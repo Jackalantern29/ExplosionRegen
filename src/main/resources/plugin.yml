@@ -1,0 +1,20 @@
+name: ExplosionRegen
+version: 3.0-EB.15
+description: Regenerate blocks destroyed from Entities
+main: com.jackalantern29.explosionregen.ExplosionRegen
+author: Jackalantern29
+api-version: 1.13
+softdepend: [CoreProtect, GriefPrevention]
+commands:
+  rsettings:
+    description: Opens a GUI Inventory used to configure explosions.
+    usage: "/<command> [entity|block] [type] [page]"
+  rregen:
+    description: Regenerate blocks from certain explosions.
+    usage: "/<command> <all|near|recent|first>"
+  rexplode:
+    description: Creates an explosion.
+    usage: "/<command> [location|onlinePlayer] [settings]"
+  rversion:
+    description: Get this plugin's version.
+    usage: "/<command>"
