@@ -1,14 +1,11 @@
 package com.jackalantern29.explosionregen.api;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-
+import com.cryptomorin.xseries.XMaterial;
+import com.jackalantern29.explosionregen.ExplosionRegen;
+import com.jackalantern29.explosionregen.api.ERProfileSettings.ERProfileExplosionSettings;
+import com.jackalantern29.explosionregen.api.enums.ERMCUpdateType;
+import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
+import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,15 +20,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.material.Bed;
 import org.bukkit.material.Chest;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.ERProfileSettings.ERProfileExplosionSettings;
-import com.jackalantern29.explosionregen.api.enums.ERMCUpdateType;
-import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
-import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
+import java.util.*;
 
 public class ERExplosionMap implements Listener {
 	private final Map<Location, ERBlock> blockMap = new HashMap<>();
@@ -327,7 +320,6 @@ public class ERExplosionMap implements Listener {
 			for(Block block : new ArrayList<>(blockList)) {
 				if(block.getType() != XMaterial.TNT.parseMaterial()) {
 					if(block.getType() == XMaterial.NETHER_PORTAL.parseMaterial()) {
-						blockList.remove(block);
 						if(block.getRelative(0, -1, 0).getType() == Material.AIR) {
 							addLater.add(block);
 						} else {
@@ -342,6 +334,43 @@ public class ERExplosionMap implements Listener {
 							addLater.addAll(calculateAdjacentBlocks(block.getRelative(0, 1, 0)));
 							blockList.remove(block.getRelative(0, 1, 0));
 							blockList.removeAll(calculateAdjacentBlocks(block.getRelative(0, 1, 0)));
+						} else {
+							if(block.getState().getData() instanceof Bed) {
+								Bed bed = (Bed) block.getState().getData();
+								addLater.add(block);
+								blockList.remove(block);
+								Block bed2 = null;
+								switch(bed.getFacing()) {
+									case NORTH:
+										if(bed.isHeadOfBed())
+											bed2 = block.getRelative(BlockFace.SOUTH);
+										else
+											bed2 = block.getRelative(BlockFace.NORTH);
+										break;
+									case SOUTH:
+										if(bed.isHeadOfBed())
+											bed2 = block.getRelative(BlockFace.NORTH);
+										else
+											bed2 = block.getRelative(BlockFace.SOUTH);
+										break;
+									case EAST:
+										if(bed.isHeadOfBed())
+											bed2 = block.getRelative(BlockFace.WEST);
+										else
+											bed2 = block.getRelative(BlockFace.EAST);
+										break;
+									case WEST:
+										if(bed.isHeadOfBed())
+											bed2 = block.getRelative(BlockFace.EAST);
+										else
+											bed2 = block.getRelative(BlockFace.WEST);
+										break;
+								}
+								if(bed2.getState().getData() instanceof Bed) {
+									addLater.add(bed2);
+									blockList.remove(bed2);
+								}
+							}
 						}
 					}
 				}
@@ -403,6 +432,11 @@ public class ERExplosionMap implements Listener {
 						if(!bs.doPreventDamage()) {
 							if(bs.doRegen()) {
 								explosion.addBlock(erBlock);
+
+								if(block.getState().getData() instanceof Bed) {
+									block.setType(Material.AIR, false);
+								}
+
 							} else {
 								Random r = new Random();
 								int random = r.nextInt(99);
@@ -412,7 +446,6 @@ public class ERExplosionMap implements Listener {
 						} else
 							erBlock.getBlock().setType(bs.getMaterial().parseMaterial());
 					} else {
-						//Bukkit.getPlayer("Jack").sendMessage("" + bs.getMaterial());
 						blockList.remove(block);
 						blockMap.put(block.getLocation(), erBlock);
 					}

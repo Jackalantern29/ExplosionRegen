@@ -8,10 +8,12 @@ import com.jackalantern29.explosionregen.api.events.ExplosionDamageEntityEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -22,8 +24,10 @@ import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.ERExplosionSettingsOverride;
 import com.jackalantern29.explosionregen.api.ExplosionSettings;
 import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 public class EntityExplodeListener implements Listener {
+	private BlockState clickedBlock = null;
 	@EventHandler
 	public void onExplode(EntityExplodeEvent event) {
 		Entity entity = event.getEntity();
@@ -59,7 +63,7 @@ public class EntityExplodeListener implements Listener {
 		}
 		return newSettings;
 	}
-	
+
 	private void explode(Event event, Object what, Location location, List<Block> blockList) {
 		ExplosionSettings settings = ExplosionSettings.getSettings("default");
 		if(settings.getConditions() != null) {
@@ -94,8 +98,8 @@ public class EntityExplodeListener implements Listener {
 			what = ((EntityDamageByEntityEvent) event).getDamager();
 			location = ((EntityDamageByEntityEvent) event).getDamager().getLocation();
 		} else if(event instanceof EntityDamageByBlockEvent && event.getCause() == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) {
-			what = ((EntityDamageByBlockEvent) event).getDamager();
-			location = ((EntityDamageByBlockEvent) event).getDamager().getLocation();
+			what = clickedBlock;
+			location = clickedBlock.getLocation();
 		} else
 			return;
 		if(settings.getConditions() != null) {
@@ -130,6 +134,13 @@ public class EntityExplodeListener implements Listener {
 					event.setDamage(event.getDamage() - entityDamage);
 					break;
 			}
+		}
+	}
+
+	@EventHandler
+	public void onClick(PlayerInteractEvent event) {
+		if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			clickedBlock = event.getClickedBlock().getState();
 		}
 	}
 }
