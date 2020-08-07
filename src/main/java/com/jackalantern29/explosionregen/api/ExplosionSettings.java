@@ -2,15 +2,9 @@ package com.jackalantern29.explosionregen.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import com.jackalantern29.explosionregen.api.enums.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -20,13 +14,6 @@ import org.bukkit.inventory.ItemStack;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.enums.ERDamageModifierType;
-import com.jackalantern29.explosionregen.api.enums.ExplosionCondition;
-import com.jackalantern29.explosionregen.api.enums.EROverrideWeatherType;
-import com.jackalantern29.explosionregen.api.enums.ERSettingsDamageCategory;
-import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
-import com.jackalantern29.explosionregen.api.enums.GenerateDirection;
-import com.jackalantern29.explosionregen.api.enums.ParticleType;
 
 import xyz.xenondevs.particle.ParticleEffect;
 
@@ -52,12 +39,10 @@ public class  ExplosionSettings {
 	private int regenMaxBlockQueue = 1;
 	
 	private boolean damageBlockAllow = true;
-	private int damageBlockPower = 4;
-	private ERDamageModifierType damageBlockModifierType = ERDamageModifierType.MULTIPLY;
+	private DamageModifier damageBlockModifierType = DamageModifier.MULTIPLY;
 	private int damageBlockAmount = 1;
 	private boolean damageEntityAllow = true;
-	private int damageEntityPower = 4;
-	private ERDamageModifierType damageEntityModifierType = ERDamageModifierType.MULTIPLY;
+	private DamageModifier damageEntityModifierType = DamageModifier.MULTIPLY;
 	private int damageEntityAmount = 1;
 
 	private ParticleType particleType = ParticleType.VANILLA;
@@ -72,15 +57,8 @@ public class  ExplosionSettings {
 			put(ParticleType.PRESET, null);
 		}
 	};
-	
-	private boolean sounds_on_explode_enable = false;
-	private ERSoundData sounds_on_explode_sound = new ERSoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f);
-	private boolean sounds_explosion_finished_regen_enable = false;
-	private ERSoundData sounds_explosion_finished_regen_sound = new ERSoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f);
-	private boolean sounds_on_block_regen_enable = true;
-	private ERSoundData sounds_on_block_regen_sound = new ERSoundData(XSound.BLOCK_GRASS_STEP, 1f, 1f);
-	private boolean sounds_block_regenerating_enable = false;
-	private ERSoundData sounds_block_regenerating_sound = new ERSoundData(XSound.BLOCK_GRASS_STEP, 1f, 1f);
+
+	private final SoundSettings soundSettings = new SoundSettings();
 	
 	private ItemStack displayItem = XMaterial.TNT.parseItem();
 	private String displayName = "Default Explosions";
@@ -108,7 +86,7 @@ public class  ExplosionSettings {
 		}
 		this.config = YamlConfiguration.loadConfiguration(file);
 		//saveLater("type", getExplosionType().toString().toLowerCase());
-		saveLater("block-settings", blockSettings);
+		saveLater("block-settings", blockSettings.getName());
 		saveLater("enable", getAllowExplosion());
 		setDisplayName(getDisplayName());
 		setDisplayItem(getDisplayItem());
@@ -123,8 +101,7 @@ public class  ExplosionSettings {
 		setMaxBlockRegenQueue(getMaxBlockRegenQueue());
 		for(ERSettingsDamageCategory cat : ERSettingsDamageCategory.values()) {
 			saveLater("damage." + cat.toString().toLowerCase() + ".allow", allowDamage(cat));
-			saveLater("damage." + cat.toString().toLowerCase() + ".power", getPower(cat));
-			saveLater("damage." + cat.toString().toLowerCase() + ".modifier-type", getModifier(cat).toString().toLowerCase());
+			saveLater("damage." + cat.toString().toLowerCase() + ".modifier-type", getDamageModifier(cat).toString().toLowerCase());
 			saveLater("damage." + cat.toString().toLowerCase() + ".amount", getDamageAmount(cat));
 		}
 		setParticleType(getParticleType());
@@ -135,12 +112,13 @@ public class  ExplosionSettings {
 				saveLater("particles.preset", "none");
 		}
 		for(ExplosionPhase phase : ExplosionPhase.values()) {
+			soundSettings.setSound(phase, new SoundData(XSound.BLOCK_GRASS_STEP, 1f, 1f, true));
 			String replace = phase.toString().toLowerCase().replace("_", "-");
 			String section = "sounds." + replace;
 			saveLater(section + ".enable", getAllowSound(phase));
-			saveLater(section + ".sound", getSound(phase).getSound().name().toLowerCase());
-			saveLater(section + ".volume", getSound(phase).getVolume());
-			saveLater(section + ".pitch", getSound(phase).getPitch());
+			saveLater(section + ".sound", getSoundSettings().getSound(phase).getSound().name().toLowerCase());
+			saveLater(section + ".volume", getSoundSettings().getSound(phase).getVolume());
+			saveLater(section + ".pitch", getSoundSettings().getSound(phase).getPitch());
 		}
 		save(false);
 		
@@ -161,13 +139,11 @@ public class  ExplosionSettings {
 
 		
 		damageBlockAllow = config.getBoolean("damage.block.allow");
-		damageBlockPower = config.getInt("damage.block.power");
-		damageBlockModifierType = ERDamageModifierType.valueOf(config.getString("damage.block.modifier-type").toUpperCase());
+		damageBlockModifierType = DamageModifier.valueOf(config.getString("damage.block.modifier-type").toUpperCase());
 		damageBlockAmount = config.getInt("damage.block.amount");
 		
 		damageEntityAllow = config.getBoolean("damage.entity.allow");
-		damageEntityPower = config.getInt("damage.entity.power");
-		damageEntityModifierType = ERDamageModifierType.valueOf(config.getString("damage.entity.modifier-type").toUpperCase());
+		damageEntityModifierType = DamageModifier.valueOf(config.getString("damage.entity.modifier-type").toUpperCase());
 		damageEntityAmount = config.getInt("damage.entity.amount");
 		
 		particleType = ParticleType.valueOf(config.getString("particles.type").toUpperCase());
@@ -183,16 +159,15 @@ public class  ExplosionSettings {
 				particleSettings.put(pTypes, ParticleSettings.getSettings(config.getString("particles.preset")));
 			}
 		}
-		
-		sounds_on_explode_enable = config.getBoolean("sounds.on-explode.enable");
-		sounds_on_explode_sound = new ERSoundData(XSound.valueOf(config.getString("sounds.on-explode.sound").toUpperCase()), Float.parseFloat(config.getString("sounds.on-explode.volume")), Float.parseFloat(config.getString("sounds.on-explode.pitch")));
-		sounds_explosion_finished_regen_enable = config.getBoolean("sounds.explosion-finished-regen.enable");
-		sounds_explosion_finished_regen_sound = new ERSoundData(XSound.valueOf(config.getString("sounds.explosion-finished-regen.sound").toUpperCase()), Float.parseFloat(config.getString("sounds.explosion-finished-regen.volume")), Float.parseFloat(config.getString("sounds.explosion-finished-regen.pitch")));
-		sounds_on_block_regen_enable = config.getBoolean("sounds.on-block-regen.enable");
-		sounds_on_block_regen_sound = new ERSoundData(XSound.valueOf(config.getString("sounds.on-block-regen.sound").toUpperCase()), Float.parseFloat(config.getString("sounds.on-block-regen.volume")), Float.parseFloat(config.getString("sounds.on-block-regen.pitch")));
-		sounds_block_regenerating_enable = config.getBoolean("sounds.block-regenerating.enable");
-		sounds_block_regenerating_sound = new ERSoundData(XSound.valueOf(config.getString("sounds.block-regenerating.sound").toUpperCase()), Float.parseFloat(config.getString("sounds.block-regenerating.volume")), Float.parseFloat(config.getString("sounds.block-regenerating.pitch")));
-		
+		for(ExplosionPhase phase : ExplosionPhase.values()) {
+			String section = "sounds." + phase.toString();
+			XSound sound = XSound.valueOf(config.getString(section + ".sound").toUpperCase());
+			float volume = (float) config.getDouble(section + ".volume");
+			float pitch = (float) config.getDouble(section + ".pitch");
+			boolean enable = config.getBoolean(section + ".enable");
+			soundSettings.setSound(phase, new SoundData(sound, volume, pitch, enable));
+		}
+
 		if(config.isConfigurationSection("conditions")) {
 			ERExplosionSettingsOverride override = conditions;
 			for(String key : config.getConfigurationSection("conditions").getKeys(false)) {
@@ -404,38 +379,16 @@ public class  ExplosionSettings {
 			break;
 		}
 	}
-
 	
-	public int getPower(ERSettingsDamageCategory category) {
-		if(category == ERSettingsDamageCategory.BLOCK)
-			return damageBlockPower;
-		else if(category == ERSettingsDamageCategory.ENTITY)
-			return damageEntityPower;
-		return 0;
-	}
-	public void setPower(ERSettingsDamageCategory category, int value) {
-		switch(category) {
-		case BLOCK:
-			damageBlockPower = value;
-			saveLater("damage.block.power", value);
-			break;
-		case ENTITY:
-			damageEntityPower = value;
-			saveLater("damage.entity.power", value);
-			break;
-		}
-	}
-
-	
-	public ERDamageModifierType getModifier(ERSettingsDamageCategory category) {
+	public DamageModifier getDamageModifier(ERSettingsDamageCategory category) {
 		if(category == ERSettingsDamageCategory.BLOCK)
 			return damageBlockModifierType;
 		else if(category == ERSettingsDamageCategory.ENTITY)
 			return damageEntityModifierType;
 		return null;
 	}
-	public void setModifier(ERSettingsDamageCategory category, ERDamageModifierType value) {
-		String valueString = value.toString().toLowerCase().replace("_", "-");
+	public void setModifier(ERSettingsDamageCategory category, DamageModifier value) {
+		String valueString = value.name().toLowerCase().replace("_", "-");
 		switch(category) {
 		case BLOCK:
 			damageBlockModifierType = value;
@@ -485,70 +438,15 @@ public class  ExplosionSettings {
 			saveLater("particles.preset", particleSettings.getName());
 	}
 
-	public boolean getAllowSound(ExplosionPhase category) {
-		if(category == ExplosionPhase.ON_EXPLODE)
-			return sounds_on_explode_enable;
-		else if(category == ExplosionPhase.EXPLOSION_FINISHED_REGEN)
-			return sounds_explosion_finished_regen_enable;
-		else if(category == ExplosionPhase.ON_BLOCK_REGEN)
-			return sounds_on_block_regen_enable;
-		else if(category == ExplosionPhase.BLOCK_REGENERATING)
-			return sounds_block_regenerating_enable;
-		return false;
+	public boolean getAllowSound(ExplosionPhase phase) {
+		return soundSettings.getSound(phase).isEnable();
 	}
-	public void setAllowSound(ExplosionPhase phase, boolean value) {
-		switch(phase) {
-		case BLOCK_REGENERATING:
-			sounds_block_regenerating_enable = value;
-			saveLater("sounds.block-regenerating.enable", value);
-			break;
-		case EXPLOSION_FINISHED_REGEN:
-			sounds_explosion_finished_regen_enable = value;
-			saveLater("sounds.explosion-finished-regen.enable", value);
-			break;
-		case ON_BLOCK_REGEN:
-			sounds_on_block_regen_enable = value;
-			saveLater("sounds.on-block-regen.enable", value);
-			break;
-		case ON_EXPLODE:
-			sounds_on_explode_enable = value;
-			saveLater("sounds.on-explode.enable", value);
-			break;
-		}
+	public void setAllowSound(ExplosionPhase phase, boolean enable) {
+		soundSettings.getSound(phase).setEnable(enable);
+		saveLater("sounds." + phase.toString() + ".enable", enable);
 	}
-
-	public ERSoundData getSound(ExplosionPhase category) {
-		if(category == ExplosionPhase.ON_EXPLODE)
-			return sounds_on_explode_sound;
-		else if(category == ExplosionPhase.EXPLOSION_FINISHED_REGEN)
-			return sounds_explosion_finished_regen_sound;
-		else if(category == ExplosionPhase.ON_BLOCK_REGEN)
-			return sounds_on_block_regen_sound;
-		else if(category == ExplosionPhase.BLOCK_REGENERATING)
-			return sounds_block_regenerating_sound;
-		return null;
-	}
-	
-	public void setSound(ExplosionPhase phase, ERSoundData value) {
-		String replace = phase.toString().toLowerCase().replace("_", "-");
-		String section = "sounds." + replace;
-		saveLater(section + ".sound", value.getSound().name().toLowerCase());
-		saveLater(section + ".volume", value.getVolume());
-		saveLater(section + ".pitch", value.getPitch());
-		switch(phase) {
-		case BLOCK_REGENERATING:
-			sounds_block_regenerating_sound = value;
-			break;
-		case EXPLOSION_FINISHED_REGEN:
-			sounds_explosion_finished_regen_sound = value;
-			break;
-		case ON_BLOCK_REGEN:
-			sounds_on_block_regen_sound = value;
-			break;
-		case ON_EXPLODE:
-			sounds_on_explode_sound = value;
-			break;
-		}
+	public SoundSettings getSoundSettings() {
+		return soundSettings;
 	}
 	
 	public ItemStack getDisplayItem() {

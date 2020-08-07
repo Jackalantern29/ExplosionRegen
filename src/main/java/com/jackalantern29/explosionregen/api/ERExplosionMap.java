@@ -31,7 +31,7 @@ import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.ERProfileSettings.ERProfileExplosionSettings;
 import com.jackalantern29.explosionregen.api.enums.ERMCUpdateType;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
-import com.jackalantern29.explosionregen.api.events.ERExplodeEvent;
+import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
 
 public class ERExplosionMap implements Listener {
 	private final Map<Location, ERBlock> blockMap = new HashMap<>();
@@ -118,10 +118,10 @@ public class ERExplosionMap implements Listener {
 									if (ERProfileSettings.get(player.getUniqueId()).getConfigurableSettings().contains(settings))
 										ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(settings).getSound(ExplosionPhase.BLOCK_REGENERATING).playSound(explosion.getBlocks().get(random).getLocation(), player);
 									else
-										settings.getSound(ExplosionPhase.BLOCK_REGENERATING).playSound(explosion.getBlocks().get(random).getLocation(), player);
+										settings.getSoundSettings().getSound(ExplosionPhase.BLOCK_REGENERATING).playSound(explosion.getBlocks().get(random).getLocation(), player);
 								});
 							else
-								settings.getSound(phase).playSound(explosion.getBlocks().get(random).getLocation());
+								settings.getSoundSettings().getSound(phase).playSound(explosion.getBlocks().get(random).getLocation());
 						}
 						phase = ExplosionPhase.ON_BLOCK_REGEN;
 						if (explosion.getRegenTick() > 0) {
@@ -209,10 +209,10 @@ public class ERExplosionMap implements Listener {
 													if (ERProfileSettings.get(player.getUniqueId()).getConfigurableSettings().contains(settings))
 														ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(settings).getSound(ExplosionPhase.ON_BLOCK_REGEN).playSound(block.getLocation(), player);
 													else
-														settings.getSound(ExplosionPhase.ON_BLOCK_REGEN).playSound(block.getLocation(), player);
+														settings.getSoundSettings().getSound(ExplosionPhase.ON_BLOCK_REGEN).playSound(block.getLocation(), player);
 												});
 											else
-												settings.getSound(phase).playSound(block.getLocation());
+												settings.getSoundSettings().getSound(phase).playSound(block.getLocation());
 										}
 										explosion.regenerate(block);
 									}
@@ -281,10 +281,10 @@ public class ERExplosionMap implements Listener {
 									if (ERProfileSettings.get(player.getUniqueId()).getConfigurableSettings().contains(settings))
 										ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(settings).getSound(ExplosionPhase.EXPLOSION_FINISHED_REGEN).playSound(explosion.getLocation(), player);
 									else
-										settings.getSound(ExplosionPhase.EXPLOSION_FINISHED_REGEN).playSound(explosion.getLocation(), player);
+										settings.getSoundSettings().getSound(ExplosionPhase.EXPLOSION_FINISHED_REGEN).playSound(explosion.getLocation(), player);
 								});
 							else
-								settings.getSound(phase).playSound(explosion.getLocation());
+								settings.getSoundSettings().getSound(phase).playSound(explosion.getLocation());
 						}
 						removeExplosion(explosion);
 					}
@@ -295,9 +295,9 @@ public class ERExplosionMap implements Listener {
 	}
 
 
-	public ERExplosion addExplosion(ExplosionSettings settings, Location location) {
-		return addExplosion(settings, location, null);
-	}
+//	public ERExplosion addExplosion(ExplosionSettings settings, Location location) {
+//		return addExplosion(settings, location, null);
+//	}
 	private List<Block> calculateAdjacentBlocks(Block block) {
 		List<Block> list = new ArrayList<>();
 		if(ERMCUpdateType.isPostUpdate(ERMCUpdateType.COLOR_UPDATE)) {
@@ -318,7 +318,7 @@ public class ERExplosionMap implements Listener {
 		}
 		return list;
 	}
-	public ERExplosion addExplosion(ExplosionSettings settings, Location location, List<Block> blockList) {
+	public ERExplosion addExplosion(ExplosionSettings settings, Location location, List<Block> blockList, double blockDamage) {
 		ERExplosion explosion = new ERExplosion(settings, location);
 		if(blockList != null && !blockList.isEmpty()) {
 
@@ -389,13 +389,12 @@ public class ERExplosionMap implements Listener {
 						Sign sign = (Sign)state;
 						erBlock.setContents(sign.getLines());
 					}
-
 					if(blockMap.containsKey(block.getLocation())) {
 						ERBlock b = blockMap.get(block.getLocation());
-						erBlock.setDurability(b.getDurability() - 4);
+						erBlock.setDurability(b.getDurability() - blockDamage);
 						blockMap.remove(block.getLocation());
 					} else {
-						erBlock.setDurability(erBlock.getDurability() - 4);
+						erBlock.setDurability(erBlock.getDurability() - blockDamage);
 					}
 					if(erBlock.getDurability() <= 0.0d) {
 						if(bs.doReplace()) {
@@ -494,10 +493,10 @@ public class ERExplosionMap implements Listener {
 							if(ERProfileSettings.get(player.getUniqueId()).getConfigurableSettings().contains(settings))
 								ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(settings).getSound(phase).playSound(location, player);
 							else
-								settings.getSound(phase).playSound(explosion.getLocation(), player);
+								settings.getSoundSettings().getSound(phase).playSound(explosion.getLocation(), player);
 						});
 					else
-						settings.getSound(phase).playSound(explosion.getLocation());
+						settings.getSoundSettings().getSound(phase).playSound(explosion.getLocation());
 				}
 			}
 			explosions.add(explosion);
@@ -517,13 +516,13 @@ public class ERExplosionMap implements Listener {
 		if(force || settings.getAllowExplosion()) {
 			Listener listener = new Listener() {
 				@EventHandler
-				public void t(ERExplodeEvent event) {
+				public void t(ExplosionTriggerEvent event) {
 					event.setSettings(settings);
 				}
 			};
 			ExplosionRegen.getInstance().getServer().getPluginManager().registerEvents(listener, ExplosionRegen.getInstance());
 			location.getWorld().createExplosion(location, power, setFire);
-			ERExplodeEvent.getHandlerList().unregister(listener);
+			ExplosionTriggerEvent.getHandlerList().unregister(listener);
 		}
 	}
 	

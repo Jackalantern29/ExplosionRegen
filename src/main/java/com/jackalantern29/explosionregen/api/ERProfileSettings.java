@@ -153,13 +153,13 @@ public class ERProfileSettings {
 		};
 
 		private boolean sounds_on_explode_enable = false;
-		private ERSoundData sounds_on_explode_sound = new ERSoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f);
+		private SoundData sounds_on_explode_sound = new SoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f);
 		private boolean sounds_explosion_finished_regen_enable = false;
-		private ERSoundData sounds_explosion_finished_regen_sound = new ERSoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f);
+		private SoundData sounds_explosion_finished_regen_sound = new SoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f);
 		private boolean sounds_on_block_regen_enable = true;
-		private ERSoundData sounds_on_block_regen_sound = new ERSoundData(XSound.BLOCK_GRASS_STEP, 1f, 1f);
+		private SoundData sounds_on_block_regen_sound = new SoundData(XSound.BLOCK_GRASS_STEP, 1f, 1f);
 		private boolean sounds_block_regenerating_enable = false;
-		private ERSoundData sounds_block_regenerating_sound = new ERSoundData(XSound.BLOCK_GRASS_STEP, 1f, 1f);
+		private SoundData sounds_block_regenerating_sound = new SoundData(XSound.BLOCK_GRASS_STEP, 1f, 1f);
 		
 		private ERProfileExplosionSettings(ExplosionSettings settings) {
 			this.settings = settings;
@@ -191,13 +191,13 @@ public class ERProfileSettings {
 			}
 			
 			sounds_on_explode_enable = config.getBoolean(settings.getName().toLowerCase() + ".sounds.on-explode.enable");
-			sounds_on_explode_sound = new ERSoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.pitch")));
+			sounds_on_explode_sound = new SoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.pitch")));
 			sounds_explosion_finished_regen_enable = config.getBoolean(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.enable");
-			sounds_explosion_finished_regen_sound = new ERSoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.pitch")));
+			sounds_explosion_finished_regen_sound = new SoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.pitch")));
 			sounds_on_block_regen_enable = config.getBoolean(settings.getName().toLowerCase() + ".sounds.on-block-regen.enable");
-			sounds_on_block_regen_sound = new ERSoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.pitch")));
+			sounds_on_block_regen_sound = new SoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.pitch")));
 			sounds_block_regenerating_enable = config.getBoolean(settings.getName().toLowerCase() + ".sounds.block-regenerating.enable");
-			sounds_block_regenerating_sound = new ERSoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.pitch")));
+			sounds_block_regenerating_sound = new SoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.pitch")));
 		}
 		public ExplosionSettings getExplosionSettings() {
 			return settings;
@@ -265,7 +265,7 @@ public class ERProfileSettings {
 		}
 
 		
-		public ERSoundData getSound(ExplosionPhase category) {
+		public SoundData getSound(ExplosionPhase category) {
 			if(category == ExplosionPhase.ON_EXPLODE)
 				return sounds_on_explode_sound;
 			else if(category == ExplosionPhase.EXPLOSION_FINISHED_REGEN)
@@ -276,7 +276,7 @@ public class ERProfileSettings {
 				return sounds_block_regenerating_sound;
 			return null;
 		}
-		public void setSound(ExplosionPhase phase, ERSoundData value) {
+		public void setSound(ExplosionPhase phase, SoundData value) {
 			String replace = phase.toString().toLowerCase().replace("_", "-");
 
 			saveLater(settings.getName().toLowerCase() + ".sounds." + replace + ".sound", value.getSound().name().toLowerCase());

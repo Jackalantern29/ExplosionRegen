@@ -222,6 +222,8 @@ public class CommandRSettings implements TabExecutor {
 						list.add("server");
 					if(sender.hasPermission(permission + ".edit"))
 						list.add("edit");
+					if(sender.hasPermission(permission + ".reload"))
+						list.add("reload");
 					return StringUtil.copyPartialMatches(args[0], list, new ArrayList<>(list.size()));
 				} else {
 					if(args[0].equalsIgnoreCase("edit") && sender.hasPermission(permission + ".edit")) {

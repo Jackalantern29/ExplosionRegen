@@ -262,16 +262,16 @@ public class ERInventory {
 								break;
 							}	
 							for(ExplosionPhase cat : ExplosionPhase.values()) {
-								if((isServer ? selectedSettings.getSound(cat).getSound() : ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(cat).getSound()) == sounds) {
+								if((isServer ? selectedSettings.getSoundSettings().getSound(cat).getSound() : ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(cat).getSound()) == sounds) {
 									item = XMaterial.NOTE_BLOCK.parseItem();
 									color = ChatColor.AQUA;
 								}
 							}
 							return new StaticGuiElement('l', item, click -> {
-								ERSoundData data = selectedSettings.getSound(selectedPhase); 
+								SoundData data = selectedSettings.getSoundSettings().getSound(selectedPhase);
 								data.setSound(sounds); 
 								if(isServer)
-									selectedSettings.setSound(selectedPhase, data); 
+									selectedSettings.getSoundSettings().setSound(selectedPhase, data);
 								else
 									ERProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setSound(selectedPhase, data);
 								g.draw(click.getEvent().getWhoClicked()); return true;}, color + StringUtils.capitaliseAllWords(sounds.toString().toLowerCase().replace("_", " ")));
@@ -358,7 +358,7 @@ public class ERInventory {
 							removeFakeEnchant(Objects.requireNonNull(item));
 							fName = "§7" + name;
 						}
-						String lore = "§7Selected " + (fi == 0 ? "Particle" : "Sound") + " Settings: §6" + (fi == 0 ? StringUtils.capitaliseAllWords(isServer ? selectedSettings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase() : ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase()) : StringUtils.capitaliseAllWords(isServer ? selectedSettings.getSound(phase).getSound().toString().toLowerCase().replace("_", " ") : ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(phase).getSound().toString().toLowerCase().replace("_", " ")));
+						String lore = "§7Selected " + (fi == 0 ? "Particle" : "Sound") + " Settings: §6" + (fi == 0 ? StringUtils.capitaliseAllWords(isServer ? selectedSettings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase() : ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase()) : StringUtils.capitaliseAllWords(isServer ? selectedSettings.getSoundSettings().getSound(phase).getSound().toString().toLowerCase().replace("_", " ") : ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(phase).getSound().toString().toLowerCase().replace("_", " ")));
 						return new StaticGuiElement(fcc, item, click -> {selectedPhase = ExplosionPhase.valueOf(fName.substring(2).replace(" ", "_").toUpperCase()); g.draw(click.getEvent().getWhoClicked()); return true;}, fName, lore);
 					}));
 				}
@@ -383,7 +383,7 @@ public class ERInventory {
 					lore.add("§7" + StringUtils.capitalise(types.name().toLowerCase()));
 					lore.add("  §7Allow: §6" + StringUtils.capitalise(selectedSettings.allowDamage(types) + ""));
 					lore.add("  §7Power: §6" + selectedSettings.getDamageAmount(types));
-					lore.add("  §7Modifier Type: §6" + StringUtils.capitalise(selectedSettings.getModifier(types).name().toLowerCase()));
+					lore.add("  §7Modifier Type: §6" + StringUtils.capitalise(selectedSettings.getDamageModifier(types).name().toLowerCase()));
 					lore.add("  §7Amount: §6" + selectedSettings.getDamageAmount(types));
 				}
 				return new StaticGuiElement('t', XMaterial.FIRE_CHARGE.parseItem(), click -> true, lore.toArray(new String[0]));
