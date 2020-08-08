@@ -14,7 +14,7 @@ public class CommandRVersion implements CommandExecutor {
 			sender.sendMessage(ExplosionRegen.getSettings().getNoPermCmdChat());
 			return true;
 		}
-		sender.sendMessage("§7[§cExplosionRegen§7] §fVersion " + ExplosionRegen.getInstance().getDescription().getVersion());
+		sender.sendMessage("Â§7[Â§cExplosionRegenÂ§7] Â§fVersion " + ExplosionRegen.getInstance().getDescription().getVersion());
 		return true;
 	}
 	
