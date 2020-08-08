@@ -18,13 +18,6 @@ public class ERExplosionSettingsOverride {
 	//private Object source;
 	private final EnumMap<ExplosionCondition, Object> conditions = new EnumMap<>(ExplosionCondition.class);
 	private ExplosionSettings settings;
-	public ERExplosionSettingsOverride(String name, String settings) {
-		this.name = name.toLowerCase();
-		
-		
-		ExplosionSettings.registerSettings(settings);
-		this.settings = ExplosionSettings.getSettings(settings);
-	}
 	public ERExplosionSettingsOverride(String name, ExplosionSettings settings) {
 		this.name = name.toLowerCase();
 		this.settings = settings;
