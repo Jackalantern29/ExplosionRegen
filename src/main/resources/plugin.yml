@@ -1,5 +1,5 @@
 name: ExplosionRegen
-version: 3.0-EB.18
+version: 3.0-EB.19
 description: Regenerate blocks destroyed from Entities
 main: com.jackalantern29.explosionregen.ExplosionRegen
 author: Jackalantern29
@@ -17,4 +17,7 @@ commands:
     usage: "/<command> [location|onlinePlayer] [settings]"
   rversion:
     description: Get this plugin's version.
+    usage: "/<command>"
+  rnuke:
+    description: Summons TnTs in the sky. Used for performance testing.
     usage: "/<command>"
