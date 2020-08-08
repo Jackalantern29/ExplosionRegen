@@ -120,6 +120,12 @@ public class ParticleSettings {
 			this.particles.put(particle.getPhase(), list);	
 		}
 	}
+	public void setParticle(int index, ParticleData particle) {
+		List<ParticleData> list = this.particles.getOrDefault(particle.getPhase(), new ArrayList<>());
+		list.remove(index);
+		list.add(index, particle);
+		this.particles.put(particle.getPhase(), list);
+	}
 	public List<ParticleData> getParticles() {
 		List<ParticleData> list = new ArrayList<>();
 		particles.values().forEach(list::addAll);
