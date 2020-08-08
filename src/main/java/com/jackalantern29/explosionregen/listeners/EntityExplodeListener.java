@@ -3,7 +3,7 @@ package com.jackalantern29.explosionregen.listeners;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jackalantern29.explosionregen.api.enums.ERSettingsDamageCategory;
+import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.events.ExplosionDamageEntityEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -73,8 +73,8 @@ public class EntityExplodeListener implements Listener {
 		settings = calculateOverrides(settings, what);
 		if(!settings.getOverrides().isEmpty())
 			settings = calculateOverrides(settings, what);
-		ExplosionTriggerEvent e = new ExplosionTriggerEvent(settings, what, location, blockList, settings.getDamageAmount(ERSettingsDamageCategory.BLOCK));
-		if(!settings.allowDamage(ERSettingsDamageCategory.BLOCK))
+		ExplosionTriggerEvent e = new ExplosionTriggerEvent(settings, what, location, blockList, settings.getDamageAmount(DamageCategory.BLOCK));
+		if(!settings.getAllowDamage(DamageCategory.BLOCK))
 			e.setCancelled(true);
 		Bukkit.getPluginManager().callEvent(e);
 		settings = e.getSettings();
@@ -109,14 +109,14 @@ public class EntityExplodeListener implements Listener {
 		settings = calculateOverrides(settings, what);
 		if(!settings.getOverrides().isEmpty())
 			settings = calculateOverrides(settings, what);
-		ExplosionDamageEntityEvent e = new ExplosionDamageEntityEvent(settings, what, location, settings.getDamageAmount(ERSettingsDamageCategory.ENTITY));
-		if(!settings.allowDamage(ERSettingsDamageCategory.ENTITY))
+		ExplosionDamageEntityEvent e = new ExplosionDamageEntityEvent(settings, what, location, settings.getDamageAmount(DamageCategory.ENTITY));
+		if(!settings.getAllowDamage(DamageCategory.ENTITY))
 			e.setCancelled(true);
 		Bukkit.getPluginManager().callEvent(e);
 		settings = e.getSettings();
 		double entityDamage = e.getEntityDamage();
 		if(!e.isCancelled()) {
-			ERSettingsDamageCategory category = ERSettingsDamageCategory.ENTITY;
+			DamageCategory category = DamageCategory.ENTITY;
 			switch(settings.getDamageModifier(category)) {
 				case ADD:
 					event.setDamage(event.getDamage() + entityDamage);
