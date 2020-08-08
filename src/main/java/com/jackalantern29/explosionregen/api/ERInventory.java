@@ -3,7 +3,7 @@ package com.jackalantern29.explosionregen.api;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.enums.ERSettingsDamageCategory;
+import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.enums.ParticleType;
 import de.themoep.inventorygui.*;
@@ -370,7 +370,6 @@ public class ERInventory {
 					"§7Allow: §6" + StringUtils.capitalize("" + selectedSettings.getAllowRegen()),
 					"§7Instant: §6" + StringUtils.capitalize("" + selectedSettings.isInstantRegen()),
 					"§7Delay: §6" + StringUtils.capitalize("" + selectedSettings.getRegenDelay()),
-					"§7Block Delay: §6" + StringUtils.capitalize("" + selectedSettings.getBlockRegenDelay()),
 					"§7Max Block Regen Queue: §6" + StringUtils.capitalize("" + selectedSettings.getMaxBlockRegenQueue()),
 					"§7Directions: §6" + StringUtils.capitalize("" + selectedSettings.getRegenerateDirections()))));
 			settingsMenu.addElement(new StaticGuiElement('w', XMaterial.ANVIL.parseItem(), click -> true, "§aConditions", "§c§lNot Yet Implemented."));
@@ -379,9 +378,9 @@ public class ERInventory {
 			settingsMenu.addElement(new DynamicGuiElement('t', () -> {
 				List<String> lore = new ArrayList<>();
 				lore.add("§aConfigure Damage Settings");
-				for(ERSettingsDamageCategory types : ERSettingsDamageCategory.values()) {
+				for(DamageCategory types : DamageCategory.values()) {
 					lore.add("§7" + StringUtils.capitalise(types.name().toLowerCase()));
-					lore.add("  §7Allow: §6" + StringUtils.capitalise(selectedSettings.allowDamage(types) + ""));
+					lore.add("  §7Allow: §6" + StringUtils.capitalise(selectedSettings.getAllowDamage(types) + ""));
 					lore.add("  §7Power: §6" + selectedSettings.getDamageAmount(types));
 					lore.add("  §7Modifier Type: §6" + StringUtils.capitalise(selectedSettings.getDamageModifier(types).name().toLowerCase()));
 					lore.add("  §7Amount: §6" + selectedSettings.getDamageAmount(types));
