@@ -32,6 +32,10 @@ public class ParticleData implements Cloneable {
 	public ParticleData(ParticleData particle, ExplosionPhase phase) {
 		this(particle.getParticle(), phase, particle.getCanDisplay(), particle.getAmount(), particle.getOffsetX(), particle.getOffsetY(), particle.getOffsetY(), particle.getOffsetZ());
 	}
+	public ParticleData(ParticleData particle, ExplosionPhase phase, boolean canDisplay) {
+		this(particle, phase);
+		setCanDisplay(canDisplay);
+	}
 	public ParticleData(ParticleEffect particle, ExplosionPhase phase) {
 		this.particle = particle;
 		this.phase = phase;
