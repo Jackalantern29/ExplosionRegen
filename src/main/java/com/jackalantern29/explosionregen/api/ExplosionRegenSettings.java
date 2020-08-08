@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -19,7 +20,7 @@ import com.jackalantern29.explosionregen.ExplosionRegen;
 
 import xyz.xenondevs.particle.ParticleEffect;
 
-public class ERSettings {
+public class ExplosionRegenSettings {
 	
 	private static boolean setup = false;
 	private final ExplosionRegen plugin = ExplosionRegen.getInstance();
@@ -31,7 +32,7 @@ public class ERSettings {
 	private final File particleVanillaFolder = new File(plugin.getDataFolder() + File.separator + "particles", "vanilla");
 	private final File particlePresetFolder = new File(plugin.getDataFolder() + File.separator + "particles", "preset");
 
-	public ERSettings() {
+	public ExplosionRegenSettings() {
 		if(!setup) {
 			setup();
 			setup = true;
@@ -82,7 +83,7 @@ public class ERSettings {
 				e.printStackTrace();
 			}
 		}
-		for(File files : blocksFolder.listFiles()) {
+		for(File files : Objects.requireNonNull(blocksFolder.listFiles())) {
 			if(files.getName().endsWith(".yml")) {
 				YamlConfiguration bc = YamlConfiguration.loadConfiguration(files);
 				//"default.yml"
@@ -151,7 +152,13 @@ public class ERSettings {
 
 			//ParticleSettings.registerSettings(particles.name().toLowerCase(), true, new ParticleData(particles, config.getInt("amount"), Float.parseFloat(config.getString("offsetX")), Float.parseFloat(config.getString("offsetY")), Float.parseFloat(config.getString("offsetX")), Float.parseFloat(config.getString("speed"))));
 		}
-		ExplosionSettings.registerSettings("default");
+		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + "default.yml");
+		try {
+			ExplosionSettings settings = ExplosionSettings.registerSettings(file);
+			settings.saveAsFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		if(getAllowPlayerSettings()) {
 			if(!profileFolder.exists())
 				profileFolder.mkdir();
@@ -176,7 +183,7 @@ public class ERSettings {
 	}
 	
 	public String getNoPermCmdChat() {
-		return config.getString("chat.noPermCmd").replace("&", "ง");
+		return config.getString("chat.noPermCmd").replace("&", "ยง");
 	}
 	
 	public ERProfileSettings getProfileSettings(UUID uuid) {
@@ -187,7 +194,7 @@ public class ERSettings {
 		for(ERExplosion explosions : ExplosionRegen.getExplosionMap().getExplosions())
 			explosions.regenerateAll();
 		for(ExplosionSettings settings : new ArrayList<>(ExplosionSettings.getRegisteredSettings())) {
-			settings.save();
+			settings.saveAsFile();
 			ExplosionSettings.removeSettings(settings.getName());
 		}
 		setup();
