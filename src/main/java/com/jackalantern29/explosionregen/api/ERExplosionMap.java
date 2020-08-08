@@ -379,7 +379,7 @@ public class ERExplosionMap implements Listener {
 
 			if(settings.getAllowRegen()) {
 				for(Block block : new ArrayList<>(blockList)) {
-					ERBlock erBlock = new ERBlock(block.getState(), settings.getBlockRegenDelay(), settings.getBlockSettings().get(XMaterial.matchXMaterial(block.getType())).getDurability());
+					ERBlock erBlock = new ERBlock(block.getState(), 0, settings.getBlockSettings().get(XMaterial.matchXMaterial(block.getType())).getDurability());
 					BlockSettingsData bs = settings.getBlockSettings().get(erBlock.getMaterial());
 
 					BlockState state = block.getState();
