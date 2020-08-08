@@ -2,7 +2,7 @@ package com.jackalantern29.explosionregen;
 
 import java.util.UUID;
 
-import com.jackalantern29.explosionregen.commands.CommandRRegen;
+import com.jackalantern29.explosionregen.commands.*;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -10,9 +10,6 @@ import com.jackalantern29.explosionregen.api.ERExplosion;
 import com.jackalantern29.explosionregen.api.ERExplosionMap;
 import com.jackalantern29.explosionregen.api.ExplosionRegenSettings;
 import com.jackalantern29.explosionregen.api.ExplosionSettings;
-import com.jackalantern29.explosionregen.commands.CommandRExplode;
-import com.jackalantern29.explosionregen.commands.CommandRSettings;
-import com.jackalantern29.explosionregen.commands.CommandRVersion;
 import com.jackalantern29.explosionregen.listeners.EntityExplodeListener;
 import com.jackalantern29.explosionregen.listeners.PlayerJoinListener;
 
@@ -41,6 +38,7 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 			getCommand("rsettings").setTabCompleter(rsettings);
 			getCommand("rversion").setExecutor(new CommandRVersion());
 			getCommand("rregen").setExecutor(new CommandRRegen());
+			getCommand("rnuke").setExecutor(new CommandRNuke());
 		}
 	}
 	
