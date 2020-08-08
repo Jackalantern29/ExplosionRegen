@@ -18,7 +18,7 @@ public class PlayerJoinListener implements Listener {
 	public void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		if(player.isOp()) {
-			player.sendMessage("§7[§cExplosionRegen§7] §9This is an early build, so use this with caution. Report any bugs & issues you come across & share any ideas you would like to see.");
+			player.sendMessage("Â§7[Â§cExplosionRegenÂ§7] Â§9This is an early build, so use this with caution. Report any bugs & issues you come across & share any ideas you would like to see.");
 		}
 		if(ExplosionRegen.getSettings().getAllowPlayerSettings()) {
 			ERProfileSettings.get(player.getUniqueId());
