@@ -3,6 +3,7 @@ package com.jackalantern29.explosionregen.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jackalantern29.explosionregen.api.BlockSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.WeatherType;
 import org.bukkit.World;
@@ -54,11 +55,13 @@ public class CommandRSettings implements TabExecutor {
 					return true;
 				}
 				if(args.length == 1) {
-					sender.sendMessage("§cUsage: /rsettings create <name>");
+					sender.sendMessage("Â§cUsage: /rsettings create <name>");
 					return true;
 				} else {
 					String name = args[1];
-					ExplosionSettings settings = ExplosionSettings.registerSettings( name);
+					BlockSettings blockSettings = args.length >= 3 ? BlockSettings.getSettings(args[2]) : BlockSettings.getSettings("default");
+					ExplosionSettings settings = ExplosionSettings.registerSettings(name, blockSettings);
+					settings.saveAsFile();
 					sender.sendMessage("Registered Explosion Settings '" + settings.getName() + "' using '" + settings.getBlockSettings() + "' block settings.");
 				}
 			} else if(args[0].equalsIgnoreCase("edit")) {
@@ -73,27 +76,27 @@ public class CommandRSettings implements TabExecutor {
 					String option = args.length >= 3 ? args[2] : null;
 					String action = args.length >= 4 ? args[3] : null;
 					if(settings == null) {
-						sender.sendMessage("§c'" + args[1] + "' settings does not exist. ");
+						sender.sendMessage("Â§c'" + args[1] + "' settings does not exist. ");
 						return true;
 					}
 					if(option == null) {
-						sender.sendMessage("§cOption not valid.");
+						sender.sendMessage("Â§cOption not valid.");
 						return true;
 					}
 					if(action == null) {
-						sender.sendMessage("§cAction not valid.");
+						sender.sendMessage("Â§cAction not valid.");
 						return true;
 					}
 					if(option.equalsIgnoreCase("condition")) {
 						ExplosionCondition condition = args.length >= 5 ? ExplosionCondition.valueOf(args[4].toUpperCase()) : null;
 						if(condition == null) {
-							sender.sendMessage("§cCondition not valid.");
+							sender.sendMessage("Â§cCondition not valid.");
 							return true;
 						}
 						if(action.equalsIgnoreCase("add") || action.equalsIgnoreCase("set")) {
 							String valueArg = args.length >= 6 ? args[5] : null;
 							if(valueArg == null) {
-								sender.sendMessage("§cValue not valid.");
+								sender.sendMessage("Â§cValue not valid.");
 								return true;
 							}
 							ERExplosionSettingsOverride conditions = settings.getConditions();
@@ -140,26 +143,26 @@ public class CommandRSettings implements TabExecutor {
 							ExplosionCondition condition = args.length >= 7 ? ExplosionCondition.valueOf(args[6].toUpperCase()) : null;
 							String valueArg = args.length >= 8 ? args[7] : null;
 							if(args.length == 4) {
-								sender.sendMessage("§cName not valid.");
+								sender.sendMessage("Â§cName not valid.");
 								return true;
 							}
 							if(overrideWith == null) {
-								sender.sendMessage("§cSettings not valid.");
+								sender.sendMessage("Â§cSettings not valid.");
 								return true;
 							}
 							if(condition == null) {
-								sender.sendMessage("§cCondition not valid.");
+								sender.sendMessage("Â§cCondition not valid.");
 								return true;
 							}
 							if(valueArg == null) {
-								sender.sendMessage("§cValue not valid.");
+								sender.sendMessage("Â§cValue not valid.");
 								return true;
 							}
 							int amount = 1;
 							for(ERExplosionSettingsOverride override : settings.getOverrides())
 								if(override.getName().equalsIgnoreCase(overrideName))
 									amount++;
-							ERExplosionSettingsOverride override = new ERExplosionSettingsOverride(overrideName + (amount > 1 ? amount : ""), overrideWith.getName());
+							ERExplosionSettingsOverride override = new ERExplosionSettingsOverride(overrideName + (amount > 1 ? amount : ""), overrideWith);
 							Object value = null;
 							switch(condition) {
 							case CUSTOM_NAME:
@@ -203,9 +206,9 @@ public class CommandRSettings implements TabExecutor {
 					sender.sendMessage(ExplosionRegen.getSettings().getNoPermCmdChat());
 					return true;
 				}
-				sender.sendMessage("§7[§cExplosionRegen§7] §aReloading...");
+				sender.sendMessage("Â§7[Â§cExplosionRegenÂ§7] Â§aReloading...");
 				ExplosionRegen.getSettings().reload();
-				sender.sendMessage("§7[§cExplosionRegen§7] §aDone.");
+				sender.sendMessage("Â§7[Â§cExplosionRegenÂ§7] Â§aDone.");
 			}
 		}
 		return true;
@@ -242,9 +245,9 @@ public class CommandRSettings implements TabExecutor {
 						} else if(args.length == 5) {
 							if(args[2].equalsIgnoreCase("override")) {
 								if(args[4].length() == 0)
-									list.add("§7<override> <settings> <condition> <value>");
+									list.add("Â§7<override> <settings> <condition> <value>");
 								else
-									list.add("§7" + args[4] + " <settings> <condition> <value>");		
+									list.add("Â§7" + args[4] + " <settings> <condition> <value>");
 							} else if(args[2].equalsIgnoreCase("condition")) {
 								for(ExplosionCondition condition : ExplosionCondition.values())
 									list.add(condition.name().toLowerCase());
@@ -258,7 +261,7 @@ public class CommandRSettings implements TabExecutor {
 								switch(ExplosionCondition.valueOf(args[4].toUpperCase())) {
 								case CUSTOM_NAME:
 									if(args[5].length() == 0)
-										list.add("§7<custom name>");
+										list.add("Â§7<custom name>");
 									else
 										list.add(args[5]);
 									return list;
@@ -304,7 +307,7 @@ public class CommandRSettings implements TabExecutor {
 								switch(ExplosionCondition.valueOf(args[6].toUpperCase())) {
 								case CUSTOM_NAME:
 									if(args[7].length() == 0)
-										list.add("§7<custom name>");
+										list.add("Â§7<custom name>");
 									else
 										list.add(args[7]);
 									return list;
