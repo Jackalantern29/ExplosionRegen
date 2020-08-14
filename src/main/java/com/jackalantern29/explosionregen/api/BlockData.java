@@ -1,25 +1,24 @@
 package com.jackalantern29.explosionregen.api;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 
-import com.cryptomorin.xseries.XMaterial;
-
-public class ERBlock {
+public class BlockData {
 	private final BlockState block;
 	private long regenDelay;
-	private XMaterial material;
+	private Material material;
 	private Object[] content;
 	private double durability;
-	
-	public ERBlock(BlockState block, long regenDelay, double durability) {
+
+	public BlockData(BlockState block, long regenDelay, double durability) {
 		this.block = block;
 		this.regenDelay = regenDelay;
-		this.material = XMaterial.matchXMaterial(block.getType());
+		this.material = block.getType();
 		this.durability = durability;
 	}
-	public ERBlock(BlockState block, XMaterial toBlock, long regenDelay, double durability) {
+	public BlockData(BlockState block, Material toBlock, long regenDelay, double durability) {
 		this(block, regenDelay, durability);
 		this.material = toBlock;
 	}
@@ -44,16 +43,16 @@ public class ERBlock {
 		this.regenDelay = delay;
 	}
 	
-	public XMaterial getType() {
-		return XMaterial.matchXMaterial(block.getType());
+	public Material getType() {
+		return block.getType();
 	}
 	
-	public XMaterial getMaterial() {
+	public Material getMaterial() {
 		return material;
 	}
 	
-	public void setMaterial(XMaterial material) {
-		block.setType(material.parseMaterial());
+	public void setMaterial(Material material) {
+		block.setType(material);
 		this.material = material;
 	}
 	

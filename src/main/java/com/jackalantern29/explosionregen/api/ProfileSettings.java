@@ -10,18 +10,17 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.cryptomorin.xseries.XSound;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.enums.ParticleType;
 
-import xyz.xenondevs.particle.ParticleEffect;
-
-public class ERProfileSettings {
-	private final static List<ERProfileSettings> profiles = new ArrayList<>();
+public class ProfileSettings {
+	private final static List<ProfileSettings> profiles = new ArrayList<>();
 	private final List<ERProfileExplosionSettings> explosions = new ArrayList<>();
 	private final UUID uuid;
 	private final File file;
@@ -29,7 +28,7 @@ public class ERProfileSettings {
 	private final LinkedHashMap<String, Object> saveLater = new LinkedHashMap<>();
 	
 	
-	public ERProfileSettings(UUID uuid) {
+	public ProfileSettings(UUID uuid) {
 		this.uuid = uuid;
 		if(ExplosionRegen.getSettings().getAllowPlayerSettings()) {
 			file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "profiles" + File.separator + uuid.toString() + ".yml");
@@ -100,13 +99,13 @@ public class ERProfileSettings {
 		return list;
 	}
 	
-	public static ERProfileSettings get(UUID uuid) {
-		for(ERProfileSettings p : profiles) {
+	public static ProfileSettings get(UUID uuid) {
+		for(ProfileSettings p : profiles) {
 			if(p.getUniqueId().equals(uuid))
 				return p;
 		}
 		
-		return new ERProfileSettings(uuid);
+		return new ProfileSettings(uuid);
 	}
 	
 	private void saveLater(String key, Object value) {
@@ -144,22 +143,22 @@ public class ERProfileSettings {
 		private final Map<ParticleType, ParticleSettings> particleSettings = new HashMap<ParticleType, ParticleSettings>() {
 			{
 				put(ParticleType.VANILLA, new ParticleSettings(null,
-						new ParticleData(ParticleData.getVanillaSettings(ParticleEffect.SLIME), ExplosionPhase.ON_EXPLODE),
-						new ParticleData(ParticleData.getVanillaSettings(ParticleEffect.SLIME), ExplosionPhase.EXPLOSION_FINISHED_REGEN),
-						new ParticleData(ParticleData.getVanillaSettings(ParticleEffect.HEART), ExplosionPhase.ON_BLOCK_REGEN),
-						new ParticleData(ParticleData.getVanillaSettings(ParticleEffect.FLAME), ExplosionPhase.BLOCK_REGENERATING)));
+						new ParticleData(ParticleData.getVanillaSettings(Particle.SLIME), ExplosionPhase.ON_EXPLODE),
+						new ParticleData(ParticleData.getVanillaSettings(Particle.SLIME), ExplosionPhase.EXPLOSION_FINISHED_REGEN),
+						new ParticleData(ParticleData.getVanillaSettings(Particle.HEART), ExplosionPhase.ON_BLOCK_REGEN),
+						new ParticleData(ParticleData.getVanillaSettings(Particle.FLAME), ExplosionPhase.BLOCK_REGENERATING)));
 				put(ParticleType.PRESET, null);
 			}
 		};
 
 		private boolean sounds_on_explode_enable = false;
-		private SoundData sounds_on_explode_sound = new SoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f);
+		private SoundData sounds_on_explode_sound = new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f);
 		private boolean sounds_explosion_finished_regen_enable = false;
-		private SoundData sounds_explosion_finished_regen_sound = new SoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f);
+		private SoundData sounds_explosion_finished_regen_sound = new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f);
 		private boolean sounds_on_block_regen_enable = true;
-		private SoundData sounds_on_block_regen_sound = new SoundData(XSound.BLOCK_GRASS_STEP, 1f, 1f);
+		private SoundData sounds_on_block_regen_sound = new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f);
 		private boolean sounds_block_regenerating_enable = false;
-		private SoundData sounds_block_regenerating_sound = new SoundData(XSound.BLOCK_GRASS_STEP, 1f, 1f);
+		private SoundData sounds_block_regenerating_sound = new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f);
 		
 		private ERProfileExplosionSettings(ExplosionSettings settings) {
 			this.settings = settings;
@@ -181,7 +180,7 @@ public class ERProfileSettings {
 				if(pTypes == ParticleType.VANILLA) {
 					for(ExplosionPhase phase : ExplosionPhase.values()) {
 						particleSettings.get(pTypes).clearParticles();
-						ParticleData particle = new ParticleData(ParticleData.getVanillaSettings(ParticleEffect.valueOf(config.getString(settings.getName().toLowerCase() + ".particles.vanilla" + phase.toString() + ".particle"))), phase);
+						ParticleData particle = new ParticleData(ParticleData.getVanillaSettings(Particle.valueOf(config.getString(settings.getName().toLowerCase() + ".particles.vanilla" + phase.toString() + ".particle"))), phase);
 						particle.setCanDisplay(config.getBoolean(settings.getName().toLowerCase() + ".particles.vanilla" + phase.toString() + ".enable"));
 						particleSettings.get(pTypes).addParticles(particle);
 					}	
@@ -191,13 +190,13 @@ public class ERProfileSettings {
 			}
 			
 			sounds_on_explode_enable = config.getBoolean(settings.getName().toLowerCase() + ".sounds.on-explode.enable");
-			sounds_on_explode_sound = new SoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.pitch")));
+			sounds_on_explode_sound = new SoundData(Sound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-explode.pitch")));
 			sounds_explosion_finished_regen_enable = config.getBoolean(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.enable");
-			sounds_explosion_finished_regen_sound = new SoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.pitch")));
+			sounds_explosion_finished_regen_sound = new SoundData(Sound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.explosion-finished-regen.pitch")));
 			sounds_on_block_regen_enable = config.getBoolean(settings.getName().toLowerCase() + ".sounds.on-block-regen.enable");
-			sounds_on_block_regen_sound = new SoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.pitch")));
+			sounds_on_block_regen_sound = new SoundData(Sound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.on-block-regen.pitch")));
 			sounds_block_regenerating_enable = config.getBoolean(settings.getName().toLowerCase() + ".sounds.block-regenerating.enable");
-			sounds_block_regenerating_sound = new SoundData(XSound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.pitch")));
+			sounds_block_regenerating_sound = new SoundData(Sound.valueOf(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.sound").toUpperCase()), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.volume")), Float.parseFloat(config.getString(settings.getName().toLowerCase() + ".sounds.block-regenerating.pitch")));
 		}
 		public ExplosionSettings getExplosionSettings() {
 			return settings;

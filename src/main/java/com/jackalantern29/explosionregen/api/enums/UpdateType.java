@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 
-public enum ERMCUpdateType {
+public enum UpdateType {
 	BOUNTIFUL_UPDATE(1),
 	COMBAT_UPDATE(2),
 	FROSTBURN_UPDATE(3),
@@ -17,14 +17,14 @@ public enum ERMCUpdateType {
 	UNKNOWN_UPDATE(9);
 	
 	private int id;
-	private ERMCUpdateType(int id) {
+	private UpdateType(int id) {
 		this.id = id;
 	}
 	
 	public int getId() {
 		return id;
 	}
-	public static ERMCUpdateType getCurrentUpdate() {
+	public static UpdateType getCurrentUpdate() {
 		switch(getNMSVersion()) {
 		case "v1_8_R1":
 		case "v1_8_R2":
@@ -50,13 +50,13 @@ public enum ERMCUpdateType {
 			return UNKNOWN_UPDATE;
 		}		
 	}
-	public static boolean isUpdate(ERMCUpdateType update) {
+	public static boolean isUpdate(UpdateType update) {
 		return update.equals(getCurrentUpdate());
 	}
-	public static boolean isPostUpdate(ERMCUpdateType update) {
+	public static boolean isPostUpdate(UpdateType update) {
 		return getCurrentUpdate().getId() >= update.getId();
 	}
-	public static boolean isPreUpdate(ERMCUpdateType update) {
+	public static boolean isPreUpdate(UpdateType update) {
 		return getCurrentUpdate().getId() <= update.getId();
 	}
 	public static String getNMSVersion() {

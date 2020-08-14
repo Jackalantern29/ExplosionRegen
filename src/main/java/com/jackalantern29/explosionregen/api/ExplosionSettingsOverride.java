@@ -9,16 +9,16 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 
-import com.jackalantern29.explosionregen.api.enums.EROverrideWeatherType;
+import com.jackalantern29.explosionregen.api.enums.WeatherType;
 import com.jackalantern29.explosionregen.api.enums.ExplosionCondition;
 
-public class ERExplosionSettingsOverride {
+public class ExplosionSettingsOverride {
 
 	private final String name;
 	//private Object source;
 	private final EnumMap<ExplosionCondition, Object> conditions = new EnumMap<>(ExplosionCondition.class);
 	private ExplosionSettings settings;
-	public ERExplosionSettingsOverride(String name, ExplosionSettings settings) {
+	public ExplosionSettingsOverride(String name, ExplosionSettings settings) {
 		this.name = name.toLowerCase();
 		this.settings = settings;
 	}
@@ -58,11 +58,11 @@ public class ERExplosionSettingsOverride {
 			case WEATHER:
 				if(location != null) {	
 					World world = location.getWorld();
-					if(!world.hasStorm() && !world.isThundering() && ((conditions.get(con)) == EROverrideWeatherType.CLEAR))
+					if(!world.hasStorm() && !world.isThundering() && ((conditions.get(con)) == WeatherType.CLEAR))
 						conditionsMet++;
-					else if(world.hasStorm() && !world.isThundering() && ((conditions.get(con)) == EROverrideWeatherType.RAIN))
+					else if(world.hasStorm() && !world.isThundering() && ((conditions.get(con)) == WeatherType.RAIN))
 						conditionsMet++;
-					else if(world.hasStorm() && world.isThundering() && ((conditions.get(con)) == EROverrideWeatherType.THUNDER))
+					else if(world.hasStorm() && world.isThundering() && ((conditions.get(con)) == WeatherType.THUNDER))
 						conditionsMet++;
 				}
 				break;

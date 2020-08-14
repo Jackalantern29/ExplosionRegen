@@ -21,7 +21,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.ERExplosionSettingsOverride;
+import com.jackalantern29.explosionregen.api.ExplosionSettingsOverride;
 import com.jackalantern29.explosionregen.api.ExplosionSettings;
 import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -52,7 +52,7 @@ public class EntityExplodeListener implements Listener {
 
 		if(source instanceof Entity) {
 			int conditions = 0;
-			for(ERExplosionSettingsOverride override : new ArrayList<>(settings.getOverrides())) {
+			for(ExplosionSettingsOverride override : new ArrayList<>(settings.getOverrides())) {
 				if(override.doMeetConditions(source)) {
 					if(override.countConditions() > conditions) {
 						conditions = override.countConditions();

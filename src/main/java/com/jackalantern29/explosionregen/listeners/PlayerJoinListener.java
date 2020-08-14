@@ -1,16 +1,12 @@
 package com.jackalantern29.explosionregen.listeners;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.ERProfileSettings;
+import com.jackalantern29.explosionregen.api.ProfileSettings;
 
 public class PlayerJoinListener implements Listener {
 	
@@ -21,7 +17,7 @@ public class PlayerJoinListener implements Listener {
 			player.sendMessage("§7[§cExplosionRegen§7] §9This is an early build, so use this with caution. Report any bugs & issues you come across & share any ideas you would like to see.");
 		}
 		if(ExplosionRegen.getSettings().getAllowPlayerSettings()) {
-			ERProfileSettings.get(player.getUniqueId());
+			ProfileSettings.get(player.getUniqueId());
 		}
 	}
 

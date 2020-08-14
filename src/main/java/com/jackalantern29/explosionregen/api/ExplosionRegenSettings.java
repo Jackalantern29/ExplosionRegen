@@ -2,6 +2,8 @@ package com.jackalantern29.explosionregen.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -9,16 +11,15 @@ import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.jackalantern29.explosionregen.ExplosionRegen;
-
-import xyz.xenondevs.particle.ParticleEffect;
 
 public class ExplosionRegenSettings {
 	
@@ -112,7 +113,7 @@ public class ExplosionRegenSettings {
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
-					XMaterial mat = key.equalsIgnoreCase("default") ? null : XMaterial.valueOf(key.toUpperCase());
+					Material mat = key.equalsIgnoreCase("default") ? null : Material.valueOf(key.toUpperCase());
 					ConfigurationSection section = bc.getConfigurationSection(key);
 					BlockSettingsData bd = new BlockSettingsData(mat);
 					bd.setPreventDamage(section.getBoolean("prevent-damage"));
@@ -120,37 +121,36 @@ public class ExplosionRegenSettings {
 					bd.setSaveItems(section.getBoolean("save-items"));
 					bd.setMaxRegenHeight(section.getInt("max-regen-height"));
 					bd.setReplace(section.getBoolean("replace.do-replace"));
-					bd.setReplaceWith(XMaterial.valueOf(section.getString("replace.replace-with").toUpperCase()));
+					bd.setReplaceWith(Material.valueOf(section.getString("replace.replace-with").toUpperCase()));
 					bd.setDropChance(section.getInt("chance"));
 					bd.setDurability(section.getDouble("durability"));
 					bs.add(bd);
 				}
 			}
 		}
-		for(ParticleEffect particles : ParticleEffect.NMS_EFFECTS.keySet()) {
-			File file = new File(particleVanillaFolder, particles.name().toLowerCase() + ".yml");
-			YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-			if(!file.exists()) {
-				try {
-					file.createNewFile();
-					config.set("amount", 5);
-					config.set("offset.x", 1f);
-					config.set("offset.y", 1f);
-					config.set("offset.z", 1f);
-					config.set("speed", 0f);
-					config.save(file);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+		if(UpdateType.isPostUpdate(UpdateType.COMBAT_UPDATE)) {
+			for(Particle particle : Particle.values()) {
+				ParticleData.getVanillaSettings(particle);
 			}
-			ParticleData particle = ParticleData.getVanillaSettings(particles);
-			particle.setAmount(config.getInt("amount"));
-			particle.setOffsetX((float)config.getDouble("offset.x"));
-			particle.setOffsetY((float)config.getDouble("offset.y"));
-			particle.setOffsetZ((float)config.getDouble("offset.z"));
-			particle.setSpeed(Float.parseFloat(config.getString("speed")));
+		} else {
+			try {
+				Class<?> enumPart = Class.forName("net.minecraft.server." + UpdateType.getNMSVersion() + ".EnumParticle");
+				for(Object particle : (Object[])MethodHandles.lookup().findStatic(enumPart, "values", MethodType.methodType(Object[].class)).invoke()) {
+					Bukkit.getConsoleSender().sendMessage("§a" + particle.toString());
+				}
 
-			//ParticleSettings.registerSettings(particles.name().toLowerCase(), true, new ParticleData(particles, config.getInt("amount"), Float.parseFloat(config.getString("offsetX")), Float.parseFloat(config.getString("offsetY")), Float.parseFloat(config.getString("offsetX")), Float.parseFloat(config.getString("speed"))));
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (Throwable throwable) {
+				throwable.printStackTrace();
+			}
+		}
+		for(File f : particlePresetFolder.listFiles()) {
+			ParticleSettings.load(f);
 		}
 		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + "default.yml");
 		try {
@@ -163,7 +163,7 @@ public class ExplosionRegenSettings {
 			if(!profileFolder.exists())
 				profileFolder.mkdir();
 			for(Player player : Bukkit.getOnlinePlayers())
-				ERProfileSettings.get(player.getUniqueId());
+				ProfileSettings.get(player.getUniqueId());
 		}
 	}
 	public boolean doEnablePlugin() {
@@ -186,13 +186,17 @@ public class ExplosionRegenSettings {
 		return config.getString("chat.noPermCmd").replace("&", "§");
 	}
 	
-	public ERProfileSettings getProfileSettings(UUID uuid) {
-		return ERProfileSettings.get(uuid);
+	public ProfileSettings getProfileSettings(UUID uuid) {
+		return ProfileSettings.get(uuid);
 	}
 	
 	public void reload() {
-		for(ERExplosion explosions : ExplosionRegen.getExplosionMap().getExplosions())
+		for(Explosion explosions : ExplosionRegen.getExplosionMap().getExplosions())
 			explosions.regenerateAll();
+		for(ParticleSettings settings : new ArrayList<>(ParticleSettings.getParticleSettings())) {
+			settings.saveToFile();
+			ParticleSettings.removeSettings(settings.getName());
+		}
 		for(ExplosionSettings settings : new ArrayList<>(ExplosionSettings.getRegisteredSettings())) {
 			settings.saveAsFile();
 			ExplosionSettings.removeSettings(settings.getName());

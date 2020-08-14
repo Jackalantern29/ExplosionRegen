@@ -1,7 +1,5 @@
 package com.jackalantern29.explosionregen.api;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
@@ -11,17 +9,19 @@ import de.themoep.inventorygui.GuiElement.Action;
 import de.themoep.inventorygui.GuiPageElement.PageAction;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import xyz.xenondevs.particle.ParticleEffect;
 
 import java.util.*;
 
-public class ERInventory {
-	private static final List<ERInventory> inventories = new ArrayList<>();
+public class InventorySettings {
+	private static final List<InventorySettings> inventories = new ArrayList<>();
 	private final UUID uuid;
 	
 	private final String[] setupRows = {
@@ -42,7 +42,7 @@ public class ERInventory {
 	private ExplosionPhase selectedPhase = ExplosionPhase.BLOCK_REGENERATING;
 	private ExplosionSettings selectedSettings = null;
 	
-	private ERInventory(UUID uuid) {
+	private InventorySettings(UUID uuid) {
 		this.uuid = uuid;
 		inventories.add(this);
 	}
@@ -50,10 +50,10 @@ public class ERInventory {
 	public void openSettings(Player player, boolean isServer) {
 		if(explosionMenu == null) {
 			String[] rows;
-			if(ERProfileSettings.get(player.getUniqueId()).getConfigurableSettings().size() <= 5)
+			if(ProfileSettings.get(player.getUniqueId()).getConfigurableSettings().size() <= 5)
 				rows = new String[] {"qqqqq"};
 			else {
-				int size = (ERProfileSettings.get(player.getUniqueId()).getConfigurableSettings().size() > 54 ? 6 : ERProfileSettings.get(player.getUniqueId()).getConfigurableSettings().size() % 9);
+				int size = (ProfileSettings.get(player.getUniqueId()).getConfigurableSettings().size() > 54 ? 6 : ProfileSettings.get(player.getUniqueId()).getConfigurableSettings().size() % 9);
 				rows = new String[size];
 				for (int i = 0; i < size; i++) {
 					rows[i] = "qqqqqqqqq";
@@ -62,15 +62,14 @@ public class ERInventory {
 			explosionMenu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Explosion", rows);
 		}
 		//InventoryGui menu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Explosion" + (isServer == true ? " §6§l✯" : ""), guiSetup);
-		GuiBackElement backElement = new GuiBackElement('0', XMaterial.BARRIER.parseItem(), "§c§lGo Back");
+		GuiBackElement backElement = new GuiBackElement('0', new ItemStack(Material.BARRIER), "§c§lGo Back");
 		
 		explosionMenu.setTitle("§2Select Explosion" + (isServer ? " §6§l✯" : ""));
 		optionMenu.setTitle("§2Select Option" + (isServer ? " §6§l✯" : ""));
 		vanillaParticleMenu.setTitle("§2Select Particle" + (isServer ? " §6§l✯" : ""));
 		presetParticleMenu.setTitle("§2Select Particle" + (isServer ? " §6§l✯" : ""));
 		soundMenu.setTitle("§2Select Sound" + (isServer ? " §6§l✯" : ""));
-		
-		ItemStack filler = XMaterial.LIGHT_GRAY_STAINED_GLASS_PANE.parseItem();
+		ItemStack filler = Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)8) : new ItemStack(Material.getMaterial("LIGHT_GRAY_STAINED_GLASS_PANE"));
 		explosionMenu.setFiller(filler);
 		optionMenu.setFiller(filler);
 		vanillaParticleMenu.setFiller(filler);
@@ -92,21 +91,21 @@ public class ERInventory {
 		settingsMenu.addElement(backElement);
 		
 		GuiElementGroup explosionGroup = new GuiElementGroup('q');
-		for(ExplosionSettings settings : ERProfileSettings.get(player.getUniqueId()).getConfigurableSettings()) {
+		for(ExplosionSettings settings : ProfileSettings.get(player.getUniqueId()).getConfigurableSettings()) {
 			explosionGroup.addElement(new DynamicGuiElement('q', () -> new StaticGuiElement('q', settings.getDisplayItem(), click -> {selectedSettings = settings; optionMenu.show(click.getEvent().getWhoClicked()); return true;}, settings.getDisplayName())));
 		}
 		explosionMenu.addElement(explosionGroup);
 		{
 			optionMenu.addElement(new DynamicGuiElement('w', () -> {
 				if(player.hasPermission("explosionregen.command.rsettings.particles"))
-					return new StaticGuiElement('w', XMaterial.NETHER_STAR.parseItem(), click -> {
+					return new StaticGuiElement('w', new ItemStack(Material.NETHER_STAR), click -> {
 						selectedPhase = ExplosionPhase.BLOCK_REGENERATING;
 						if(selectedSettings.getParticleType() == ParticleType.VANILLA) {
 							vanillaParticleMenu.setPageNumber(0);
-							vanillaParticleMenu.show(click.getEvent().getWhoClicked()); 							
+							vanillaParticleMenu.show(click.getEvent().getWhoClicked());
 						} else if(selectedSettings.getParticleType() == ParticleType.PRESET) {
 							presetParticleMenu.setPageNumber(0);
-							presetParticleMenu.show(click.getEvent().getWhoClicked());							
+							presetParticleMenu.show(click.getEvent().getWhoClicked());
 						}
 						return true;
 					}, "§a§lParticles");
@@ -115,13 +114,13 @@ public class ERInventory {
 			}));
 			optionMenu.addElement(new DynamicGuiElement('e', () -> {
 				if(player.hasPermission("explosionregen.command.rsettings.sounds"))
-					return new StaticGuiElement('e', XMaterial.NOTE_BLOCK.parseItem(), click -> {selectedPhase = ExplosionPhase.BLOCK_REGENERATING;soundMenu.setPageNumber(0);soundMenu.show(click.getEvent().getWhoClicked()); return true;}, "§a§lSounds");
+					return new StaticGuiElement('e', new ItemStack(Material.NOTE_BLOCK), click -> {selectedPhase = ExplosionPhase.BLOCK_REGENERATING;soundMenu.setPageNumber(0);soundMenu.show(click.getEvent().getWhoClicked()); return true;}, "§a§lSounds");
 				else
 					return optionMenu.getFiller();
 			}));
 			optionMenu.addElement(new DynamicGuiElement('r', () -> {
 				if(isServer && player.hasPermission("explosionregen.command.rsettings.settings"))
-					return new StaticGuiElement('r', XMaterial.PAPER.parseItem(), click -> {selectedPhase = ExplosionPhase.BLOCK_REGENERATING;settingsMenu.show(click.getEvent().getWhoClicked()); return true;}, "§a§lSettings");
+					return new StaticGuiElement('r', new ItemStack(Material.PAPER), click -> {selectedPhase = ExplosionPhase.BLOCK_REGENERATING;settingsMenu.show(click.getEvent().getWhoClicked()); return true;}, "§a§lSettings");
 				else
 					return optionMenu.getFiller();
 			}));
@@ -137,7 +136,7 @@ public class ERInventory {
 								StringUtils.capitaliseAllWords(ExplosionPhase.values()[ii-1].toString().replace("-", " ")) + 
 								": " + 
 								((isServer ? (fi == 0 ? selectedSettings.getParticleSettings(ParticleType.VANILLA).getParticles(ExplosionPhase.values()[ii-1]).get(0).getCanDisplay() : selectedSettings.getAllowSound(ExplosionPhase.values()[ii-1])) :
-									(fi == 0 ? ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(ExplosionPhase.values()[ii-1]).get(0).getCanDisplay() : ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getAllowSound(ExplosionPhase.values()[ii-1]))) ? "§aTrue" : "§cFalse");
+									(fi == 0 ? ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(ExplosionPhase.values()[ii-1]).get(0).getCanDisplay() : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getAllowSound(ExplosionPhase.values()[ii-1]))) ? "§aTrue" : "§cFalse");
 					}
 					Action click;
 					if(fi == 0) {
@@ -161,9 +160,9 @@ public class ERInventory {
 							return true;
 						};
 					}
-					return new StaticGuiElement('t', XMaterial.COMPASS.parseItem(), click, toggleLore);
+					return new StaticGuiElement('t', new ItemStack(Material.COMPASS), click, toggleLore);
 				}));
-				g.addElement(new DynamicGuiElement('i', () -> new StaticGuiElement('i', XMaterial.CLOCK.parseItem(), click -> {
+				g.addElement(new DynamicGuiElement('i', () -> new StaticGuiElement('i', new ItemStack(Material.getMaterial("WATCH") != null ? Material.getMaterial("WATCH") : Material.getMaterial("CLOCK")), click -> {
 					ParticleType type = selectedSettings.getParticleType();
 					selectedSettings.setParticleType(type == ParticleType.VANILLA ? ParticleType.PRESET : ParticleType.VANILLA );
 					if(type == ParticleType.VANILLA)
@@ -174,31 +173,31 @@ public class ERInventory {
 				}, "§aSwitch Particle Type", "§7Current Type: §6" + StringUtils.capitalise(selectedSettings.getParticleType().name().toLowerCase()))));
 				GuiElementGroup listGroup = new GuiElementGroup('p');
 				if(fi == 0) {
-					List<ParticleEffect> keys = new ArrayList<>(ParticleEffect.NMS_EFFECTS.keySet());
-					keys.sort(Comparator.comparing(ParticleEffect::name));
-					for(ParticleEffect particles : keys) {
+					List<Particle> keys = Arrays.asList(Particle.values());
+					keys.sort(Comparator.comparing(Particle::name));
+					for(Particle particles : keys) {
 						if(!player.hasPermission("explosionregen.command.rsettings.particles." + particles.name().toLowerCase()))
 							continue;
 						listGroup.addElement(new DynamicGuiElement('l', () -> {
-							ItemStack item = XMaterial.GRAY_DYE.parseItem();
+							ItemStack item = Material.getMaterial("GRAY_DYE") != null ? new ItemStack(Material.getMaterial("GRAY_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)7);
 							ChatColor color = ChatColor.GRAY;
 							for(ExplosionPhase phase : ExplosionPhase.values()) {
-								if((isServer ? selectedSettings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle(): ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle()).equals(particles)) {
+								if((isServer ? selectedSettings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle(): ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle()).equals(particles)) {
 									switch(phase) {
 									case BLOCK_REGENERATING:
-										item = XMaterial.LIME_DYE.parseItem();
+										item = Material.getMaterial("LIME_DYE") != null ? new ItemStack(Material.getMaterial("LIME_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)5);
 										color = ChatColor.GREEN;
 										break;
 									case ON_BLOCK_REGEN:
-										item = XMaterial.LIGHT_BLUE_DYE.parseItem();
+										item = Material.getMaterial("LIGHT_BLUE_DYE") != null ? new ItemStack(Material.getMaterial("LIGHT_BLUE_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)3);
 										color = ChatColor.AQUA;
 										break;
 									case ON_EXPLODE:
-										item = XMaterial.PURPLE_DYE.parseItem();
+										item = Material.getMaterial("PURPLE_DYE") != null ? new ItemStack(Material.getMaterial("PURPLE_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)10);
 										color = ChatColor.DARK_PURPLE;
 										break;
 									case EXPLOSION_FINISHED_REGEN:
-										item = XMaterial.PINK_DYE.parseItem();
+										item = Material.getMaterial("PINK_DYE") != null ? new ItemStack(Material.getMaterial("PINK_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)6);
 										color = ChatColor.LIGHT_PURPLE;
 										break;
 									}
@@ -209,61 +208,61 @@ public class ERInventory {
 									ParticleSettings pSettings = selectedSettings.getParticleSettings(ParticleType.VANILLA);
 									boolean display = pSettings.getParticles(selectedPhase).get(0).getCanDisplay();
 									pSettings.clearParticles(selectedPhase);
-									pSettings.addParticles(ParticleData.getVanillaSettings(ParticleEffect.valueOf(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));
+									pSettings.addParticles(ParticleData.getVanillaSettings(Particle.valueOf(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));
 									selectedSettings.setParticleSettings(ParticleType.VANILLA, pSettings);
 								} else {
-									ParticleSettings pSettings = ERProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA);
+									ParticleSettings pSettings = ProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA);
 									boolean display = pSettings.getParticles(selectedPhase).get(0).getCanDisplay();
 									pSettings.clearParticles(selectedPhase);
-									pSettings.addParticles(ParticleData.getVanillaSettings(ParticleEffect.valueOf(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));									
-									ERProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setParticleSettings(ParticleType.VANILLA, pSettings);
+									pSettings.addParticles(ParticleData.getVanillaSettings(Particle.valueOf(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));
+									ProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setParticleSettings(ParticleType.VANILLA, pSettings);
 								}
 								g.draw(click.getEvent().getWhoClicked()); return true;
 							}, color + StringUtils.capitaliseAllWords(particles.toString().toLowerCase().replace("_", " ")));
 						}));
 					}
 				} else if(fi == 1) {
-					for(XSound sounds : XSound.VALUES) {
-						if(!sounds.isSupported() || !player.hasPermission("explosionregen.command.rsettings.sounds." + sounds.name().toLowerCase()))
+					for(Sound sounds : Sound.values()) {
+						if(!player.hasPermission("explosionregen.command.rsettings.sounds." + sounds.name().toLowerCase()))
 							continue;
 						listGroup.addElement(new DynamicGuiElement('l', () -> {
-							ItemStack item = XMaterial.MUSIC_DISC_STAL.parseItem();
+							ItemStack item = new ItemStack(Material.getMaterial("MUSIC_DISC_STAL") != null ? Material.getMaterial("MUSIC_DISC_STAL") : Material.getMaterial("RECORD_9"));
 							ChatColor color = ChatColor.GRAY;
 							switch(sounds.name().split("_")[0]) {
 							case "AMBIENT":
-								item = XMaterial.MUSIC_DISC_13.parseItem();
+								item = new ItemStack(Material.getMaterial("MUSIC_DISC_13") != null ? Material.getMaterial("MUSIC_DISC_13") : Material.getMaterial("GREEN_RECORD"));
 								break;
 							case "BLOCK":
-								item = XMaterial.MUSIC_DISC_BLOCKS.parseItem();
+								item = new ItemStack(Material.getMaterial("MUSIC_DISC_BLOCKS") != null ? Material.getMaterial("MUSIC_DISC_BLOCKS") : Material.getMaterial("RECORD_3"));
 								break;
 							case "ENCHANT":
-								item = XMaterial.MUSIC_DISC_CHIRP.parseItem();
+								item = new ItemStack(Material.getMaterial("MUSIC_DISC_CHIRP") != null ? Material.getMaterial("MUSIC_DISC_CHIRP") : Material.getMaterial("RECORD_5"));
 								break;
 							case "ENTITY":
-								item = XMaterial.MUSIC_DISC_CAT.parseItem();
+								item = new ItemStack(Material.getMaterial("MUSIC_DISC_CAT") != null ? Material.getMaterial("MUSIC_DISC_CAT") : Material.getMaterial("RECORD_4"));
 								break;
 							case "ITEM":
-								item = XMaterial.MUSIC_DISC_FAR.parseItem();
+								item = new ItemStack(Material.getMaterial("MUSIC_DISC_FAR") != null ? Material.getMaterial("MUSIC_DISC_FAR") : Material.getMaterial("RECORD_6"));
 								break;
 							case "EVENT":
-								item = XMaterial.MUSIC_DISC_WAIT.parseItem();
+								item = new ItemStack(Material.getMaterial("MUSIC_DISC_WAIT") != null ? Material.getMaterial("MUSIC_DISC_WAIT") : Material.getMaterial("RECORD_11"));
 								break;
 							case "MUSIC":
-								item = XMaterial.MUSIC_DISC_STRAD.parseItem();
+								item = new ItemStack(Material.getMaterial("MUSIC_DISC_STRAD") != null ? Material.getMaterial("MUSIC_DISC_STRAD") : Material.getMaterial("RECORD_10"));
 								break;
 							case "PARTICLE":
-								item = XMaterial.MUSIC_DISC_MELLOHI.parseItem();
+								item = new ItemStack(Material.getMaterial("MUSIC_DISC_MELLOHI") != null ? Material.getMaterial("MUSIC_DISC_MELLOHI") : Material.getMaterial("RECORD_8"));
 								break;
 							case "UI":
-								item = XMaterial.MUSIC_DISC_STAL.parseItem();
+								item = new ItemStack(Material.getMaterial("MUSIC_DISC_11") != null ? Material.getMaterial("MUSIC_DISC_11") : Material.getMaterial("GOLD_RECORD"));
 								break;
 							case "WEATHER":
-								item = XMaterial.MUSIC_DISC_MALL.parseItem();
+								item = new ItemStack(Material.getMaterial("MUSIC_DISC_MALL") != null ? Material.getMaterial("MUSIC_DISC_MALL") : Material.getMaterial("RECORD_7"));
 								break;
 							}	
 							for(ExplosionPhase cat : ExplosionPhase.values()) {
-								if((isServer ? selectedSettings.getSoundSettings().getSound(cat).getSound() : ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(cat).getSound()) == sounds) {
-									item = XMaterial.NOTE_BLOCK.parseItem();
+								if((isServer ? selectedSettings.getSoundSettings().getSound(cat).getSound() : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(cat).getSound()) == sounds) {
+									item = new ItemStack(Material.NOTE_BLOCK);
 									color = ChatColor.AQUA;
 								}
 							}
@@ -273,33 +272,30 @@ public class ERInventory {
 								if(isServer)
 									selectedSettings.getSoundSettings().setSound(selectedPhase, data);
 								else
-									ERProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setSound(selectedPhase, data);
+									ProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setSound(selectedPhase, data);
 								g.draw(click.getEvent().getWhoClicked()); return true;}, color + StringUtils.capitaliseAllWords(sounds.toString().toLowerCase().replace("_", " ")));
 						}));
 					}
 				} else {
-					List<ParticleSettings> keys = new ArrayList<>();
-					for(ParticleSettings particle : ParticleSettings.getSettingsList())
-							if(particle.getName() != null)
-								keys.add(particle);
+					List<ParticleSettings> keys = new ArrayList<>(ParticleSettings.getParticleSettings());
 					keys.sort(Comparator.comparing(ParticleSettings::getName));
 					for(ParticleSettings particles : keys) {
 						if(!player.hasPermission("explosionregen.command.rsettings.particles." + particles.getName().toLowerCase()))
 							continue;
 						listGroup.addElement(new DynamicGuiElement('l', () -> {
-							ItemStack item = XMaterial.BOOK.parseItem();
+							ItemStack item = new ItemStack(Material.BOOK);
 							ChatColor color = ChatColor.GRAY;
 							if(isServer) {
-								if(selectedSettings.getParticleSettings(ParticleType.PRESET).getName() != null && selectedSettings.getParticleSettings(ParticleType.PRESET).getName().equals(particles.getName())) {
-									item = XMaterial.WRITTEN_BOOK.parseItem();
+								if(selectedSettings.getParticleSettings(ParticleType.PRESET) != null && selectedSettings.getParticleSettings(ParticleType.PRESET).getName().equals(particles.getName())) {
+									item = new ItemStack(Material.WRITTEN_BOOK);
 									ItemMeta meta = Objects.requireNonNull(item).getItemMeta();
 									meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
 									item.setItemMeta(meta);
 									color = ChatColor.GOLD;
 								}
 							} else {
-								if(ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.PRESET) != null && selectedSettings.getParticleSettings(ParticleType.PRESET).getName().equals(particles.getName())) {
-									item = XMaterial.WRITTEN_BOOK.parseItem();
+								if(ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.PRESET) != null && selectedSettings.getParticleSettings(ParticleType.PRESET).getName().equals(particles.getName())) {
+									item = new ItemStack(Material.WRITTEN_BOOK);
 									color = ChatColor.GOLD;
 									ItemMeta meta = Objects.requireNonNull(item).getItemMeta();
 									meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
@@ -307,10 +303,10 @@ public class ERInventory {
 								}
 							}
 							return new StaticGuiElement('l', item, click -> {
-								if(isServer)
-									selectedSettings.setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase())));
-								else
-									ERProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase())));
+								if(isServer) {
+									selectedSettings.setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toLowerCase())));
+								} else
+									ProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase())));
 								g.draw(click.getEvent().getWhoClicked()); return true;
 							}, color + StringUtils.capitaliseAllWords(particles.getName().toLowerCase().replace("_", " ")), "§7by " + particles.getAuthor());
 						}));
@@ -323,22 +319,22 @@ public class ERInventory {
 					char cc;
 					switch(phase) {
 					case BLOCK_REGENERATING:
-						item = XMaterial.LIME_DYE.parseItem();
+						item = Material.getMaterial("LIME_DYE") != null ? new ItemStack(Material.getMaterial("LIME_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)5);
 						name = "Block Regenerating";
 						cc = 'q';
 						break;
 					case ON_BLOCK_REGEN:
-						item = XMaterial.LIGHT_BLUE_DYE.parseItem();
+						item = Material.getMaterial("LIGHT_BLUE_DYE") != null ? new ItemStack(Material.getMaterial("LIGHT_BLUE_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)3);
 						name = "On Block Regen";
 						cc = 'w';
 						break;
 					case ON_EXPLODE:
-						item = XMaterial.PURPLE_DYE.parseItem();
+						item = Material.getMaterial("PURPLE_DYE") != null ? new ItemStack(Material.getMaterial("PURPLE_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)10);
 						name = "On Explode";
 						cc = 'e';
 						break;
 					case EXPLOSION_FINISHED_REGEN:
-						item = XMaterial.PINK_DYE.parseItem();
+						item = Material.getMaterial("PINK_DYE") != null ? new ItemStack(Material.getMaterial("PINK_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)6);
 						name = "Explosion Finished Regen";
 						cc = 'r';
 						break;
@@ -358,49 +354,48 @@ public class ERInventory {
 							removeFakeEnchant(Objects.requireNonNull(item));
 							fName = "§7" + name;
 						}
-						String lore = "§7Selected " + (fi == 0 ? "Particle" : "Sound") + " Settings: §6" + (fi == 0 ? StringUtils.capitaliseAllWords(isServer ? selectedSettings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase() : ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase()) : StringUtils.capitaliseAllWords(isServer ? selectedSettings.getSoundSettings().getSound(phase).getSound().toString().toLowerCase().replace("_", " ") : ERProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(phase).getSound().toString().toLowerCase().replace("_", " ")));
+						String lore = "§7Selected " + (fi == 0 ? "Particle" : "Sound") + " Settings: §6" + (fi == 0 ? StringUtils.capitaliseAllWords(isServer ? selectedSettings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase() : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase()) : StringUtils.capitaliseAllWords(isServer ? selectedSettings.getSoundSettings().getSound(phase).getSound().toString().toLowerCase().replace("_", " ") : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(phase).getSound().toString().toLowerCase().replace("_", " ")));
 						return new StaticGuiElement(fcc, item, click -> {selectedPhase = ExplosionPhase.valueOf(fName.substring(2).replace(" ", "_").toUpperCase()); g.draw(click.getEvent().getWhoClicked()); return true;}, fName, lore);
 					}));
 				}
-				g.addElement(new GuiPageElement('z', XMaterial.LIME_STAINED_GLASS_PANE.parseItem(), PageAction.PREVIOUS, "§7Previous"));
-				g.addElement(new GuiPageElement('v', XMaterial.LIME_STAINED_GLASS_PANE.parseItem(), PageAction.NEXT, "§7Next"));
+				g.addElement(new GuiPageElement('z', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)5) : new ItemStack(Material.getMaterial("LIME_STAINED_GLASS_PANE")), PageAction.PREVIOUS, "§7Previous"));
+				g.addElement(new GuiPageElement('v', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)5) : new ItemStack(Material.getMaterial("LIME_STAINED_GLASS_PANE")), PageAction.NEXT, "§7Next"));
 			}	
-			settingsMenu.addElement(new DynamicGuiElement('q', () -> new StaticGuiElement('q', XMaterial.RED_DYE.parseItem(), click -> true,
+			settingsMenu.addElement(new DynamicGuiElement('q', () -> new StaticGuiElement('q', Material.getMaterial("RED_DYE") != null ? new ItemStack(Material.getMaterial("RED_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)14), click -> true,
 					"§aRegen",
 					"§7Allow: §6" + StringUtils.capitalize("" + selectedSettings.getAllowRegen()),
 					"§7Instant: §6" + StringUtils.capitalize("" + selectedSettings.isInstantRegen()),
 					"§7Delay: §6" + StringUtils.capitalize("" + selectedSettings.getRegenDelay()),
 					"§7Max Block Regen Queue: §6" + StringUtils.capitalize("" + selectedSettings.getMaxBlockRegenQueue()),
 					"§7Directions: §6" + StringUtils.capitalize("" + selectedSettings.getRegenerateDirections()))));
-			settingsMenu.addElement(new StaticGuiElement('w', XMaterial.ANVIL.parseItem(), click -> true, "§aConditions", "§c§lNot Yet Implemented."));
-			settingsMenu.addElement(new DynamicGuiElement('e', () -> new StaticGuiElement('e', XMaterial.COMPASS.parseItem(), click -> {selectedSettings.setAllowExplosion(!selectedSettings.getAllowExplosion()); settingsMenu.draw(); return true;}, "§aAllow Explosion: " + (selectedSettings.getAllowExplosion() ? "§aTrue" : "§cFalse"))));
-			settingsMenu.addElement(new DynamicGuiElement('r', () -> new StaticGuiElement('r', XMaterial.CHEST.parseItem(), click -> true, "§aConfigure Block Settings", "§7Selected Settings: §6" + StringUtils.capitaliseAllWords(selectedSettings.getBlockSettings().getName()))));
+			settingsMenu.addElement(new StaticGuiElement('w', new ItemStack(Material.ANVIL), click -> true, "§aConditions", "§c§lNot Yet Implemented."));
+			settingsMenu.addElement(new DynamicGuiElement('e', () -> new StaticGuiElement('e', new ItemStack(Material.COMPASS), click -> {selectedSettings.setAllowExplosion(!selectedSettings.getAllowExplosion()); settingsMenu.draw(); return true;}, "§aAllow Explosion: " + (selectedSettings.getAllowExplosion() ? "§aTrue" : "§cFalse"))));
+			settingsMenu.addElement(new DynamicGuiElement('r', () -> new StaticGuiElement('r', new ItemStack(Material.CHEST), click -> true, "§aConfigure Block Settings", "§7Selected Settings: §6" + StringUtils.capitaliseAllWords(selectedSettings.getBlockSettings().getName()))));
 			settingsMenu.addElement(new DynamicGuiElement('t', () -> {
 				List<String> lore = new ArrayList<>();
 				lore.add("§aConfigure Damage Settings");
 				for(DamageCategory types : DamageCategory.values()) {
 					lore.add("§7" + StringUtils.capitalise(types.name().toLowerCase()));
 					lore.add("  §7Allow: §6" + StringUtils.capitalise(selectedSettings.getAllowDamage(types) + ""));
-					lore.add("  §7Power: §6" + selectedSettings.getDamageAmount(types));
 					lore.add("  §7Modifier Type: §6" + StringUtils.capitalise(selectedSettings.getDamageModifier(types).name().toLowerCase()));
 					lore.add("  §7Amount: §6" + selectedSettings.getDamageAmount(types));
 				}
-				return new StaticGuiElement('t', XMaterial.FIRE_CHARGE.parseItem(), click -> true, lore.toArray(new String[0]));
+				return new StaticGuiElement('t', new ItemStack(Material.getMaterial("FIREBALL") != null ? Material.getMaterial("FIREBALL") : Material.getMaterial("FIRE_CHARGE")), click -> true, lore.toArray(new String[0]));
 			}));
-			settingsMenu.addElement(new StaticGuiElement('y', XMaterial.MAP.parseItem(), click -> true, "§aCreate New Override", "§c§lNot Yet Implemented."));
-			settingsMenu.addElement(new DynamicGuiElement('u', () -> new StaticGuiElement('u', XMaterial.PAPER.parseItem(), click -> true, "§aChange Display Name", "§7Current Name: §6" + StringUtils.capitaliseAllWords(selectedSettings.getDisplayName()))));
+			settingsMenu.addElement(new StaticGuiElement('y', new ItemStack(Material.MAP), click -> true, "§aCreate New Override", "§c§lNot Yet Implemented."));
+			settingsMenu.addElement(new DynamicGuiElement('u', () -> new StaticGuiElement('u', new ItemStack(Material.PAPER), click -> true, "§aChange Display Name", "§7Current Name: §6" + StringUtils.capitaliseAllWords(selectedSettings.getDisplayName()))));
 			settingsMenu.addElement(new DynamicGuiElement('i', () -> new StaticGuiElement('i', selectedSettings.getDisplayItem(), click -> {selectedSettings.setDisplayItem(click.getEvent().getCurrentItem());settingsMenu.draw(); return true;}, "§aChange Display Item", "§7Replace this item to change the Display Item.")));
 		}
 		explosionMenu.addElement(explosionGroup);
-		explosionMenu.addElement('e', XMaterial.BLACK_STAINED_GLASS_PANE.parseItem(), click -> true, " ");
+		explosionMenu.addElement('e', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)15) : new ItemStack(Material.getMaterial("BLACK_STAINED_GLASS_PANE")), click -> true, " ");
 		explosionMenu.build();
 		explosionMenu.show(player);
 	}
-	public static ERInventory get(UUID uuid) {
-		for(ERInventory inv : inventories)
+	public static InventorySettings get(UUID uuid) {
+		for(InventorySettings inv : inventories)
 			if(inv.uuid == uuid)
 				return inv;
-		return new ERInventory(uuid);
+		return new InventorySettings(uuid);
 	}
 	private void addFakeEnchant(ItemStack item) {
 		ItemMeta meta = item.getItemMeta();

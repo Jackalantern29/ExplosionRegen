@@ -1,11 +1,11 @@
 package com.jackalantern29.explosionregen.api;
 
-import com.cryptomorin.xseries.XMaterial;
+import org.bukkit.Material;
 
 public class BlockSettingsData {	
-	private final XMaterial material;
+	private final Material material;
 	
-	private XMaterial replaceWith = XMaterial.AIR;
+	private Material replaceWith = Material.AIR;
 	
 	private int chance = 30;
 	private int maxRegenHeight = 3;
@@ -17,11 +17,11 @@ public class BlockSettingsData {
 	private boolean saveItems = false;
 	private boolean replace = false;
 	
-	public BlockSettingsData(XMaterial material) {
+	public BlockSettingsData(Material material) {
 		this.material = material;
 	}
 	
-	public XMaterial getMaterial() {
+	public Material getMaterial() {
 		return material;
 	}
 	
@@ -65,11 +65,11 @@ public class BlockSettingsData {
 		replace = value;
 	}
 	
-	public XMaterial getReplaceWith() {
+	public Material getReplaceWith() {
 		return replaceWith;
 	}
 	
-	public void setReplaceWith(XMaterial material) {
+	public void setReplaceWith(Material material) {
 		replaceWith = material;
 	}
 	

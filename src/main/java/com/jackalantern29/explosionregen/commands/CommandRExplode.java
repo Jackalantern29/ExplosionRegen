@@ -48,7 +48,7 @@ public class CommandRExplode implements TabExecutor {
 								try {
 									list.add("" + Float.parseFloat(args[3]));
 								} catch(NumberFormatException e) {
-									list.add("§cInvalid Number Format");
+									list.add("Â§cInvalid Number Format");
 								}
 							}
 							return StringUtil.copyPartialMatches(args[3], list, new ArrayList<>(list.size()));
@@ -60,7 +60,7 @@ public class CommandRExplode implements TabExecutor {
 								if(fire == null) {
 									ArrayList<String> list1 = StringUtil.copyPartialMatches(args[4], list, new ArrayList<>(list.size()));
 									if(list1.isEmpty()) {
-										list1.add("§cInvalid Boolean Format");
+										list1.add("Â§cInvalid Boolean Format");
 										return list1;
 									}
 								}
@@ -79,7 +79,7 @@ public class CommandRExplode implements TabExecutor {
 									try {
 										list.add("" + Float.parseFloat(args[2]));
 									} catch(NumberFormatException e) {
-										list.add("§cInvalid Number Format");
+										list.add("Â§cInvalid Number Format");
 									}
 								}
 								return StringUtil.copyPartialMatches(args[2], list, new ArrayList<>(list.size()));
@@ -91,7 +91,7 @@ public class CommandRExplode implements TabExecutor {
 									if(fire == null) {
 										ArrayList<String> list1 = StringUtil.copyPartialMatches(args[3], list, new ArrayList<>(list.size()));
 										if(list1.isEmpty()) {
-											list1.add("§cInvalid Boolean Format");
+											list1.add("Â§cInvalid Boolean Format");
 											return list1;
 										}
 									}
@@ -111,7 +111,7 @@ public class CommandRExplode implements TabExecutor {
 								try {
 									list.add("" + Float.parseFloat(args[4]));
 								} catch(NumberFormatException e) {
-									list.add("§cInvalid Number Format");
+									list.add("Â§cInvalid Number Format");
 								}
 							}
 							return StringUtil.copyPartialMatches(args[4], list, new ArrayList<>(list.size()));
@@ -123,7 +123,7 @@ public class CommandRExplode implements TabExecutor {
 								if(fire == null) {
 									ArrayList<String> list1 = StringUtil.copyPartialMatches(args[5], list, new ArrayList<>(list.size()));
 									if(list1.isEmpty()) {
-										list1.add("§cInvalid Boolean Format");
+										list1.add("Â§cInvalid Boolean Format");
 										return list1;
 									}
 								}
@@ -162,12 +162,12 @@ public class CommandRExplode implements TabExecutor {
 			String fireArg = args.length >= totalArgs+2 ? args[totalArgs+1] : null;
 			if(args[0].equalsIgnoreCase("at")) {
 				if(args.length == 1) {
-					sender.sendMessage("§cError: Missing value <player>");
+					sender.sendMessage("Â§cError: Missing value <player>");
 					return true;
 				} else {
 					Player target = Bukkit.getPlayerExact(args[1]);
 					if(target == null) {
-						sender.sendMessage("§cError: Could not find player '" + args[1] + "'.");
+						sender.sendMessage("Â§cError: Could not find player '" + args[1] + "'.");
 						return true;
 					}
 					location = target.getLocation();
@@ -190,7 +190,7 @@ public class CommandRExplode implements TabExecutor {
 						a = new int[] {0, 1, 2};
 					}
 					else {
-						sender.sendMessage("§cError: World '" + args[0] + "' does not exist.");
+						sender.sendMessage("Â§cError: World '" + args[0] + "' does not exist.");
 						return true;
 					}
 				}
@@ -200,19 +200,19 @@ public class CommandRExplode implements TabExecutor {
 				try {
 					x = Double.parseDouble(args[a[0]]);
 				} catch(NumberFormatException e) {
-					sender.sendMessage("§cError: '" + args[a[0]] + "' is not an accepted value.");
+					sender.sendMessage("Â§cError: '" + args[a[0]] + "' is not an accepted value.");
 					return true;
 				}
 				try {
 					y = Double.parseDouble(args[a[1]]);
 				} catch(NumberFormatException e) {
-					sender.sendMessage("§cError: '" + args[a[1]] + "' is not an accepted value.");
+					sender.sendMessage("Â§cError: '" + args[a[1]] + "' is not an accepted value.");
 					return true;
 				}
 				try {
 					z = Double.parseDouble(args[a[2]]);
 				} catch(NumberFormatException e) {
-					sender.sendMessage("§cError: '" + args[a[2]] + "' is not an accepted value.");
+					sender.sendMessage("Â§cError: '" + args[a[2]] + "' is not an accepted value.");
 					return true;
 				}
 				location = new Location(world, x, y, z);

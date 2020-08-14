@@ -1,6 +1,5 @@
 package com.jackalantern29.explosionregen.api;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.jackalantern29.explosionregen.api.enums.GenerateDirection;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Location;
@@ -16,15 +15,15 @@ import org.bukkit.material.Chest;
 
 import java.util.*;
 
-public class ERExplosion {
+public class Explosion {
 	
 	private final ExplosionSettings settings;
 	private final Location location;
-	private final List<ERBlock> blocks = new ArrayList<>();
-	private ERBlock previousBlock;
+	private final List<BlockData> blocks = new ArrayList<>();
+	private BlockData previousBlock;
 	private long regenTick;
 	
-	public ERExplosion(ExplosionSettings settings, Location location) {
+	public Explosion(ExplosionSettings settings, Location location) {
 		this.settings = settings;
 		this.location = location;
 		this.regenTick = settings.getRegenDelay();
@@ -39,10 +38,10 @@ public class ERExplosion {
 		return location;
 	}
 	
-	public void addBlocks(List<ERBlock> blocks) {
-		for(ERBlock b0 : blocks) {
+	public void addBlocks(List<BlockData> blocks) {
+		for(BlockData b0 : blocks) {
 			boolean doadd = true;
-			for(ERBlock b1 : this.blocks) {
+			for(BlockData b1 : this.blocks) {
 				if(b1.getLocation().equals(b0.getLocation()))
 					doadd = false;
 			}
@@ -50,17 +49,17 @@ public class ERExplosion {
 				this.blocks.add(b0);
 		}
 	}
-	public void addBlock(ERBlock block) {
+	public void addBlock(BlockData block) {
 		blocks.add(block);
 	}
 	
-	public List<ERBlock> getBlocks() {
+	public List<BlockData> getBlocks() {
 		return getBlocks(settings.getRegenerateDirections());
 	}
 	
 	
-	public List<ERBlock> getBlocks(List<GenerateDirection> direction) {
-		List<ERBlock> list = new ArrayList<>(blocks);
+	public List<BlockData> getBlocks(List<GenerateDirection> direction) {
+		List<BlockData> list = new ArrayList<>(blocks);
 		list.sort((o1, o2) -> {
 			CompareToBuilder builder = new CompareToBuilder();
 			for(GenerateDirection d : direction) {
@@ -89,9 +88,9 @@ public class ERExplosion {
 			return builder.toComparison();
 		});
 		if(direction.contains(GenerateDirection.RANDOM_UP)) {
-			HashMap<Integer, List<ERBlock>> map = new HashMap<>();
-			for(ERBlock block : list) {
-				List<ERBlock> l;
+			HashMap<Integer, List<BlockData>> map = new HashMap<>();
+			for(BlockData block : list) {
+				List<BlockData> l;
 				if(!map.containsKey(block.getLocation().getBlockY()))
 					l = new ArrayList<>();
 				else
@@ -111,7 +110,7 @@ public class ERExplosion {
 	}
 	
 	public void removeBlock(Location location) {
-		for(ERBlock block : new ArrayList<>(getBlocks())) {
+		for(BlockData block : new ArrayList<>(getBlocks())) {
 			if(block.getLocation().equals(location))
 				blocks.remove(block);
 		}
@@ -122,14 +121,14 @@ public class ERExplosion {
 	}
 
 	
-	public void regenerate(ERBlock block) {
-		if(block.getType() == XMaterial.NETHER_PORTAL) {
-			if(block.getBlock().getType() == XMaterial.NETHER_PORTAL.parseMaterial()) {
+	public void regenerate(BlockData block) {
+		if(block.getType() == (Material.getMaterial("PORTAL") != null ? Material.PORTAL : Material.getMaterial("NETHER_PORTAL"))) {
+			if(block.getBlock().getType() == (Material.getMaterial("PORTAL") != null ? Material.PORTAL : Material.getMaterial("NETHER_PORTAL"))) {
 				removeBlock(block.getLocation());
 				return;
 			} else if(block.getBlock().getType() == Material.AIR) {
 				if(block.getBlock().getRelative(0, -1, 0).getType() == Material.AIR)
-					block.getState().setType(XMaterial.FIRE.parseMaterial());
+					block.getState().setType(Material.FIRE);
 				else
 					block.getState().setType(Material.AIR);
 			}
@@ -179,7 +178,7 @@ public class ERExplosion {
 		previousBlock = block;
 	}
 	public void regenerateAll() {
-		for(ERBlock block : new ArrayList<>(blocks))
+		for(BlockData block : new ArrayList<>(blocks))
 			regenerate(block);
 	}
 
@@ -192,15 +191,15 @@ public class ERExplosion {
 		this.regenTick = regenTick;
 	}
 	
-	public List<ERBlock> getQueueBlocks() {
+	public List<BlockData> getQueueBlocks() {
 		return getQueueBlocks(settings.getRegenerateDirections());
 	}
 	
-	public List<ERBlock> getQueueBlocks(List<GenerateDirection> direction) {
-		List<ERBlock> list = new ArrayList<>();
+	public List<BlockData> getQueueBlocks(List<GenerateDirection> direction) {
+		List<BlockData> list = new ArrayList<>();
 	//	Player jack = Bukkit.getPlayer("Jack");
 		int i = 0;
-		for(Iterator<ERBlock> it = getBlocks(direction).iterator(); it.hasNext(); i++) {
+		for(Iterator<BlockData> it = getBlocks(direction).iterator(); it.hasNext(); i++) {
 			try {
 				list.add(getBlocks(direction).iterator().next());
 			} catch(IndexOutOfBoundsException e) {
@@ -211,7 +210,7 @@ public class ERExplosion {
 		}
 		return list;
 	}
-	public ERBlock getPreviousBlock() {
+	public BlockData getPreviousBlock() {
 		return previousBlock;
 	}
 }

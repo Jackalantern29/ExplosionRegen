@@ -1,7 +1,7 @@
 package com.jackalantern29.explosionregen.commands;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.ERExplosion;
+import com.jackalantern29.explosionregen.api.Explosion;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -16,14 +16,14 @@ public class CommandRRegen implements TabExecutor {
             return true;
         }
         int count = 0;
-        for(ERExplosion explosion : ExplosionRegen.getExplosionMap().getExplosions()) {
+        for(Explosion explosion : ExplosionRegen.getExplosionMap().getExplosions()) {
             explosion.regenerateAll();
             count++;
         }
         if(count == 0)
-          sender.sendMessage("§aNo explosions were regenerated.");
+          sender.sendMessage("Â§aNo explosions were regenerated.");
         else
-            sender.sendMessage("§aRegenerated " + count + " explosion" + (count > 1 ? "s" : "") + ".");
+            sender.sendMessage("Â§aRegenerated " + count + " explosion" + (count > 1 ? "s" : "") + ".");
         return true;
     }
 

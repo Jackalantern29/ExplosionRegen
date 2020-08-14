@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.jackalantern29.explosionregen.api.BlockSettings;
 import org.bukkit.Bukkit;
-import org.bukkit.WeatherType;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -14,12 +14,11 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.ERExplosionSettingsOverride;
-import com.jackalantern29.explosionregen.api.ERInventory;
+import com.jackalantern29.explosionregen.api.ExplosionSettingsOverride;
+import com.jackalantern29.explosionregen.api.InventorySettings;
 import com.jackalantern29.explosionregen.api.ExplosionSettings;
-import com.jackalantern29.explosionregen.api.enums.EROverrideWeatherType;
+import com.jackalantern29.explosionregen.api.enums.WeatherType;
 import com.jackalantern29.explosionregen.api.enums.ExplosionCondition;
 
 public class CommandRSettings implements TabExecutor {
@@ -33,13 +32,13 @@ public class CommandRSettings implements TabExecutor {
 		if(args.length == 0) {
 			Player player = (Player)sender;
 			if(ExplosionRegen.getSettings().getAllowPlayerSettings())
-				ERInventory.get(player.getUniqueId()).openSettings(player, false);
+				InventorySettings.get(player.getUniqueId()).openSettings(player, false);
 			else {
 				if(!sender.hasPermission("explosionregen.command.rsettings.server")) {
 					sender.sendMessage(ExplosionRegen.getSettings().getNoPermCmdChat());
 					return true;
 				}
-				ERInventory.get(player.getUniqueId()).openSettings(player, true);
+				InventorySettings.get(player.getUniqueId()).openSettings(player, true);
 			}
 		} else {
 			if(args[0].equalsIgnoreCase("server")) {
@@ -48,7 +47,7 @@ public class CommandRSettings implements TabExecutor {
 					return true;
 				}
 				Player player = (Player)sender;
-				ERInventory.get(player.getUniqueId()).openSettings(player, true);
+				InventorySettings.get(player.getUniqueId()).openSettings(player, true);
 			} else if(args[0].equalsIgnoreCase("create")) {
 				if(!sender.hasPermission("explosionregen.command.rsettings.server")) {
 					sender.sendMessage(ExplosionRegen.getSettings().getNoPermCmdChat());
@@ -99,14 +98,14 @@ public class CommandRSettings implements TabExecutor {
 								sender.sendMessage("§cValue not valid.");
 								return true;
 							}
-							ERExplosionSettingsOverride conditions = settings.getConditions();
+							ExplosionSettingsOverride conditions = settings.getConditions();
 							Object value = null;
 							switch(condition) {
 							case CUSTOM_NAME:
 								value = valueArg;
 								break;
 							case BLOCK:
-								value = XMaterial.valueOf(valueArg.toUpperCase());
+								value = Material.valueOf(valueArg.toUpperCase());
 								break;
 							case ENTITY:
 								value = EntityType.valueOf(valueArg.toUpperCase());
@@ -115,7 +114,7 @@ public class CommandRSettings implements TabExecutor {
 								value = Boolean.valueOf(valueArg);
 								break;
 							case WEATHER:
-								value = WeatherType.valueOf(valueArg);
+								value = org.bukkit.WeatherType.valueOf(valueArg);
 								break;
 							case WORLD:
 								value = Bukkit.getWorld(valueArg);
@@ -159,17 +158,17 @@ public class CommandRSettings implements TabExecutor {
 								return true;
 							}
 							int amount = 1;
-							for(ERExplosionSettingsOverride override : settings.getOverrides())
+							for(ExplosionSettingsOverride override : settings.getOverrides())
 								if(override.getName().equalsIgnoreCase(overrideName))
 									amount++;
-							ERExplosionSettingsOverride override = new ERExplosionSettingsOverride(overrideName + (amount > 1 ? amount : ""), overrideWith);
+							ExplosionSettingsOverride override = new ExplosionSettingsOverride(overrideName + (amount > 1 ? amount : ""), overrideWith);
 							Object value = null;
 							switch(condition) {
 							case CUSTOM_NAME:
 								value = valueArg;
 								break;
 							case BLOCK:
-								value = XMaterial.valueOf(valueArg.toUpperCase());
+								value = Material.valueOf(valueArg.toUpperCase());
 								break;
 							case ENTITY:
 								value = EntityType.valueOf(valueArg.toUpperCase());
@@ -178,7 +177,7 @@ public class CommandRSettings implements TabExecutor {
 								value = Boolean.valueOf(valueArg);
 								break;
 							case WEATHER:
-								value = WeatherType.valueOf(valueArg);
+								value = org.bukkit.WeatherType.valueOf(valueArg);
 								break;
 							case WORLD:
 								value = Bukkit.getWorld(valueArg);
@@ -270,15 +269,16 @@ public class CommandRSettings implements TabExecutor {
 										list.add(type.name().toLowerCase());
 									return StringUtil.copyPartialMatches(args[5], list, new ArrayList<>(list.size()));
 								case BLOCK:
-									for(XMaterial type : XMaterial.VALUES)
-										list.add(type.name().toLowerCase());
+									for(Material type : Material.values())
+										if(type.isBlock())
+											list.add(type.name().toLowerCase());
 									return StringUtil.copyPartialMatches(args[5], list, new ArrayList<>(list.size()));
 								case IS_CHARGED:
 									list.add("true");
 									list.add("false");
 									return StringUtil.copyPartialMatches(args[5], list, new ArrayList<>(list.size()));
 								case WEATHER:
-									for(EROverrideWeatherType type : EROverrideWeatherType.values())
+									for(WeatherType type : WeatherType.values())
 										list.add(type.name().toLowerCase());
 									return StringUtil.copyPartialMatches(args[5], list, new ArrayList<>(list.size()));
 								case WORLD:
@@ -316,15 +316,16 @@ public class CommandRSettings implements TabExecutor {
 										list.add(type.name().toLowerCase());
 									return StringUtil.copyPartialMatches(args[7], list, new ArrayList<>(list.size()));
 								case BLOCK:
-									for(XMaterial type : XMaterial.VALUES)
-										list.add(type.name().toLowerCase());
+									for(Material type : Material.values())
+										if(type.isBlock())
+											list.add(type.name().toLowerCase());
 									return StringUtil.copyPartialMatches(args[7], list, new ArrayList<>(list.size()));
 								case IS_CHARGED:
 									list.add("true");
 									list.add("false");
 									return StringUtil.copyPartialMatches(args[7], list, new ArrayList<>(list.size()));
 								case WEATHER:
-									for(EROverrideWeatherType type : EROverrideWeatherType.values())
+									for(WeatherType type : WeatherType.values())
 										list.add(type.name().toLowerCase());
 									return StringUtil.copyPartialMatches(args[7], list, new ArrayList<>(list.size()));
 								case WORLD:

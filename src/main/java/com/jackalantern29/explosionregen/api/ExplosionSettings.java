@@ -1,14 +1,13 @@
 package com.jackalantern29.explosionregen.api;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.enums.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-import xyz.xenondevs.particle.ParticleEffect;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +41,8 @@ public class  ExplosionSettings {
 	private ItemStack displayItem;
 	private String displayName;
 
-	private final Map<String, ERExplosionSettingsOverride> overrides = new HashMap<>();
-	private final ERExplosionSettingsOverride conditions;
+	private final Map<String, ExplosionSettingsOverride> overrides = new HashMap<>();
+	private final ExplosionSettingsOverride conditions;
 	private ExplosionSettings(String name, BlockSettings blockSettings) {
 		this.name = name;
 		this.blockSettings = blockSettings;
@@ -60,19 +59,19 @@ public class  ExplosionSettings {
 		this.damageEntityModifier = DamageModifier.MULTIPLY;
 		this.damageEntityAmount = 1.0d;
 		this.particleType = ParticleType.VANILLA;
-		this.particleSettings.put(ParticleType.VANILLA, new ParticleSettings(null,
-				new ParticleData(ParticleData.getVanillaSettings(ParticleEffect.SLIME), ExplosionPhase.ON_EXPLODE, false),
-				new ParticleData(ParticleData.getVanillaSettings(ParticleEffect.SLIME), ExplosionPhase.EXPLOSION_FINISHED_REGEN, false),
-				new ParticleData(ParticleData.getVanillaSettings(ParticleEffect.HEART), ExplosionPhase.ON_BLOCK_REGEN, true),
-				new ParticleData(ParticleData.getVanillaSettings(ParticleEffect.FLAME), ExplosionPhase.BLOCK_REGENERATING, true)));
+		this.particleSettings.put(ParticleType.VANILLA, new ParticleSettings(name + "_vanilla",
+				new ParticleData(ParticleData.getVanillaSettings(Particle.SLIME), ExplosionPhase.ON_EXPLODE, false),
+				new ParticleData(ParticleData.getVanillaSettings(Particle.SLIME), ExplosionPhase.EXPLOSION_FINISHED_REGEN, false),
+				new ParticleData(ParticleData.getVanillaSettings(Particle.HEART), ExplosionPhase.ON_BLOCK_REGEN, true),
+				new ParticleData(ParticleData.getVanillaSettings(Particle.FLAME), ExplosionPhase.BLOCK_REGENERATING, true)));
 		this.particleSettings.put(ParticleType.PRESET, null);
-		this.soundSettings.setSound(ExplosionPhase.ON_EXPLODE, new SoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f, false));
-		this.soundSettings.setSound(ExplosionPhase.BLOCK_REGENERATING, new SoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f, false));
-		this.soundSettings.setSound(ExplosionPhase.ON_BLOCK_REGEN, new SoundData(XSound.BLOCK_GRASS_STEP, 1f, 1f, true));
-		this.soundSettings.setSound(ExplosionPhase.EXPLOSION_FINISHED_REGEN, new SoundData(XSound.ENTITY_GHAST_SCREAM, 1f, 1f, false));
-		this.displayItem = XMaterial.TNT.parseItem();
+		this.soundSettings.setSound(ExplosionPhase.ON_EXPLODE, new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f, false));
+		this.soundSettings.setSound(ExplosionPhase.BLOCK_REGENERATING, new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f, false));
+		this.soundSettings.setSound(ExplosionPhase.ON_BLOCK_REGEN, new SoundData((SoundData.getSound("STEP_GRASS") != null ? SoundData.getSound("STEP_GRASS") : SoundData.getSound("BLOCK_GRASS_STEP") != null ? SoundData.getSound("BLOCK_GRASS_STEP") : Sound.values()[0]), 1f, 1f, true));
+		this.soundSettings.setSound(ExplosionPhase.EXPLOSION_FINISHED_REGEN, new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f, false));
+		this.displayItem = new ItemStack(Material.TNT);
 		this.displayName = name;
-		this.conditions = new ERExplosionSettingsOverride(name + "-conditions", this);
+		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
 		MAP.put(name, this);
 	}
 //		if(config.isConfigurationSection("conditions")) {
@@ -166,7 +165,7 @@ public class  ExplosionSettings {
 		map.put("block-settings", getBlockSettings().getName().toLowerCase());
 		map.put("enable", getAllowExplosion());
 		map.put("display-name", getDisplayName());
-		map.put("display-item", XMaterial.matchXMaterial(getDisplayItem()).name().toLowerCase());
+		map.put("display-item", getDisplayItem().getType().name().toLowerCase());
 		map.put("regen.allow", getAllowRegen());
 		List<String> stringDirections = new ArrayList<>();
 		for(GenerateDirection direction : getRegenerateDirections())
@@ -376,8 +375,8 @@ public class  ExplosionSettings {
 		}
 	}
 	
-	public void addOrSetOverride(ERExplosionSettingsOverride override) {
-		ERExplosionSettingsOverride newOverride;
+	public void addOrSetOverride(ExplosionSettingsOverride override) {
+		ExplosionSettingsOverride newOverride;
 		if(overrides.containsKey(override.getName())) {
 			newOverride = overrides.get(override.getName());
 			for(ExplosionCondition condition : override.getConditions())
@@ -388,7 +387,7 @@ public class  ExplosionSettings {
 		}
 	}
 
-	public void addOrSetCondition(ERExplosionSettingsOverride override) {
+	public void addOrSetCondition(ExplosionSettingsOverride override) {
 		for(ExplosionCondition condition : override.getConditions())
 			conditions.setCondition(condition, override.getConditionValue(condition));
 	}
@@ -400,11 +399,11 @@ public class  ExplosionSettings {
 		conditions.removeCondition(condition);
 	}
 	
-	public Collection<ERExplosionSettingsOverride> getOverrides() {
+	public Collection<ExplosionSettingsOverride> getOverrides() {
 		return overrides.values();
 	}
 	
-	public ERExplosionSettingsOverride getConditions() {
+	public ExplosionSettingsOverride getConditions() {
 		return conditions;
 	}
 	
@@ -425,11 +424,12 @@ public class  ExplosionSettings {
 			settings = registerSettings(name, BlockSettings.getSettings(blockSettings));
 			settings.setAllowExplosion(config.getBoolean("enable", settings.getAllowExplosion()));
 			settings.setDisplayName(config.getString("display-name", settings.getDisplayName()));
-			settings.setDisplayItem(XMaterial.valueOf(config.getString("display-item", XMaterial.matchXMaterial(settings.getDisplayItem()).name()).toUpperCase()).parseItem());
+
+			settings.setDisplayItem(new ItemStack(Material.valueOf(config.getString("display-item", settings.getDisplayItem().getType().name()).toUpperCase())));
 			settings.setAllowRegen(config.getBoolean("regen.allow", settings.getAllowRegen()));
 			List<GenerateDirection> directions = new ArrayList<>();
 			for(Object direction : config.getList("regen.directions", settings.getRegenerateDirections())) {
-				directions.add(GenerateDirection.valueOf(((String)direction).toUpperCase()));
+				directions.add(GenerateDirection.valueOf((direction).toString().toUpperCase()));
 			}
 			settings.setRegenerateDirections(directions);
 			settings.setInstantRegen(config.getBoolean("regen.instant", settings.isInstantRegen()));
@@ -442,10 +442,10 @@ public class  ExplosionSettings {
 			}
 			settings.setParticleType(ParticleType.valueOf(config.getString("particles.type", settings.getParticleType().name()).toUpperCase()));
 			for(ExplosionPhase phase : ExplosionPhase.values()) {
-				ParticleEffect particle = ParticleEffect.valueOf(config.getString("particles.vanilla." + phase.toString() + ".particle", settings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name()).toUpperCase());
+				Particle particle = Particle.valueOf(config.getString("particles.vanilla." + phase.toString() + ".particle", settings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name()).toUpperCase());
 				boolean canDisplay = config.getBoolean("particles.vanilla." + phase.toString() + ".enable", settings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getCanDisplay());
 				settings.getParticleSettings(ParticleType.VANILLA).setParticle(0, new ParticleData(ParticleData.getVanillaSettings(particle), phase, canDisplay));
-				XSound sound = XSound.valueOf(config.getString("sounds." + phase.toString() + ".sound", settings.getSoundSettings().getSound(phase).getSound().name()).toUpperCase());
+				Sound sound = Sound.valueOf(config.getString("sounds." + phase.toString() + ".sound", settings.getSoundSettings().getSound(phase).getSound().name()).toUpperCase());
 				float volume = (float)config.getDouble("sounds." + phase.toString() + ".volume", settings.getSoundSettings().getSound(phase).getVolume());
 				float pitch = (float)config.getDouble("sounds." + phase.toString() + ".pitch", settings.getSoundSettings().getSound(phase).getPitch());
 				boolean enable = config.getBoolean("sounds." + phase.toString() + ".enable", settings.getSoundSettings().getSound(phase).isEnable());

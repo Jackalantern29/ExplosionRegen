@@ -5,12 +5,12 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 
-import com.cryptomorin.xseries.XMaterial;
+import org.bukkit.Material;
 
 public class BlockSettings {
 	private static final Map<String, BlockSettings> MAP = new HashMap<>();
 	private final String name;
-	private final Map<XMaterial, BlockSettingsData> settings = new HashMap<>();
+	private final Map<Material, BlockSettingsData> settings = new HashMap<>();
 	
 	private BlockSettings(String name, BlockSettingsData... settings) {
 		this.name = name;
@@ -25,7 +25,7 @@ public class BlockSettings {
 	public void add(BlockSettingsData settings) {
 		this.settings.putIfAbsent(settings.getMaterial(), settings);
 	}
-	public BlockSettingsData get(XMaterial material) {
+	public BlockSettingsData get(Material material) {
 		if(this.settings.containsKey(material))
 			return this.settings.get(material);
 		else {

@@ -33,14 +33,14 @@ public class SoundSettings {
 		if(sounds.containsKey(phase)) {
 			SoundData sound = sounds.get(phase);
 			if (sound.isEnable())
-				location.getWorld().playSound(location, sound.getSound().parseSound(), sound.getVolume(), sound.getPitch());
+				location.getWorld().playSound(location, sound.getSound(), sound.getVolume(), sound.getPitch());
 		}
 	}
 	public void playSound(ExplosionPhase phase, Location location, Player player) {
 		if (sounds.containsKey(phase)) {
 			SoundData sound = sounds.get(phase);
 			if (sound.isEnable())
-				player.playSound(location, sound.getSound().parseSound(), sound.getVolume(), sound.getPitch());
+				player.playSound(location, sound.getSound(), sound.getVolume(), sound.getPitch());
 		}
 	}
 	public int getId() {

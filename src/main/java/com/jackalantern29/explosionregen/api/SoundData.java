@@ -1,26 +1,25 @@
 package com.jackalantern29.explosionregen.api;
 
-import com.cryptomorin.xseries.XSound;
-import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 public class SoundData {
-	private XSound sound;
+	private Sound sound;
 	private float volume;
 	private float pitch;
 	private boolean enable = true;
-	public SoundData(XSound sound, float volume, float pitch) {
+	public SoundData(Sound sound, float volume, float pitch) {
 		this.sound = sound;
 		this.volume = volume;
 		this.pitch = pitch;
 	}
 
-	public SoundData(XSound sound, float volume, float pitch, boolean enable) {
+	public SoundData(Sound sound, float volume, float pitch, boolean enable) {
 		this(sound, volume, pitch);
 		this.enable = enable;
 	}
-	public XSound getSound() {
+	public Sound getSound() {
 		return sound;
 	}
 
@@ -33,14 +32,14 @@ public class SoundData {
 	}
 
 	public void playSound(Location location) {
-		sound.play(location, volume, pitch);
+		location.getWorld().playSound(location, sound, volume, pitch);
 	}
 
 	public void playSound(Location location, Player player) {
-		player.playSound(location, sound.parseSound(), volume, pitch);
+		player.playSound(location, sound, volume, pitch);
 	}
 
-	public void setSound(XSound sound) {
+	public void setSound(Sound sound) {
 		this.sound = sound;
 	}
 
@@ -58,5 +57,13 @@ public class SoundData {
 
 	public void setEnable(boolean enable) {
 		this.enable = enable;
+	}
+
+	public static Sound getSound(String sound) {
+		try {
+			return Sound.valueOf(sound);
+		} catch(IllegalArgumentException e) {
+			return null;
+		}
 	}
 }

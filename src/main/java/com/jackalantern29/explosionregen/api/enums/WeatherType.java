@@ -1,6 +1,6 @@
 package com.jackalantern29.explosionregen.api.enums;
 
-public enum EROverrideWeatherType {
+public enum WeatherType {
 	CLEAR,
 	RAIN,
 	THUNDER;
