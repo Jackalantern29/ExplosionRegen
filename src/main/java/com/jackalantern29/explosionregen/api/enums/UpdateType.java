@@ -6,16 +6,17 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 
 public enum UpdateType {
-	BOUNTIFUL_UPDATE(1),
-	COMBAT_UPDATE(2),
-	FROSTBURN_UPDATE(3),
-	EXPLORATION_UPDATE(4),
-	COLOR_UPDATE(5),
-	AQUATIC_UPDATE(6),
-	PILLAGE_UPDATE(7),
-	BEES_UPDATE(8),
-	NETHER_UPDATE(9),
-	UNKNOWN_UPDATE(99);
+	PAST_UPDATE(-1),
+	BOUNTIFUL_UPDATE(8),
+	COMBAT_UPDATE(9),
+	FROSTBURN_UPDATE(10),
+	EXPLORATION_UPDATE(11),
+	COLOR_UPDATE(12),
+	AQUATIC_UPDATE(13),
+	PILLAGE_UPDATE(14),
+	BEES_UPDATE(15),
+	NETHER_UPDATE(16),
+	FUTURE_UPDATE(0);
 	
 	private final int id;
 	UpdateType(int id) {
@@ -26,31 +27,31 @@ public enum UpdateType {
 		return id;
 	}
 	public static UpdateType getCurrentUpdate() {
-		switch(getNMSVersion()) {
-		case "v1_8_R1":
-		case "v1_8_R2":
-		case "v1_8_R3":
+		int version = Integer.parseInt(getNMSVersion().substring(3, getNMSVersion().length()-3));
+		switch(version) {
+		case 8:
 			return BOUNTIFUL_UPDATE;
-		case "v1_9_R1":
-		case "v1_9_R2":
+		case 9:
 			return COMBAT_UPDATE;
-		case "v1_10_R1":
+		case 10:
 			return FROSTBURN_UPDATE;
-		case "v1_11_R1":
+		case 11:
 			return EXPLORATION_UPDATE;
-		case "v1_12_R1":
+		case 12:
 			return COLOR_UPDATE;
-		case "v1_13_R1":
-		case "v1_13_R2":
+		case 13:
 			return AQUATIC_UPDATE;
-		case "v1_14_R1":
+		case 14:
 			return PILLAGE_UPDATE;
-		case "v1_15_R1":
+		case 15:
 			return BEES_UPDATE;
-		case "v1_16_R1":
+		case 16:
 			return NETHER_UPDATE;
 		default:
-			return UNKNOWN_UPDATE;
+			if(version < 8)
+				return PAST_UPDATE;
+			else if(version > UpdateType.values()[UpdateType.values().length-2].getId());
+				return FUTURE_UPDATE;
 		}		
 	}
 	public static boolean isUpdate(UpdateType update) {
