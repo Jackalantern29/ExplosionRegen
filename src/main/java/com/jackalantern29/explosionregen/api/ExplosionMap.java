@@ -1,6 +1,7 @@
 package com.jackalantern29.explosionregen.api;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
+import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.ProfileSettings.ERProfileExplosionSettings;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
@@ -319,7 +320,7 @@ public class ExplosionMap implements Listener {
 			Set<Block> addLater = new HashSet<>();
 			for(Block block : new ArrayList<>(blockList)) {
 				if(block.getType() != Material.TNT) {
-					if(block.getType() == (Material.getMaterial("PORTAL") != null ? Material.PORTAL : Material.getMaterial("NETHER_PORTAL"))) {
+					if(MaterialUtil.equalsMaterial(block.getType(), "NETHER_PORTAL")) {
 						if(block.getRelative(0, -1, 0).getType() == Material.AIR) {
 							addLater.add(block);
 						} else {
@@ -366,7 +367,7 @@ public class ExplosionMap implements Listener {
 											bed2 = block.getRelative(BlockFace.WEST);
 										break;
 								}
-								if(bed2.getState().getData() instanceof Bed) {
+								if (bed2 != null && bed2.getState().getData() instanceof Bed) {
 									addLater.add(bed2);
 									blockList.remove(bed2);
 								}
@@ -426,9 +427,6 @@ public class ExplosionMap implements Listener {
 						blockData.setDurability(blockData.getDurability() - blockDamage);
 					}
 					if(blockData.getDurability() <= 0.0d) {
-						if(bs.doReplace()) {
-							blockData.setMaterial(bs.getReplaceWith());
-						}
 						if(!bs.doPreventDamage()) {
 							if(bs.doRegen()) {
 								explosion.addBlock(blockData);
@@ -441,10 +439,12 @@ public class ExplosionMap implements Listener {
 								Random r = new Random();
 								int random = r.nextInt(99);
 								if(random <= bs.getDropChance() - 1)
-									block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(bs.getMaterial()));
+									block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(bs.getResult()));
 							}
-						} else
-							blockData.getBlock().setType(bs.getMaterial());
+						} else {
+							blockData.getBlock().setType(bs.getResult());
+							blockList.remove(block);
+						}
 					} else {
 						blockList.remove(block);
 						blockMap.put(block.getLocation(), blockData);

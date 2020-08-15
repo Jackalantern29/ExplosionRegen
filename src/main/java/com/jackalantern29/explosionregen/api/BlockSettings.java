@@ -3,6 +3,7 @@ package com.jackalantern29.explosionregen.api;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jackalantern29.explosionregen.MaterialUtil;
 import org.bukkit.Bukkit;
 
 import org.bukkit.Material;
@@ -31,10 +32,13 @@ public class BlockSettings {
 		else {
 			BlockSettingsData to = new BlockSettingsData(material);
 			BlockSettingsData from = this.settings.get(null);
+			if(material.equals(MaterialUtil.getMaterial("ENDER_CHEST")) || material.equals(MaterialUtil.getMaterial("OBSIDIAN")) || material.equals(MaterialUtil.getMaterial("ENCHANTMENT_TABLE")) || material.equals(MaterialUtil.getMaterial("ANVIL")) || material.equals(MaterialUtil.getMaterial("STRUCTURE_BLOCK")) || material.equals(MaterialUtil.getMaterial("END_PORTAL_FRAME")) || material.equals(MaterialUtil.getMaterial("END_PORTAL")) || material.equals(MaterialUtil.getMaterial("END_GATEWAY")) || material.equals(MaterialUtil.getMaterial("COMMAND_BLOCK")) || material.equals(MaterialUtil.getMaterial("CHAIN_COMMAND_BLOCK")) || material.equals(MaterialUtil.getMaterial("REPEATING_COMMAND_BLOCK")) || material.equals(MaterialUtil.getMaterial("BEDROCK")) || material.equals(MaterialUtil.getMaterial("BARRIER")))
+				to.setPreventDamage(true);
+			else
+				to.setPreventDamage(from.doPreventDamage());
 			to.setDropChance(from.getDropChance());
 			to.setDurability(from.getDurability());
 			to.setMaxRegenHeight(from.getMaxRegenHeight());
-			to.setPreventDamage(from.doPreventDamage());
 			to.setRegen(from.doRegen());
 			to.setRegenDelay(from.getRegenDelay());
 			to.setReplace(from.doReplace());

@@ -87,8 +87,6 @@ public class ExplosionRegenSettings {
 		for(File files : Objects.requireNonNull(blocksFolder.listFiles())) {
 			if(files.getName().endsWith(".yml")) {
 				YamlConfiguration bc = YamlConfiguration.loadConfiguration(files);
-				//"default.yml"
-				//smiles 6 
 				LinkedHashMap<String, Object> saveMap = new LinkedHashMap<>();
 				BlockSettings bs = BlockSettings.registerBlockSettings(files.getName().substring(0, files.getName().length()-4));
 				for(String key : bc.getKeys(false)) {
@@ -99,6 +97,7 @@ public class ExplosionRegenSettings {
 					saveMap.put(key + ".replace.replace-with", Material.AIR.name().toLowerCase());
 					saveMap.put(key + ".chance", 30);
 					saveMap.put(key + ".durability", 1.0d);
+					saveMap.put(key + ".regen-delay", 0);
 					boolean saveBC = false;
 					for(String k : new ArrayList<>(saveMap.keySet())) {
 						if(!bc.contains(k)) {
@@ -124,6 +123,7 @@ public class ExplosionRegenSettings {
 					bd.setReplaceWith(Material.valueOf(section.getString("replace.replace-with").toUpperCase()));
 					bd.setDropChance(section.getInt("chance"));
 					bd.setDurability(section.getDouble("durability"));
+					bd.setRegenDelay(section.getLong("regen-delay"));
 					bs.add(bd);
 				}
 			}

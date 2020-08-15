@@ -68,7 +68,13 @@ public class BlockSettingsData {
 	public Material getReplaceWith() {
 		return replaceWith;
 	}
-	
+
+	public Material getResult() {
+		if(doReplace())
+			return getReplaceWith();
+		else
+			return getMaterial();
+	}
 	public void setReplaceWith(Material material) {
 		replaceWith = material;
 	}

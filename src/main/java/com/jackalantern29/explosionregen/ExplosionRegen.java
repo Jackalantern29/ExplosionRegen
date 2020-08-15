@@ -23,6 +23,7 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 		instance = this;
 		explosions = new ExplosionMap();
 		settings = new ExplosionRegenSettings();
+
 		EntityExplodeListener listener = new EntityExplodeListener();
 		getServer().getPluginManager().registerEvents(listener, this);
 		try {

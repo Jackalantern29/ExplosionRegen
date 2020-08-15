@@ -3,6 +3,7 @@ package com.jackalantern29.explosionregen.listeners;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.events.ExplosionDamageEntityEvent;
 import org.bukkit.Bukkit;
@@ -10,6 +11,8 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Explosive;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -81,10 +84,23 @@ public class EntityExplodeListener implements Listener {
 		double blockDamage = e.getBlockDamage();
 		if(e.isCancelled())
 			return;
-		if(event instanceof EntityExplodeEvent)
-			((EntityExplodeEvent) event).setYield(0.0f);
+		int powerRadius = 5;
+		if(event instanceof EntityExplodeEvent) {
+			EntityExplodeEvent explodeEvent = (EntityExplodeEvent)event;
+			explodeEvent.setYield(0.0f);
+			if(explodeEvent.getEntity() instanceof Explosive)
+				powerRadius = (int) Math.ceil(((Explosive)explodeEvent.getEntity()).getYield());
+		}
 		else if(event instanceof BlockExplodeEvent)
 			((BlockExplodeEvent) event).setYield(0.0f);
+		for (int x = powerRadius * -1; x <= powerRadius; x++)
+			for (int y = powerRadius * -1; y <= powerRadius; y++)
+				for (int z = powerRadius * -1; z <= powerRadius; z++) {
+					Block block = location.getBlock().getRelative(x, y, z);
+					if(MaterialUtil.equalsMaterial(block.getType(), "ENDER_CHEST") || MaterialUtil.equalsMaterial(block.getType(), "OBSIDIAN") || MaterialUtil.equalsMaterial(block.getType(), "ENCHANTMENT_TABLE") || MaterialUtil.equalsMaterial(block.getType(), "ANVIL") || MaterialUtil.equalsMaterial(block.getType(), "STRUCTURE_BLOCK") || MaterialUtil.equalsMaterial(block.getType(), "END_PORTAL_FRAME") || MaterialUtil.equalsMaterial(block.getType(), "END_PORTAL") || MaterialUtil.equalsMaterial(block.getType(), "END_GATEWAY") || MaterialUtil.equalsMaterial(block.getType(), "COMMAND_BLOCK") || MaterialUtil.equalsMaterial(block.getType(), "CHAIN_COMMAND_BLOCK") || MaterialUtil.equalsMaterial(block.getType(), "REPEATING_COMMAND_BLOCK") || MaterialUtil.equalsMaterial(block.getType(), "BEDROCK") || MaterialUtil.equalsMaterial(block.getType(), "BARRIER")) {
+						blockList.add(block);
+					}
+				}
 		ExplosionRegen.getExplosionMap().addExplosion(settings, location, blockList, blockDamage);
 
 	}
