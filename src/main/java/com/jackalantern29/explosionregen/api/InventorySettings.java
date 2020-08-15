@@ -1,7 +1,6 @@
 package com.jackalantern29.explosionregen.api;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.enums.ParticleType;
 import de.themoep.inventorygui.*;
@@ -33,11 +32,10 @@ public class InventorySettings {
 			"ppppppppv",
 	};
 	private InventoryGui explosionMenu = null;
-	private final InventoryGui optionMenu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Option", new String[] {"0 wer"});
+	private final InventoryGui optionMenu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Option", new String[] {"0  we"});
 	private final InventoryGui vanillaParticleMenu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Particle", setupRows);
 	private final InventoryGui presetParticleMenu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Particle", setupRows);
 	private final InventoryGui soundMenu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Sound", setupRows);
-	private final InventoryGui settingsMenu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Settings §6§l✯", new String[] {"0 qwert y", "   u i   "});
 	
 	private ExplosionPhase selectedPhase = ExplosionPhase.BLOCK_REGENERATING;
 	private ExplosionSettings selectedSettings = null;
@@ -61,7 +59,6 @@ public class InventorySettings {
 			}
 			explosionMenu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Explosion", rows);
 		}
-		//InventoryGui menu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Explosion" + (isServer == true ? " §6§l✯" : ""), guiSetup);
 		GuiBackElement backElement = new GuiBackElement('0', new ItemStack(Material.BARRIER), "§c§lGo Back");
 		
 		explosionMenu.setTitle("§2Select Explosion" + (isServer ? " §6§l✯" : ""));
@@ -75,21 +72,18 @@ public class InventorySettings {
 		vanillaParticleMenu.setFiller(filler);
 		presetParticleMenu.setFiller(filler);
 		soundMenu.setFiller(filler);
-		settingsMenu.setFiller(filler);
-		
+
 		explosionMenu.setCloseAction(click -> false);
 		optionMenu.setCloseAction(click -> false);
 		vanillaParticleMenu.setCloseAction(click -> false);
 		presetParticleMenu.setCloseAction(click -> false);
 		soundMenu.setCloseAction(click -> false);
-		settingsMenu.setCloseAction(click -> false);
-		
+
 		optionMenu.addElement(backElement);
 		vanillaParticleMenu.addElement(backElement);
 		presetParticleMenu.addElement(backElement);
 		soundMenu.addElement(backElement);
-		settingsMenu.addElement(backElement);
-		
+
 		GuiElementGroup explosionGroup = new GuiElementGroup('q');
 		for(ExplosionSettings settings : ProfileSettings.get(player.getUniqueId()).getConfigurableSettings()) {
 			explosionGroup.addElement(new DynamicGuiElement('q', () -> new StaticGuiElement('q', settings.getDisplayItem(), click -> {selectedSettings = settings; optionMenu.show(click.getEvent().getWhoClicked()); return true;}, settings.getDisplayName())));
@@ -115,12 +109,6 @@ public class InventorySettings {
 			optionMenu.addElement(new DynamicGuiElement('e', () -> {
 				if(player.hasPermission("explosionregen.command.rsettings.sounds"))
 					return new StaticGuiElement('e', new ItemStack(Material.NOTE_BLOCK), click -> {selectedPhase = ExplosionPhase.BLOCK_REGENERATING;soundMenu.setPageNumber(0);soundMenu.show(click.getEvent().getWhoClicked()); return true;}, "§a§lSounds");
-				else
-					return optionMenu.getFiller();
-			}));
-			optionMenu.addElement(new DynamicGuiElement('r', () -> {
-				if(isServer && player.hasPermission("explosionregen.command.rsettings.settings"))
-					return new StaticGuiElement('r', new ItemStack(Material.PAPER), click -> {selectedPhase = ExplosionPhase.BLOCK_REGENERATING;settingsMenu.show(click.getEvent().getWhoClicked()); return true;}, "§a§lSettings");
 				else
 					return optionMenu.getFiller();
 			}));
@@ -360,31 +348,7 @@ public class InventorySettings {
 				}
 				g.addElement(new GuiPageElement('z', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)5) : new ItemStack(Material.getMaterial("LIME_STAINED_GLASS_PANE")), PageAction.PREVIOUS, "§7Previous"));
 				g.addElement(new GuiPageElement('v', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)5) : new ItemStack(Material.getMaterial("LIME_STAINED_GLASS_PANE")), PageAction.NEXT, "§7Next"));
-			}	
-			settingsMenu.addElement(new DynamicGuiElement('q', () -> new StaticGuiElement('q', Material.getMaterial("RED_DYE") != null ? new ItemStack(Material.getMaterial("RED_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)14), click -> true,
-					"§aRegen",
-					"§7Allow: §6" + StringUtils.capitalize("" + selectedSettings.getAllowRegen()),
-					"§7Instant: §6" + StringUtils.capitalize("" + selectedSettings.isInstantRegen()),
-					"§7Delay: §6" + StringUtils.capitalize("" + selectedSettings.getRegenDelay()),
-					"§7Max Block Regen Queue: §6" + StringUtils.capitalize("" + selectedSettings.getMaxBlockRegenQueue()),
-					"§7Directions: §6" + StringUtils.capitalize("" + selectedSettings.getRegenerateDirections()))));
-			settingsMenu.addElement(new StaticGuiElement('w', new ItemStack(Material.ANVIL), click -> true, "§aConditions", "§c§lNot Yet Implemented."));
-			settingsMenu.addElement(new DynamicGuiElement('e', () -> new StaticGuiElement('e', new ItemStack(Material.COMPASS), click -> {selectedSettings.setAllowExplosion(!selectedSettings.getAllowExplosion()); settingsMenu.draw(); return true;}, "§aAllow Explosion: " + (selectedSettings.getAllowExplosion() ? "§aTrue" : "§cFalse"))));
-			settingsMenu.addElement(new DynamicGuiElement('r', () -> new StaticGuiElement('r', new ItemStack(Material.CHEST), click -> true, "§aConfigure Block Settings", "§7Selected Settings: §6" + StringUtils.capitaliseAllWords(selectedSettings.getBlockSettings().getName()))));
-			settingsMenu.addElement(new DynamicGuiElement('t', () -> {
-				List<String> lore = new ArrayList<>();
-				lore.add("§aConfigure Damage Settings");
-				for(DamageCategory types : DamageCategory.values()) {
-					lore.add("§7" + StringUtils.capitalise(types.name().toLowerCase()));
-					lore.add("  §7Allow: §6" + StringUtils.capitalise(selectedSettings.getAllowDamage(types) + ""));
-					lore.add("  §7Modifier Type: §6" + StringUtils.capitalise(selectedSettings.getDamageModifier(types).name().toLowerCase()));
-					lore.add("  §7Amount: §6" + selectedSettings.getDamageAmount(types));
-				}
-				return new StaticGuiElement('t', new ItemStack(Material.getMaterial("FIREBALL") != null ? Material.getMaterial("FIREBALL") : Material.getMaterial("FIRE_CHARGE")), click -> true, lore.toArray(new String[0]));
-			}));
-			settingsMenu.addElement(new StaticGuiElement('y', new ItemStack(Material.MAP), click -> true, "§aCreate New Override", "§c§lNot Yet Implemented."));
-			settingsMenu.addElement(new DynamicGuiElement('u', () -> new StaticGuiElement('u', new ItemStack(Material.PAPER), click -> true, "§aChange Display Name", "§7Current Name: §6" + StringUtils.capitaliseAllWords(selectedSettings.getDisplayName()))));
-			settingsMenu.addElement(new DynamicGuiElement('i', () -> new StaticGuiElement('i', selectedSettings.getDisplayItem(), click -> {selectedSettings.setDisplayItem(click.getEvent().getCurrentItem());settingsMenu.draw(); return true;}, "§aChange Display Item", "§7Replace this item to change the Display Item.")));
+			}
 		}
 		explosionMenu.addElement(explosionGroup);
 		explosionMenu.addElement('e', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)15) : new ItemStack(Material.getMaterial("BLACK_STAINED_GLASS_PANE")), click -> true, " ");
