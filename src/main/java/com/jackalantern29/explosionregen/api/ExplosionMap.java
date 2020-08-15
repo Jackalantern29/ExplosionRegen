@@ -3,6 +3,7 @@ package com.jackalantern29.explosionregen.api;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.ProfileSettings.ERProfileExplosionSettings;
+import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
@@ -28,7 +29,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.*;
 
 public class ExplosionMap implements Listener {
-	private final Map<Location, BlockData> blockMap = new HashMap<>();
+	private final Map<Location, RegenBlock> blockMap = new HashMap<>();
 	private final LinkedList<Explosion> explosions = new LinkedList<>();
 
 	public ExplosionMap() {
@@ -122,11 +123,11 @@ public class ExplosionMap implements Listener {
 							explosion.setRegenTick(explosion.getRegenTick() - 1);
 						} else {
 							if (explosion.getExplosionSettings().isInstantRegen()) {
-								for (BlockData block : explosion.getBlocks()) {
+								for (RegenBlock block : explosion.getBlocks()) {
 									explosion.regenerate(block);
 								}
 							} else {
-								for (BlockData block : explosion.getQueueBlocks()) {
+								for (RegenBlock block : explosion.getQueueBlocks()) {
 									if (block.getRegenDelay() > 0)
 										block.setRegenDelay(block.getRegenDelay() - 1);
 									else {
@@ -380,8 +381,8 @@ public class ExplosionMap implements Listener {
 
 			if(settings.getAllowRegen()) {
 				for(Block block : new ArrayList<>(blockList)) {
-					BlockData blockData = new BlockData(block.getState(), 0, settings.getBlockSettings().get(block.getType()).getDurability());
-					BlockSettingsData bs = settings.getBlockSettings().get(blockData.getMaterial());
+					RegenBlock regenBlock = new RegenBlock(block, 0, settings.getBlockSettings().get(new RegenBlockData(block)).getDurability());
+					BlockSettingsData bs = settings.getBlockSettings().get(regenBlock.getRegenData());
 
 					BlockState state = block.getState();
 					if(bs.doSaveItems() && state instanceof InventoryHolder) {
@@ -413,23 +414,23 @@ public class ExplosionMap implements Listener {
 								}
 							}
 						}
-						blockData.setContents(inventory.getContents());
+						regenBlock.setContents(inventory.getContents());
 						inventory.clear();
 					} else if(state instanceof Sign) {
 						Sign sign = (Sign)state;
-						blockData.setContents(sign.getLines());
+						regenBlock.setContents(sign.getLines());
 					}
 					if(blockMap.containsKey(block.getLocation())) {
-						BlockData b = blockMap.get(block.getLocation());
-						blockData.setDurability(b.getDurability() - blockDamage);
+						RegenBlock b = blockMap.get(block.getLocation());
+						regenBlock.setDurability(b.getDurability() - blockDamage);
 						blockMap.remove(block.getLocation());
 					} else {
-						blockData.setDurability(blockData.getDurability() - blockDamage);
+						regenBlock.setDurability(regenBlock.getDurability() - blockDamage);
 					}
-					if(blockData.getDurability() <= 0.0d) {
+					if(regenBlock.getDurability() <= 0.0d) {
 						if(!bs.doPreventDamage()) {
 							if(bs.doRegen()) {
-								explosion.addBlock(blockData);
+								explosion.addBlock(regenBlock);
 
 								if(block.getState().getData() instanceof Bed) {
 									block.setType(Material.AIR, false);
@@ -439,15 +440,15 @@ public class ExplosionMap implements Listener {
 								Random r = new Random();
 								int random = r.nextInt(99);
 								if(random <= bs.getDropChance() - 1)
-									block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(bs.getResult()));
+									block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(bs.getResult().getMaterial()));
 							}
 						} else {
-							blockData.getBlock().setType(bs.getResult());
+							regenBlock.setBlock();
 							blockList.remove(block);
 						}
 					} else {
 						blockList.remove(block);
-						blockMap.put(block.getLocation(), blockData);
+						blockMap.put(block.getLocation(), regenBlock);
 					}
 				}
 			}

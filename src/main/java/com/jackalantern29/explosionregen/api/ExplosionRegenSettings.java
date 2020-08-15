@@ -11,7 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
+import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -20,6 +22,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
+import org.bukkit.material.MaterialData;
 
 public class ExplosionRegenSettings {
 	
@@ -112,15 +115,33 @@ public class ExplosionRegenSettings {
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
-					Material mat = key.equalsIgnoreCase("default") ? null : Material.valueOf(key.toUpperCase());
+					//Material mat = key.equalsIgnoreCase("default") ? null : Material.valueOf(key.toUpperCase());
+					RegenBlockData regenData;
+					if(key.equalsIgnoreCase("default"))
+						regenData = null;
+					else {
+						if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+							regenData = new RegenBlockData(Material.valueOf(key.toUpperCase()));
+						else {
+							String mat = key.contains(":") ? key.split(":", 1)[0] : key;
+							byte data = key.contains(":") ? Byte.parseByte(key.split(":", 1)[1]) : 0;
+							int id;
+							if(NumberUtils.isNumber(mat))
+								id = Integer.parseInt(mat);
+							else
+								id = Material.getMaterial(mat).getId();
+							regenData = new RegenBlockData(Material.getMaterial(id), data);
+						}
+					}
 					ConfigurationSection section = bc.getConfigurationSection(key);
-					BlockSettingsData bd = new BlockSettingsData(mat);
+
+					BlockSettingsData bd = new BlockSettingsData(regenData);
 					bd.setPreventDamage(section.getBoolean("prevent-damage"));
 					bd.setRegen(section.getBoolean("regen"));
 					bd.setSaveItems(section.getBoolean("save-items"));
 					bd.setMaxRegenHeight(section.getInt("max-regen-height"));
 					bd.setReplace(section.getBoolean("replace.do-replace"));
-					bd.setReplaceWith(Material.valueOf(section.getString("replace.replace-with").toUpperCase()));
+					bd.setReplaceWith(new RegenBlockData(Material.valueOf(section.getString("replace.replace-with").toUpperCase())));
 					bd.setDropChance(section.getInt("chance"));
 					bd.setDurability(section.getDouble("durability"));
 					bd.setRegenDelay(section.getLong("regen-delay"));

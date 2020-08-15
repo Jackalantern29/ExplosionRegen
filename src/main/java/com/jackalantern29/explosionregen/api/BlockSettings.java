@@ -4,19 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.jackalantern29.explosionregen.MaterialUtil;
+import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import org.bukkit.Bukkit;
-
-import org.bukkit.Material;
 
 public class BlockSettings {
 	private static final Map<String, BlockSettings> MAP = new HashMap<>();
 	private final String name;
-	private final Map<Material, BlockSettingsData> settings = new HashMap<>();
+	private final Map<String, BlockSettingsData> settings = new HashMap<>();
 	
 	private BlockSettings(String name, BlockSettingsData... settings) {
 		this.name = name;
 		for(BlockSettingsData setting : settings)
-			this.settings.put(setting.getMaterial(), setting);
+			this.settings.put(setting.getRegenData().toString(), setting);
 	}
 	
 	public String getName() {
@@ -24,15 +23,16 @@ public class BlockSettings {
 	}
 	
 	public void add(BlockSettingsData settings) {
-		this.settings.putIfAbsent(settings.getMaterial(), settings);
+		String string = settings.getRegenData() != null ? settings.getRegenData().toString() : "";
+		this.settings.putIfAbsent(string, settings);
 	}
-	public BlockSettingsData get(Material material) {
-		if(this.settings.containsKey(material))
-			return this.settings.get(material);
+	public BlockSettingsData get(RegenBlockData regenData) {
+		if(this.settings.containsKey(regenData.toString()))
+			return this.settings.get(regenData.toString());
 		else {
-			BlockSettingsData to = new BlockSettingsData(material);
-			BlockSettingsData from = this.settings.get(null);
-			if(material.equals(MaterialUtil.getMaterial("ENDER_CHEST")) || material.equals(MaterialUtil.getMaterial("OBSIDIAN")) || material.equals(MaterialUtil.getMaterial("ENCHANTMENT_TABLE")) || material.equals(MaterialUtil.getMaterial("ANVIL")) || material.equals(MaterialUtil.getMaterial("STRUCTURE_BLOCK")) || material.equals(MaterialUtil.getMaterial("END_PORTAL_FRAME")) || material.equals(MaterialUtil.getMaterial("END_PORTAL")) || material.equals(MaterialUtil.getMaterial("END_GATEWAY")) || material.equals(MaterialUtil.getMaterial("COMMAND_BLOCK")) || material.equals(MaterialUtil.getMaterial("CHAIN_COMMAND_BLOCK")) || material.equals(MaterialUtil.getMaterial("REPEATING_COMMAND_BLOCK")) || material.equals(MaterialUtil.getMaterial("BEDROCK")) || material.equals(MaterialUtil.getMaterial("BARRIER")))
+			BlockSettingsData to = new BlockSettingsData(regenData);
+			BlockSettingsData from = this.settings.get("");
+			if(MaterialUtil.isIndestructible(regenData.getMaterial()))
 				to.setPreventDamage(true);
 			else
 				to.setPreventDamage(from.doPreventDamage());
@@ -44,7 +44,7 @@ public class BlockSettings {
 			to.setReplace(from.doReplace());
 			to.setReplaceWith(from.getReplaceWith());
 			to.setSaveItems(from.doSaveItems());
-			this.settings.put(material, to);
+			this.settings.put(regenData.toString(), to);
 			return to;
 		}
 	}

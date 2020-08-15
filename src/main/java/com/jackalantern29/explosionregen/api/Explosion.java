@@ -19,8 +19,8 @@ public class Explosion {
 	
 	private final ExplosionSettings settings;
 	private final Location location;
-	private final List<BlockData> blocks = new ArrayList<>();
-	private BlockData previousBlock;
+	private final List<RegenBlock> blocks = new ArrayList<>();
+	private RegenBlock previousBlock;
 	private long regenTick;
 	
 	public Explosion(ExplosionSettings settings, Location location) {
@@ -38,10 +38,10 @@ public class Explosion {
 		return location;
 	}
 	
-	public void addBlocks(List<BlockData> blocks) {
-		for(BlockData b0 : blocks) {
+	public void addBlocks(List<RegenBlock> blocks) {
+		for(RegenBlock b0 : blocks) {
 			boolean doadd = true;
-			for(BlockData b1 : this.blocks) {
+			for(RegenBlock b1 : this.blocks) {
 				if(b1.getLocation().equals(b0.getLocation()))
 					doadd = false;
 			}
@@ -49,17 +49,17 @@ public class Explosion {
 				this.blocks.add(b0);
 		}
 	}
-	public void addBlock(BlockData block) {
+	public void addBlock(RegenBlock block) {
 		blocks.add(block);
 	}
 	
-	public List<BlockData> getBlocks() {
+	public List<RegenBlock> getBlocks() {
 		return getBlocks(settings.getRegenerateDirections());
 	}
 	
 	
-	public List<BlockData> getBlocks(List<GenerateDirection> direction) {
-		List<BlockData> list = new ArrayList<>(blocks);
+	public List<RegenBlock> getBlocks(List<GenerateDirection> direction) {
+		List<RegenBlock> list = new ArrayList<>(blocks);
 		list.sort((o1, o2) -> {
 			CompareToBuilder builder = new CompareToBuilder();
 			for(GenerateDirection d : direction) {
@@ -88,9 +88,9 @@ public class Explosion {
 			return builder.toComparison();
 		});
 		if(direction.contains(GenerateDirection.RANDOM_UP)) {
-			HashMap<Integer, List<BlockData>> map = new HashMap<>();
-			for(BlockData block : list) {
-				List<BlockData> l;
+			HashMap<Integer, List<RegenBlock>> map = new HashMap<>();
+			for(RegenBlock block : list) {
+				List<RegenBlock> l;
 				if(!map.containsKey(block.getLocation().getBlockY()))
 					l = new ArrayList<>();
 				else
@@ -110,7 +110,7 @@ public class Explosion {
 	}
 	
 	public void removeBlock(Location location) {
-		for(BlockData block : new ArrayList<>(getBlocks())) {
+		for(RegenBlock block : new ArrayList<>(getBlocks())) {
 			if(block.getLocation().equals(location))
 				blocks.remove(block);
 		}
@@ -121,7 +121,7 @@ public class Explosion {
 	}
 
 	
-	public void regenerate(BlockData block) {
+	public void regenerate(RegenBlock block) {
 		if(block.getType() == (Material.getMaterial("PORTAL") != null ? Material.PORTAL : Material.getMaterial("NETHER_PORTAL"))) {
 			if(block.getBlock().getType() == (Material.getMaterial("PORTAL") != null ? Material.PORTAL : Material.getMaterial("NETHER_PORTAL"))) {
 				removeBlock(block.getLocation());
@@ -178,7 +178,7 @@ public class Explosion {
 		previousBlock = block;
 	}
 	public void regenerateAll() {
-		for(BlockData block : new ArrayList<>(blocks))
+		for(RegenBlock block : new ArrayList<>(blocks))
 			regenerate(block);
 	}
 
@@ -191,15 +191,15 @@ public class Explosion {
 		this.regenTick = regenTick;
 	}
 	
-	public List<BlockData> getQueueBlocks() {
+	public List<RegenBlock> getQueueBlocks() {
 		return getQueueBlocks(settings.getRegenerateDirections());
 	}
 	
-	public List<BlockData> getQueueBlocks(List<GenerateDirection> direction) {
-		List<BlockData> list = new ArrayList<>();
+	public List<RegenBlock> getQueueBlocks(List<GenerateDirection> direction) {
+		List<RegenBlock> list = new ArrayList<>();
 	//	Player jack = Bukkit.getPlayer("Jack");
 		int i = 0;
-		for(Iterator<BlockData> it = getBlocks(direction).iterator(); it.hasNext(); i++) {
+		for(Iterator<RegenBlock> it = getBlocks(direction).iterator(); it.hasNext(); i++) {
 			try {
 				list.add(getBlocks(direction).iterator().next());
 			} catch(IndexOutOfBoundsException e) {
@@ -210,7 +210,7 @@ public class Explosion {
 		}
 		return list;
 	}
-	public BlockData getPreviousBlock() {
+	public RegenBlock getPreviousBlock() {
 		return previousBlock;
 	}
 }

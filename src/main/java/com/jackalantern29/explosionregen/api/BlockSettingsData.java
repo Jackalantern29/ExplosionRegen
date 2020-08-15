@@ -1,11 +1,13 @@
 package com.jackalantern29.explosionregen.api;
 
+import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import org.bukkit.Material;
+import org.bukkit.material.MaterialData;
 
 public class BlockSettingsData {	
-	private final Material material;
+	private final RegenBlockData regenData;
 	
-	private Material replaceWith = Material.AIR;
+	private RegenBlockData replaceWith = new RegenBlockData(Material.AIR);
 	
 	private int chance = 30;
 	private int maxRegenHeight = 3;
@@ -17,12 +19,12 @@ public class BlockSettingsData {
 	private boolean saveItems = false;
 	private boolean replace = false;
 	
-	public BlockSettingsData(Material material) {
-		this.material = material;
+	public BlockSettingsData(RegenBlockData regenData) {
+		this.regenData = regenData;
 	}
-	
-	public Material getMaterial() {
-		return material;
+
+	public RegenBlockData getRegenData() {
+		return regenData;
 	}
 	
 	public boolean doPreventDamage() {
@@ -65,17 +67,17 @@ public class BlockSettingsData {
 		replace = value;
 	}
 	
-	public Material getReplaceWith() {
+	public RegenBlockData getReplaceWith() {
 		return replaceWith;
 	}
 
-	public Material getResult() {
+	public RegenBlockData getResult() {
 		if(doReplace())
 			return getReplaceWith();
 		else
-			return getMaterial();
+			return getRegenData();
 	}
-	public void setReplaceWith(Material material) {
+	public void setReplaceWith(RegenBlockData material) {
 		replaceWith = material;
 	}
 	

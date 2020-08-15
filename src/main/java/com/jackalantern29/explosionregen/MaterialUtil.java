@@ -61,6 +61,13 @@ public class MaterialUtil {
         return source.equals(material);
     }
 
+    public static boolean isIndestructible(Material material) {
+        if(material.equals(getMaterial("ENDER_CHEST")) || material.equals(getMaterial("OBSIDIAN")) || material.equals(getMaterial("ENCHANTMENT_TABLE")) || material.equals(getMaterial("ANVIL")) || material.equals(getMaterial("STRUCTURE_BLOCK")) || material.equals(getMaterial("STRUCTURE_VOID")) || material.equals(getMaterial("END_PORTAL_FRAME")) || material.equals(getMaterial("END_PORTAL")) || material.equals(getMaterial("END_GATEWAY")) || material.equals(getMaterial("COMMAND_BLOCK")) || material.equals(getMaterial("CHAIN_COMMAND_BLOCK")) || material.equals(getMaterial("REPEATING_COMMAND_BLOCK")) || material.equals(getMaterial("BEDROCK")) || material.equals(getMaterial("BARRIER")))
+            return true;
+        else
+            return false;
+
+    }
     public static ItemStack parseItemStack(String material, int amount) {
         if(getMaterial(material) == null)
             return null;
