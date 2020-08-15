@@ -14,10 +14,11 @@ public enum UpdateType {
 	AQUATIC_UPDATE(6),
 	PILLAGE_UPDATE(7),
 	BEES_UPDATE(8),
-	UNKNOWN_UPDATE(9);
+	NETHER_UPDATE(9),
+	UNKNOWN_UPDATE(99);
 	
-	private int id;
-	private UpdateType(int id) {
+	private final int id;
+	UpdateType(int id) {
 		this.id = id;
 	}
 	
@@ -46,6 +47,8 @@ public enum UpdateType {
 			return PILLAGE_UPDATE;
 		case "v1_15_R1":
 			return BEES_UPDATE;
+		case "v1_16_R1":
+			return NETHER_UPDATE;
 		default:
 			return UNKNOWN_UPDATE;
 		}		
