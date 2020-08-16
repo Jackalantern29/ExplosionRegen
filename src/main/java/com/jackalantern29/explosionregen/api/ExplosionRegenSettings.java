@@ -11,12 +11,13 @@ import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.jackalantern29.explosionregen.BukkitMethods;
+import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -36,6 +37,8 @@ public class ExplosionRegenSettings {
 	private final File particleVanillaFolder = new File(plugin.getDataFolder() + File.separator + "particles", "vanilla");
 	private final File particlePresetFolder = new File(plugin.getDataFolder() + File.separator + "particles", "preset");
 
+	private boolean enablePlugin;
+	private boolean enableProfile;
 	public ExplosionRegenSettings() {
 		if(!setup) {
 			setup();
@@ -70,10 +73,8 @@ public class ExplosionRegenSettings {
 			}
 		boolean doSave = false;
 		LinkedHashMap<String, Object> map = new LinkedHashMap<>();
-		map.put("options.enablePlugin", true);
-		map.put("options.gravity.allowShift", false);
-		map.put("options.gravity.limit", 5);
-		map.put("options.playerSettings.enable", false);
+		map.put("options.enable-plugin", true);
+		map.put("options.profile-settings.enable", false);
 		map.put("chat.noPermCmd", "&c[ExplosionRegen] You do not have permission to use this command!");
 		for(String key : new ArrayList<>(map.keySet())) {
 			Object value = map.get(key);
@@ -87,6 +88,8 @@ public class ExplosionRegenSettings {
 				e.printStackTrace();
 			}
 		}
+		enablePlugin = config.getBoolean("options.enable-plugin");
+		enableProfile = config.getBoolean("options.profile-settings.enable");
 		for(File files : Objects.requireNonNull(blocksFolder.listFiles())) {
 			if(files.getName().endsWith(".yml")) {
 				YamlConfiguration bc = YamlConfiguration.loadConfiguration(files);
@@ -129,7 +132,7 @@ public class ExplosionRegenSettings {
 							if(NumberUtils.isNumber(mat))
 								id = Integer.parseInt(mat);
 							else
-								id = Material.getMaterial(mat).getId();
+								id = Material.getMaterial(mat.toUpperCase()).getId();
 							regenData = new RegenBlockData(Material.getMaterial(id), data);
 						}
 					}
@@ -141,7 +144,7 @@ public class ExplosionRegenSettings {
 					bd.setSaveItems(section.getBoolean("save-items"));
 					bd.setMaxRegenHeight(section.getInt("max-regen-height"));
 					bd.setReplace(section.getBoolean("replace.do-replace"));
-					bd.setReplaceWith(new RegenBlockData(Material.valueOf(section.getString("replace.replace-with").toUpperCase())));
+					bd.setReplaceWith(new RegenBlockData(MaterialUtil.getMaterial(section.getString("replace.replace-with").toUpperCase())));
 					bd.setDropChance(section.getInt("chance"));
 					bd.setDurability(section.getDouble("durability"));
 					bd.setRegenDelay(section.getLong("regen-delay"));
@@ -149,26 +152,8 @@ public class ExplosionRegenSettings {
 				}
 			}
 		}
-		if(UpdateType.isPostUpdate(UpdateType.COMBAT_UPDATE)) {
-			for(Particle particle : Particle.values()) {
-				ParticleData.getVanillaSettings(particle);
-			}
-		} else {
-			try {
-				Class<?> enumPart = Class.forName("net.minecraft.server." + UpdateType.getNMSVersion() + ".EnumParticle");
-				for(Object particle : (Object[])MethodHandles.lookup().findStatic(enumPart, "values", MethodType.methodType(Object[].class)).invoke()) {
-					Bukkit.getConsoleSender().sendMessage("§a" + particle.toString());
-				}
-
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (Throwable throwable) {
-				throwable.printStackTrace();
-			}
+		for(ExplosionParticle particle : ExplosionParticle.getParticles()) {
+			ParticleData.getVanillaSettings(particle);
 		}
 		for(File f : particlePresetFolder.listFiles()) {
 			ParticleSettings.load(f);
@@ -180,27 +165,24 @@ public class ExplosionRegenSettings {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if(getAllowPlayerSettings()) {
+		if(getAllowProfileSettings()) {
 			if(!profileFolder.exists())
 				profileFolder.mkdir();
 			for(Player player : Bukkit.getOnlinePlayers())
 				ProfileSettings.get(player.getUniqueId());
 		}
+		try {
+			Class.forName(BukkitMethods.class.getName());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	public boolean doEnablePlugin() {
-		return config.getBoolean("options.enablePlugin");
+		return enablePlugin;
 	}
 	
-	public boolean allowShiftingGravity() {
-		return config.getBoolean("options.gravity.allowShift");
-	}
-	
-	public int getGravityShiftLimit() {
-		return config.getInt("options.gravity.limit");
-	}
-	
-	public boolean getAllowPlayerSettings() {
-		return config.getBoolean("options.playerSettings.enable");
+	public boolean getAllowProfileSettings() {
+		return enableProfile;
 	}
 	
 	public String getNoPermCmdChat() {

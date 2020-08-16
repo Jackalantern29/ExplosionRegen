@@ -9,7 +9,6 @@ import de.themoep.inventorygui.GuiPageElement.PageAction;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -161,10 +160,10 @@ public class InventorySettings {
 				}, "§aSwitch Particle Type", "§7Current Type: §6" + StringUtils.capitalise(selectedSettings.getParticleType().name().toLowerCase()))));
 				GuiElementGroup listGroup = new GuiElementGroup('p');
 				if(fi == 0) {
-					List<Particle> keys = Arrays.asList(Particle.values());
-					keys.sort(Comparator.comparing(Particle::name));
-					for(Particle particles : keys) {
-						if(!player.hasPermission("explosionregen.command.rsettings.particles." + particles.name().toLowerCase()))
+					List<ExplosionParticle> keys = Arrays.asList(ExplosionParticle.getParticles());
+					keys.sort(Comparator.comparing(ExplosionParticle::toString));
+					for(ExplosionParticle particles : keys) {
+						if(!player.hasPermission("explosionregen.command.rsettings.particles." + particles.toString().toLowerCase()))
 							continue;
 						listGroup.addElement(new DynamicGuiElement('l', () -> {
 							ItemStack item = Material.getMaterial("GRAY_DYE") != null ? new ItemStack(Material.getMaterial("GRAY_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)7);
@@ -196,13 +195,13 @@ public class InventorySettings {
 									ParticleSettings pSettings = selectedSettings.getParticleSettings(ParticleType.VANILLA);
 									boolean display = pSettings.getParticles(selectedPhase).get(0).getCanDisplay();
 									pSettings.clearParticles(selectedPhase);
-									pSettings.addParticles(ParticleData.getVanillaSettings(Particle.valueOf(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));
+									pSettings.addParticles(ParticleData.getVanillaSettings(ExplosionParticle.getParticle(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));
 									selectedSettings.setParticleSettings(ParticleType.VANILLA, pSettings);
 								} else {
 									ParticleSettings pSettings = ProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA);
 									boolean display = pSettings.getParticles(selectedPhase).get(0).getCanDisplay();
 									pSettings.clearParticles(selectedPhase);
-									pSettings.addParticles(ParticleData.getVanillaSettings(Particle.valueOf(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));
+									pSettings.addParticles(ParticleData.getVanillaSettings(ExplosionParticle.getParticle(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));
 									ProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setParticleSettings(ParticleType.VANILLA, pSettings);
 								}
 								g.draw(click.getEvent().getWhoClicked()); return true;
@@ -342,7 +341,7 @@ public class InventorySettings {
 							removeFakeEnchant(Objects.requireNonNull(item));
 							fName = "§7" + name;
 						}
-						String lore = "§7Selected " + (fi == 0 ? "Particle" : "Sound") + " Settings: §6" + (fi == 0 ? StringUtils.capitaliseAllWords(isServer ? selectedSettings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase() : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase()) : StringUtils.capitaliseAllWords(isServer ? selectedSettings.getSoundSettings().getSound(phase).getSound().toString().toLowerCase().replace("_", " ") : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(phase).getSound().toString().toLowerCase().replace("_", " ")));
+						String lore = "§7Selected " + (fi == 0 ? "Particle" : "Sound") + " Settings: §6" + (fi == 0 ? StringUtils.capitaliseAllWords(isServer ? selectedSettings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase() : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase()) : StringUtils.capitaliseAllWords(isServer ? selectedSettings.getSoundSettings().getSound(phase).getSound().toString().toLowerCase().replace("_", " ") : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(phase).getSound().toString().toLowerCase().replace("_", " ")));
 						return new StaticGuiElement(fcc, item, click -> {selectedPhase = ExplosionPhase.valueOf(fName.substring(2).replace(" ", "_").toUpperCase()); g.draw(click.getEvent().getWhoClicked()); return true;}, fName, lore);
 					}));
 				}

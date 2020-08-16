@@ -31,7 +31,7 @@ public class CommandRSettings implements TabExecutor {
 		}
 		if(args.length == 0) {
 			Player player = (Player)sender;
-			if(ExplosionRegen.getSettings().getAllowPlayerSettings())
+			if(ExplosionRegen.getSettings().getAllowProfileSettings())
 				InventorySettings.get(player.getUniqueId()).openSettings(player, false);
 			else {
 				if(!sender.hasPermission("explosionregen.command.rsettings.server")) {

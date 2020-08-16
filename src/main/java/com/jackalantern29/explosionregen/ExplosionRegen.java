@@ -3,6 +3,7 @@ package com.jackalantern29.explosionregen;
 import java.util.UUID;
 
 import com.jackalantern29.explosionregen.commands.*;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,8 +22,14 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 	public static UUID author = UUID.fromString("76763b6e-4804-4b7e-bfbd-5d87c72e7843");
 	public void onEnable() {
 		instance = this;
-		explosions = new ExplosionMap();
 		settings = new ExplosionRegenSettings();
+
+		if(!settings.doEnablePlugin()) {
+			Bukkit.getConsoleSender().sendMessage("[ExplosionRegen] Option 'enable-plugin' in the config is set to false. Disabling plugin.");
+			setEnabled(false);
+			return;
+		}
+		explosions = new ExplosionMap();
 
 		EntityExplodeListener listener = new EntityExplodeListener();
 		getServer().getPluginManager().registerEvents(listener, this);

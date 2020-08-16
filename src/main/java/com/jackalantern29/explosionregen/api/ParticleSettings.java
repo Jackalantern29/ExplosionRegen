@@ -7,7 +7,6 @@ import java.util.*;
 
 import org.apache.commons.lang.enums.EnumUtils;
 import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -96,7 +95,7 @@ public class ParticleSettings {
 		LinkedHashMap<String, Object> map = new LinkedHashMap<>();
 		map.put("author", getAuthor());
 		for(ParticleData particle : getParticles()) {
-			String section = particle.getPhase() + "." + particle.getParticle().name().toLowerCase();
+			String section = particle.getPhase() + "." + particle.getParticle().toString().toLowerCase();
 			map.put(section + ".amount", particle.getAmount());
 			map.put(section + ".display-amount", particle.getDisplayAmount());
 			map.put(section + ".offset.x", particle.getOffsetX());
@@ -147,7 +146,7 @@ public class ParticleSettings {
 			}
 			if(config.isConfigurationSection(key)) {
 				for(String keyy : config.getConfigurationSection(key).getKeys(false)) {
-					Particle particle = Particle.valueOf(keyy.toUpperCase());
+					ExplosionParticle particle = ExplosionParticle.getParticle(keyy);
 					ConfigurationSection section = config.getConfigurationSection(key + "." + keyy);
 					ParticleData data = new ParticleData(particle, phase, true, section.getInt("amount"), (float)section.getDouble("offset.x"), (float)section.getDouble("offset.y"), (float)section.getDouble("offset.z"), (float)section.getDouble("speed"));
 					if(section.contains("play-at"))

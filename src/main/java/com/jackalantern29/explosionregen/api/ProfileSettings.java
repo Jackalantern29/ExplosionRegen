@@ -30,7 +30,7 @@ public class ProfileSettings {
 	
 	public ProfileSettings(UUID uuid) {
 		this.uuid = uuid;
-		if(ExplosionRegen.getSettings().getAllowPlayerSettings()) {
+		if(ExplosionRegen.getSettings().getAllowProfileSettings()) {
 			file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "profiles" + File.separator + uuid.toString() + ".yml");
 			if(!file.exists())
 				try {
@@ -143,10 +143,10 @@ public class ProfileSettings {
 		private final Map<ParticleType, ParticleSettings> particleSettings = new HashMap<ParticleType, ParticleSettings>() {
 			{
 				put(ParticleType.VANILLA, new ParticleSettings(null,
-						new ParticleData(ParticleData.getVanillaSettings(Particle.SLIME), ExplosionPhase.ON_EXPLODE),
-						new ParticleData(ParticleData.getVanillaSettings(Particle.SLIME), ExplosionPhase.EXPLOSION_FINISHED_REGEN),
-						new ParticleData(ParticleData.getVanillaSettings(Particle.HEART), ExplosionPhase.ON_BLOCK_REGEN),
-						new ParticleData(ParticleData.getVanillaSettings(Particle.FLAME), ExplosionPhase.BLOCK_REGENERATING)));
+						new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("slime")), ExplosionPhase.ON_EXPLODE),
+						new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("slime")), ExplosionPhase.EXPLOSION_FINISHED_REGEN),
+						new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("heart")), ExplosionPhase.ON_BLOCK_REGEN),
+						new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("flame")), ExplosionPhase.BLOCK_REGENERATING)));
 				put(ParticleType.PRESET, null);
 			}
 		};
@@ -180,7 +180,7 @@ public class ProfileSettings {
 				if(pTypes == ParticleType.VANILLA) {
 					for(ExplosionPhase phase : ExplosionPhase.values()) {
 						particleSettings.get(pTypes).clearParticles();
-						ParticleData particle = new ParticleData(ParticleData.getVanillaSettings(Particle.valueOf(config.getString(settings.getName().toLowerCase() + ".particles.vanilla" + phase.toString() + ".particle"))), phase);
+						ParticleData particle = new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle(config.getString(settings.getName().toLowerCase() + ".particles.vanilla" + phase.toString() + ".particle"))), phase);
 						particle.setCanDisplay(config.getBoolean(settings.getName().toLowerCase() + ".particles.vanilla" + phase.toString() + ".enable"));
 						particleSettings.get(pTypes).addParticles(particle);
 					}	
@@ -223,7 +223,7 @@ public class ProfileSettings {
 			this.particleSettings.put(type, particleSettings);
 			if(type == ParticleType.VANILLA) {
 				for(ParticleData particle : particleSettings.getParticles()) {
-					saveLater(settings.getName().toLowerCase() + ".particles.vanilla." + particle.getPhase().toString() + ".particle", particle.getParticle().name().toLowerCase());
+					saveLater(settings.getName().toLowerCase() + ".particles.vanilla." + particle.getPhase().toString() + ".particle", particle.getParticle().toString().toLowerCase());
 					saveLater(settings.getName().toLowerCase() + ".particles.vanilla." + particle.getPhase().toString() + ".enable", particle.getCanDisplay());
 				}
 			} else if(type == ParticleType.PRESET)

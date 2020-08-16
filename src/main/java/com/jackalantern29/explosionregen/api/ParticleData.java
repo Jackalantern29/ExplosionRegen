@@ -2,70 +2,25 @@ package com.jackalantern29.explosionregen.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.enums.UpdateType;
-import net.minecraft.server.v1_8_R1.PacketPlayOutWorldParticles;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.enums.ParticlePlayAt;
 
 public class ParticleData implements Cloneable {
-	private static final Map<Particle, ParticleData> VANILLA_PARTICLES = new HashMap<>();
+	private static final Map<ExplosionParticle, ParticleData> VANILLA_PARTICLES = new HashMap<>();
 
-	private static MethodHandle PLAY_PARTICLE = null;
-	private static MethodHandle ENUM_PARTICLE = null;
-	private static MethodHandle GET_HANDLE = null;
-	private static MethodHandle PLAYER_CONNECTION = null;
-	private static MethodHandle SEND_PACKET = null;
-
-	static {
-		MethodHandles.Lookup publicLookup = MethodHandles.publicLookup();
-		MethodHandles.Lookup lookup = MethodHandles.lookup();
-
-		MethodHandle playParticle = null;
-		MethodHandle enumParticle = null;
-		MethodHandle getHandle = null;
-		MethodHandle playerConnection = null;
-		MethodHandle sendPacket = null;
-		try {
-			if(UpdateType.isPostUpdate(UpdateType.COMBAT_UPDATE)) {
-				playParticle = publicLookup.findVirtual(Player.class, "spawnParticle", MethodType.methodType(void.class, Particle.class, Location.class, int.class, double.class, double.class, double.class, double.class, Object.class));
-			} else {
-				Class<?> packetClazz = Class.forName("net.minecraft.server." + UpdateType.getNMSVersion() + ".PacketPlayOutWorldParticles");
-				Class<?> enumPartClazz = Class.forName("net.minecraft.server." + UpdateType.getNMSVersion() + ".EnumParticle");
-				playParticle = publicLookup.findConstructor(packetClazz, MethodType.methodType(void.class, enumPartClazz, boolean.class, float.class, float.class, float.class, float.class, float.class, float.class, float.class, int.class, int[].class));
-				enumParticle = publicLookup.findStatic(enumPartClazz, "valueOf", MethodType.methodType(enumPartClazz, String.class));
-			}
-			Class<?> entityPlayer = Class.forName("net.minecraft.server." + UpdateType.getNMSVersion() + ".EntityPlayer");
-			Class<?> connection = Class.forName("net.minecraft.server." + UpdateType.getNMSVersion() + ".PlayerConnection");
-			Class<?> craftPlayer = Class.forName("org.bukkit.craftbukkit." + UpdateType.getNMSVersion() + ".entity.CraftPlayer");
-			Class<?> packet = Class.forName("net.minecraft.server." + UpdateType.getNMSVersion() + ".Packet");
-			getHandle = publicLookup.findVirtual(craftPlayer, "getHandle", MethodType.methodType(entityPlayer));
-			playerConnection = publicLookup.findGetter(entityPlayer, "playerConnection", connection);
-			sendPacket = publicLookup.findVirtual(connection, "sendPacket", MethodType.methodType(void.class, packet));
-
-		} catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-			e.printStackTrace();
-		}
-		PLAY_PARTICLE = playParticle;
-	}
-	private Particle particle;
+	private ExplosionParticle particle;
 	private ExplosionPhase phase;
 	
 	private int amount = 5;
@@ -86,29 +41,29 @@ public class ParticleData implements Cloneable {
 		this(particle, phase);
 		setCanDisplay(canDisplay);
 	}
-	public ParticleData(Particle particle, ExplosionPhase phase) {
+	public ParticleData(ExplosionParticle particle, ExplosionPhase phase) {
 		this.particle = particle;
 		this.phase = phase;
 	}
-	public ParticleData(Particle particle, ExplosionPhase phase, boolean canDisplay, int amount) {
+	public ParticleData(ExplosionParticle particle, ExplosionPhase phase, boolean canDisplay, int amount) {
 		this(particle, phase);
 		setCanDisplay(canDisplay);
 		setAmount(amount);
 	}
-	public ParticleData(Particle particle, ExplosionPhase phase, boolean canDisplay, int amount, float offsetX, float offsetY, float offsetZ) {
+	public ParticleData(ExplosionParticle particle, ExplosionPhase phase, boolean canDisplay, int amount, float offsetX, float offsetY, float offsetZ) {
 		this(particle, phase, canDisplay, amount);
 		setOffsetX(offsetX);
 		setOffsetY(offsetY);
 		setOffsetZ(offsetZ);
 	}
-	public ParticleData(Particle particle, ExplosionPhase phase, boolean canDisplay, int amount, float offsetX, float offsetY, float offsetZ, float speed) {
+	public ParticleData(ExplosionParticle particle, ExplosionPhase phase, boolean canDisplay, int amount, float offsetX, float offsetY, float offsetZ, float speed) {
 		this(particle, phase, canDisplay, amount, offsetX, offsetY, offsetZ);
 		setSpeed(speed);
 	}
-	public Particle getParticle() {
+	public ExplosionParticle getParticle() {
 		return particle;
 	}
-	public void setParticle(Particle particle) {
+	public void setParticle(ExplosionParticle particle) {
 		this.particle = particle;
 	}
 	public ExplosionPhase getPhase() {
@@ -179,26 +134,9 @@ public class ParticleData implements Cloneable {
 		}
 	}
 	public void playParticle(Location location, Player player) {
-		if(PLAY_PARTICLE == null)
-			return;
 		if(getCanDisplay())
 			for (int i = 0; i < displayAmount; i++) {
-				if(UpdateType.isPostUpdate(UpdateType.COMBAT_UPDATE)) {
-					try {
-						PLAY_PARTICLE.invoke(player, particle, location, amount, offsetX, offsetY, offsetZ, speed, data);
-					} catch (Throwable throwable) {
-						throwable.printStackTrace();
-					}
-				} else {
-					try {
-						Object particlePacket = PLAY_PARTICLE.invoke(ENUM_PARTICLE.invoke(particle.name()), false, (float)location.getX(), (float)location.getY(), (float)location.getZ(), offsetX, offsetY, offsetZ, speed, amount);
-						Object handle = GET_HANDLE.invoke(player);
-						Object connection = PLAYER_CONNECTION.invoke(handle);
-						SEND_PACKET.invoke(connection, particlePacket);
-					} catch (Throwable throwable) {
-						throwable.printStackTrace();
-					}
-				}
+				BukkitMethods.spawnParticle(player, particle, location, amount, offsetX, offsetY, offsetZ, speed, data);
 			}
 	}
 	
@@ -226,13 +164,13 @@ public class ParticleData implements Cloneable {
     	data.setCanDisplay(canDisplay);
     	return data;
     }
-	public static ParticleData getVanillaSettings(Particle particle) {
+	public static ParticleData getVanillaSettings(ExplosionParticle particle) {
 		ParticleData data;
 		if(VANILLA_PARTICLES.containsKey(particle))
 			data = VANILLA_PARTICLES.get(particle);
 		else {
 			data = new ParticleData(particle, null);
-			File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "particles" + File.separator + "vanilla", particle.name().toLowerCase() + ".yml");
+			File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "particles" + File.separator + "vanilla", particle.toString().toLowerCase() + ".yml");
 			YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 			if(!file.exists()) {
 				try {

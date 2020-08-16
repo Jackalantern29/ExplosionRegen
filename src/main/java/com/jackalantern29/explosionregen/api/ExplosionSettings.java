@@ -4,7 +4,6 @@ import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.enums.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -60,10 +59,10 @@ public class  ExplosionSettings {
 		this.damageEntityAmount = 1.0d;
 		this.particleType = ParticleType.VANILLA;
 		this.particleSettings.put(ParticleType.VANILLA, new ParticleSettings(name + "_vanilla",
-				new ParticleData(ParticleData.getVanillaSettings(Particle.SLIME), ExplosionPhase.ON_EXPLODE, false),
-				new ParticleData(ParticleData.getVanillaSettings(Particle.SLIME), ExplosionPhase.EXPLOSION_FINISHED_REGEN, false),
-				new ParticleData(ParticleData.getVanillaSettings(Particle.HEART), ExplosionPhase.ON_BLOCK_REGEN, true),
-				new ParticleData(ParticleData.getVanillaSettings(Particle.FLAME), ExplosionPhase.BLOCK_REGENERATING, true)));
+				new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("slime")), ExplosionPhase.ON_EXPLODE, false),
+				new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("slime")), ExplosionPhase.EXPLOSION_FINISHED_REGEN, false),
+				new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("heart")), ExplosionPhase.ON_BLOCK_REGEN, true),
+				new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("flame")), ExplosionPhase.BLOCK_REGENERATING, true)));
 		this.particleSettings.put(ParticleType.PRESET, null);
 		this.soundSettings.setSound(ExplosionPhase.ON_EXPLODE, new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f, false));
 		this.soundSettings.setSound(ExplosionPhase.BLOCK_REGENERATING, new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f, false));
@@ -181,7 +180,7 @@ public class  ExplosionSettings {
 		}
 		map.put("particles.type", getParticleType().name().toLowerCase());
 		for(ExplosionPhase phase : ExplosionPhase.values()) {
-			map.put("particles.vanilla." + phase.toString() + ".particle", getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name().toLowerCase());
+			map.put("particles.vanilla." + phase.toString() + ".particle", getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase());
 			map.put("particles.vanilla." + phase.toString() + ".enable", getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getCanDisplay());
 			SoundData sound = getSoundSettings().getSound(phase);
 			map.put("sounds." + phase.toString() + ".enable", sound.isEnable());
@@ -442,7 +441,7 @@ public class  ExplosionSettings {
 			}
 			settings.setParticleType(ParticleType.valueOf(config.getString("particles.type", settings.getParticleType().name()).toUpperCase()));
 			for(ExplosionPhase phase : ExplosionPhase.values()) {
-				Particle particle = Particle.valueOf(config.getString("particles.vanilla." + phase.toString() + ".particle", settings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().name()).toUpperCase());
+				ExplosionParticle particle = ExplosionParticle.getParticle(config.getString("particles.vanilla." + phase.toString() + ".particle", settings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString()).toUpperCase());
 				boolean canDisplay = config.getBoolean("particles.vanilla." + phase.toString() + ".enable", settings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getCanDisplay());
 				settings.getParticleSettings(ParticleType.VANILLA).setParticle(0, new ParticleData(ParticleData.getVanillaSettings(particle), phase, canDisplay));
 				Sound sound = Sound.valueOf(config.getString("sounds." + phase.toString() + ".sound", settings.getSoundSettings().getSound(phase).getSound().name()).toUpperCase());
