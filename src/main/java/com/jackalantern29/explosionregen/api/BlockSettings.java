@@ -24,12 +24,12 @@ public class BlockSettings {
 	
 	public void add(BlockSettingsData settings) {
 		String string = settings.getRegenData() != null ? settings.getRegenData().toString() : "";
-		this.settings.putIfAbsent(string, settings);
+		this.settings.put(string, settings);
 	}
 	public BlockSettingsData get(RegenBlockData regenData) {
-		if(this.settings.containsKey(regenData.toString()))
+		if(this.settings.containsKey(regenData.toString())) {
 			return this.settings.get(regenData.toString());
-		else {
+		} else {
 			BlockSettingsData to = new BlockSettingsData(regenData);
 			BlockSettingsData from = this.settings.get("");
 			if(MaterialUtil.isIndestructible(regenData.getMaterial()))

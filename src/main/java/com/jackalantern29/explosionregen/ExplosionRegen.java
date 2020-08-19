@@ -3,8 +3,12 @@ package com.jackalantern29.explosionregen;
 import java.util.UUID;
 
 import com.jackalantern29.explosionregen.commands.*;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
+import net.coreprotect.CoreProtect;
+import net.coreprotect.CoreProtectAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.jackalantern29.explosionregen.api.Explosion;
@@ -69,6 +73,32 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 	}
 	public static UUID getAuthor() {
 		return author;
+	}
+
+	public CoreProtectAPI getCoreProtect() {
+		Plugin p = getServer().getPluginManager().getPlugin("CoreProtect");
+		if(p == null)
+			return null;
+		try {
+			if(!(p instanceof CoreProtect))
+				return null;
+		} catch (NoClassDefFoundError e) {
+			return null;
+		}
+		CoreProtectAPI CoreProtect = ((CoreProtect)p).getAPI();
+		if(CoreProtect.isEnabled() == false)
+			return null;
+		return CoreProtect;
+	}
+
+	public GriefPrevention getGriefPrevention() {
+		Plugin p = getServer().getPluginManager().getPlugin("GriefPrevention");
+		if(p == null || !(p instanceof GriefPrevention))
+			return null;
+		GriefPrevention grief = GriefPrevention.instance;
+		if(grief.isEnabled() == false)
+			return null;
+		return grief;
 	}
 
 }

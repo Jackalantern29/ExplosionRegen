@@ -1,10 +1,15 @@
 package com.jackalantern29.explosionregen.api;
 
+import com.jackalantern29.explosionregen.BukkitMethods;
+import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
+import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.material.MaterialData;
 
 public class RegenBlock {
 	private final BlockState block;
@@ -55,7 +60,18 @@ public class RegenBlock {
 		this.regenData = regenData;
 	}
 	public void setBlock() {
-		block.getBlock().setType(regenData.getMaterial());
+		block.setType(regenData.getMaterial());
+		if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+			BukkitMethods.setBlockData(block, (BlockData) regenData.getBlockData());
+		else
+			block.setData((MaterialData) regenData.getBlockData());
+		block.update(true);
+		if(ExplosionRegen.getInstance().getCoreProtect() != null) {
+			if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+				ExplosionRegen.getInstance().getCoreProtect().logPlacement("#explosionregen", block.getLocation(), block.getType(), BukkitMethods.getBlockData(block));
+			else
+				ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), block.getData().getData());
+		}
 	}
 	public double getDurability() {
 		return durability;

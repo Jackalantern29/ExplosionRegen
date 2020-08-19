@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
@@ -24,6 +25,7 @@ public class  ExplosionSettings {
 	private boolean regenInstant;
 	private long regenDelay;
 	private int regenMaxBlockQueue;
+	private boolean regenForceBlock;
 	
 	private boolean damageBlockAllow;
 	private DamageModifier damageBlockModifier;
@@ -51,6 +53,7 @@ public class  ExplosionSettings {
 		this.regenInstant = false;
 		this.regenDelay = 200;
 		this.regenMaxBlockQueue = 1;
+		this.regenForceBlock = false;
 		this.damageBlockAllow = true;
 		this.damageBlockModifier = DamageModifier.MULTIPLY;
 		this.damageBlockAmount = 1.0d;
@@ -73,82 +76,6 @@ public class  ExplosionSettings {
 		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
 		MAP.put(name, this);
 	}
-//		if(config.isConfigurationSection("conditions")) {
-//			ERExplosionSettingsOverride override = conditions;
-//			for(String key : config.getConfigurationSection("conditions").getKeys(false)) {
-//				ExplosionCondition condition = ExplosionCondition.valueOf(key.toUpperCase());
-//				Object value = null;
-//				switch(condition) {
-//				case CUSTOM_NAME:
-//					value = config.get("conditions." + key);
-//					break;
-//				case ENTITY:
-//					value = EntityType.valueOf(config.getString("conditions." + key).toUpperCase());
-//					break;
-//				case BLOCK:
-//					value = XMaterial.valueOf(config.getString("conditions." + key).toUpperCase());
-//					break;
-//				case IS_CHARGED:
-//					value = config.getBoolean("conditions." + key);
-//					break;
-//				case WEATHER:
-//					value = EROverrideWeatherType.valueOf(config.getString("conditions." + key).toUpperCase());
-//					break;
-//				case WORLD:
-//					value = Bukkit.getWorld(config.getString("conditions." + key));
-//					break;
-//				case MINX:
-//				case MAXX:
-//				case MINY:
-//				case MAXY:
-//				case MINZ:
-//				case MAXZ:
-//					value = config.getDouble("conditions." + key);
-//				}
-//				override.setCondition(condition, value);
-//			}
-//			addOrSetCondition(override);
-//		}
-//		if(config.isConfigurationSection("override")) {
-//			for(String key : config.getConfigurationSection("override").getKeys(false)) {
-//				//ExplosionType t = config.contains("override." + key + ".conditions.entity") ? ExplosionType.ENTITY : config.contains("override." + key + ".conditions.block") ? ExplosionType.BLOCK : type;
-//				//ExplosionType t = config.contains("override." + key + ".conditions.type") ? ExplosionType.valueOf(config.getString("override." + key + ".conditions.type").toUpperCase()) : type;
-//				ERExplosionSettingsOverride override = new ERExplosionSettingsOverride(key, config.getString("override." + key + ".settings"));//addOverride(key, t);
-//				for(String k : config.getConfigurationSection("override." + key + ".conditions").getKeys(false)) {
-//					ExplosionCondition condition = ExplosionCondition.valueOf(k.toUpperCase());
-//					Object value = null;
-//					switch(condition) {
-//					case CUSTOM_NAME:
-//						value = config.get("override." + key + ".conditions." + k);
-//						break;
-//					case ENTITY:
-//						value = EntityType.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
-//						break;
-//					case BLOCK:
-//						value = XMaterial.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
-//						break;
-//					case IS_CHARGED:
-//						value = config.getBoolean("override." + key + ".conditions." + k);
-//						break;
-//					case WEATHER:
-//						value = EROverrideWeatherType.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
-//						break;
-//					case WORLD:
-//						value = Bukkit.getWorld(config.getString("override." + key + ".conditions." + k));
-//						break;
-//					case MINX:
-//					case MAXX:
-//					case MINY:
-//					case MAXY:
-//					case MINZ:
-//					case MAXZ:
-//						value = config.getDouble("override." + key + ".conditions." + k);
-//					}
-//					override.setCondition(condition, value);
-//				}
-//				addOrSetOverride(override);
-//			}
-//		}
 	public void saveAsFile() {
 		File file;
 		if(name.equals("default"))
@@ -173,6 +100,7 @@ public class  ExplosionSettings {
 		map.put("regen.instant", isInstantRegen());
 		map.put("regen.delay", getRegenDelay());
 		map.put("regen.max-block-regen-queue", getMaxBlockRegenQueue());
+		map.put("regen.force-block", getRegenForceBlock());
 		for(DamageCategory category : DamageCategory.values()) {
 			map.put("damage." + category.name().toLowerCase() + ".allow", getAllowDamage(category));
 			map.put("damage." + category.name().toLowerCase() + ".modifier", getDamageModifier(category).name().toLowerCase());
@@ -283,10 +211,18 @@ public class  ExplosionSettings {
 		return regenMaxBlockQueue;
 	}
 
+
 	public void setMaxBlockRegenQueue(int value) {
 		regenMaxBlockQueue = value;
 	}
-	
+
+	public void setRegenForceBlock(boolean value) {
+		this.regenForceBlock = value;
+	}
+
+	public boolean getRegenForceBlock() {
+		return regenForceBlock;
+	}
 	public boolean getAllowDamage(DamageCategory category) {
 		if(category == DamageCategory.BLOCK)
 			return damageBlockAllow;
@@ -434,6 +370,7 @@ public class  ExplosionSettings {
 			settings.setInstantRegen(config.getBoolean("regen.instant", settings.isInstantRegen()));
 			settings.setRegenDelay(config.getLong("regen.delay", settings.getRegenDelay()));
 			settings.setMaxBlockRegenQueue(config.getInt("regen.max-block-regen-queue", settings.getMaxBlockRegenQueue()));
+			settings.setRegenForceBlock(config.getBoolean("regen.force-block", settings.getRegenForceBlock()));
 			for(DamageCategory category : DamageCategory.values()) {
 				settings.setAllowDamage(category, config.getBoolean("damage." + category.name().toLowerCase() + ".allow", settings.getAllowDamage(category)));
 				settings.setDamageModifier(category, DamageModifier.valueOf(config.getString("damage." + category.name().toLowerCase() + ".modifier", settings.getDamageModifier(category).name()).toUpperCase()));
@@ -451,6 +388,82 @@ public class  ExplosionSettings {
 				settings.getSoundSettings().setSound(phase, new SoundData(sound, volume, pitch, enable));
 			}
 			settings.setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(config.getString("particles.preset", Objects.nonNull(settings.getParticleSettings(ParticleType.PRESET)) ? settings.getParticleSettings(ParticleType.PRESET).getName() : null)));
+
+			if(config.isConfigurationSection("conditions")) {
+				ExplosionSettingsOverride override = settings.getConditions();
+				for(String key : config.getConfigurationSection("conditions").getKeys(false)) {
+					ExplosionCondition condition = ExplosionCondition.valueOf(key.toUpperCase());
+					Object value = null;
+					switch(condition) {
+						case CUSTOM_NAME:
+							value = config.get("conditions." + key);
+							break;
+						case ENTITY:
+							value = EntityType.valueOf(config.getString("conditions." + key).toUpperCase());
+							break;
+						case BLOCK:
+							value = Material.getMaterial(config.getString("conditions." + key).toUpperCase());
+							break;
+						case IS_CHARGED:
+							value = config.getBoolean("conditions." + key);
+							break;
+						case WEATHER:
+							value = WeatherType.valueOf(config.getString("conditions." + key).toUpperCase());
+							break;
+						case WORLD:
+							value = Bukkit.getWorld(config.getString("conditions." + key));
+							break;
+						case MINX:
+						case MAXX:
+						case MINY:
+						case MAXY:
+						case MINZ:
+						case MAXZ:
+							value = config.getDouble("conditions." + key);
+					}
+					override.setCondition(condition, value);
+				}
+				settings.addOrSetCondition(override);
+			}
+			if(config.isConfigurationSection("override")) {
+				for(String key : config.getConfigurationSection("override").getKeys(false)) {
+					ExplosionSettingsOverride override = new ExplosionSettingsOverride(key, ExplosionSettings.getSettings(config.getString("override." + key + ".settings")));//addOverride(key, t);
+					for(String k : config.getConfigurationSection("override." + key + ".conditions").getKeys(false)) {
+						ExplosionCondition condition = ExplosionCondition.valueOf(k.toUpperCase());
+						Object value = null;
+						switch(condition) {
+							case CUSTOM_NAME:
+								value = config.get("override." + key + ".conditions." + k);
+								break;
+							case ENTITY:
+								value = EntityType.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
+								break;
+							case BLOCK:
+								value = Material.getMaterial(config.getString("override." + key + ".conditions." + k).toUpperCase());
+								break;
+							case IS_CHARGED:
+								value = config.getBoolean("override." + key + ".conditions." + k);
+								break;
+							case WEATHER:
+								value = WeatherType.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
+								break;
+							case WORLD:
+								value = Bukkit.getWorld(config.getString("override." + key + ".conditions." + k));
+								break;
+							case MINX:
+							case MAXX:
+							case MINY:
+							case MAXY:
+							case MINZ:
+							case MAXZ:
+								value = config.getDouble("override." + key + ".conditions." + k);
+						}
+						override.setCondition(condition, value);
+					}
+					settings.addOrSetOverride(override);
+				}
+			}
+
 			return settings;
 		} else {
 			file.createNewFile();

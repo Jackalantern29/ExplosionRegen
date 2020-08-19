@@ -1,6 +1,7 @@
 package com.jackalantern29.explosionregen.api;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
+import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.enums.ParticleType;
 import de.themoep.inventorygui.*;
@@ -58,14 +59,14 @@ public class InventorySettings {
 			}
 			explosionMenu = new InventoryGui(ExplosionRegen.getInstance(), "§2Select Explosion", rows);
 		}
-		GuiBackElement backElement = new GuiBackElement('0', new ItemStack(Material.BARRIER), "§c§lGo Back");
+		GuiBackElement backElement = new GuiBackElement('0', MaterialUtil.parseItemStack("BARRIER"), "§c§lGo Back");
 		
 		explosionMenu.setTitle("§2Select Explosion" + (isServer ? " §6§l✯" : ""));
 		optionMenu.setTitle("§2Select Option" + (isServer ? " §6§l✯" : ""));
 		vanillaParticleMenu.setTitle("§2Select Particle" + (isServer ? " §6§l✯" : ""));
 		presetParticleMenu.setTitle("§2Select Particle" + (isServer ? " §6§l✯" : ""));
 		soundMenu.setTitle("§2Select Sound" + (isServer ? " §6§l✯" : ""));
-		ItemStack filler = Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)8) : new ItemStack(Material.getMaterial("LIGHT_GRAY_STAINED_GLASS_PANE"));
+		ItemStack filler = MaterialUtil.parseItemStack("LIGHT_GRAY_STAINED_GLASS_PANE");
 		explosionMenu.setFiller(filler);
 		optionMenu.setFiller(filler);
 		vanillaParticleMenu.setFiller(filler);
@@ -91,7 +92,7 @@ public class InventorySettings {
 		{
 			optionMenu.addElement(new DynamicGuiElement('w', () -> {
 				if(player.hasPermission("explosionregen.command.rsettings.particles"))
-					return new StaticGuiElement('w', new ItemStack(Material.NETHER_STAR), click -> {
+					return new StaticGuiElement('w', MaterialUtil.parseItemStack("NETHER_STAR"), click -> {
 						selectedPhase = ExplosionPhase.BLOCK_REGENERATING;
 						if(selectedSettings.getParticleType() == ParticleType.VANILLA) {
 							vanillaParticleMenu.setPageNumber(0);
@@ -107,7 +108,7 @@ public class InventorySettings {
 			}));
 			optionMenu.addElement(new DynamicGuiElement('e', () -> {
 				if(player.hasPermission("explosionregen.command.rsettings.sounds"))
-					return new StaticGuiElement('e', new ItemStack(Material.NOTE_BLOCK), click -> {selectedPhase = ExplosionPhase.BLOCK_REGENERATING;soundMenu.setPageNumber(0);soundMenu.show(click.getEvent().getWhoClicked()); return true;}, "§a§lSounds");
+					return new StaticGuiElement('e', MaterialUtil.parseItemStack("NOTE_BLOCK"), click -> {selectedPhase = ExplosionPhase.BLOCK_REGENERATING;soundMenu.setPageNumber(0);soundMenu.show(click.getEvent().getWhoClicked()); return true;}, "§a§lSounds");
 				else
 					return optionMenu.getFiller();
 			}));
@@ -147,9 +148,9 @@ public class InventorySettings {
 							return true;
 						};
 					}
-					return new StaticGuiElement('t', new ItemStack(Material.COMPASS), click, toggleLore);
+					return new StaticGuiElement('t', MaterialUtil.parseItemStack("COMPASS"), click, toggleLore);
 				}));
-				g.addElement(new DynamicGuiElement('i', () -> new StaticGuiElement('i', new ItemStack(Material.getMaterial("WATCH") != null ? Material.getMaterial("WATCH") : Material.getMaterial("CLOCK")), click -> {
+				g.addElement(new DynamicGuiElement('i', () -> new StaticGuiElement('i', MaterialUtil.parseItemStack("CLOCK"), click -> {
 					ParticleType type = selectedSettings.getParticleType();
 					selectedSettings.setParticleType(type == ParticleType.VANILLA ? ParticleType.PRESET : ParticleType.VANILLA );
 					if(type == ParticleType.VANILLA)
@@ -166,25 +167,25 @@ public class InventorySettings {
 						if(!player.hasPermission("explosionregen.command.rsettings.particles." + particles.toString().toLowerCase()))
 							continue;
 						listGroup.addElement(new DynamicGuiElement('l', () -> {
-							ItemStack item = Material.getMaterial("GRAY_DYE") != null ? new ItemStack(Material.getMaterial("GRAY_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)7);
+							ItemStack item = MaterialUtil.parseItemStack("GRAY_DYE");
 							ChatColor color = ChatColor.GRAY;
 							for(ExplosionPhase phase : ExplosionPhase.values()) {
 								if((isServer ? selectedSettings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle(): ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle()).equals(particles)) {
 									switch(phase) {
 									case BLOCK_REGENERATING:
-										item = Material.getMaterial("LIME_DYE") != null ? new ItemStack(Material.getMaterial("LIME_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)5);
+										item = MaterialUtil.parseItemStack("LIME_DYE");
 										color = ChatColor.GREEN;
 										break;
 									case ON_BLOCK_REGEN:
-										item = Material.getMaterial("LIGHT_BLUE_DYE") != null ? new ItemStack(Material.getMaterial("LIGHT_BLUE_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)3);
+										item = MaterialUtil.parseItemStack("LIGHT_BLUE");
 										color = ChatColor.AQUA;
 										break;
 									case ON_EXPLODE:
-										item = Material.getMaterial("PURPLE_DYE") != null ? new ItemStack(Material.getMaterial("PURPLE_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)10);
+										item = MaterialUtil.parseItemStack("PURPLE_DYE");
 										color = ChatColor.DARK_PURPLE;
 										break;
 									case EXPLOSION_FINISHED_REGEN:
-										item = Material.getMaterial("PINK_DYE") != null ? new ItemStack(Material.getMaterial("PINK_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)6);
+										item = MaterialUtil.parseItemStack("PINK_DYE");
 										color = ChatColor.LIGHT_PURPLE;
 										break;
 									}
@@ -306,22 +307,22 @@ public class InventorySettings {
 					char cc;
 					switch(phase) {
 					case BLOCK_REGENERATING:
-						item = Material.getMaterial("LIME_DYE") != null ? new ItemStack(Material.getMaterial("LIME_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)5);
+						item = MaterialUtil.parseItemStack("LIME_DYE");
 						name = "Block Regenerating";
 						cc = 'q';
 						break;
 					case ON_BLOCK_REGEN:
-						item = Material.getMaterial("LIGHT_BLUE_DYE") != null ? new ItemStack(Material.getMaterial("LIGHT_BLUE_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)3);
+						item = MaterialUtil.parseItemStack("LIGHT_BLUE_DYE");
 						name = "On Block Regen";
 						cc = 'w';
 						break;
 					case ON_EXPLODE:
-						item = Material.getMaterial("PURPLE_DYE") != null ? new ItemStack(Material.getMaterial("PURPLE_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)10);
+						item = MaterialUtil.parseItemStack("PURPLE_DYE");
 						name = "On Explode";
 						cc = 'e';
 						break;
 					case EXPLOSION_FINISHED_REGEN:
-						item = Material.getMaterial("PINK_DYE") != null ? new ItemStack(Material.getMaterial("PINK_DYE")) : new ItemStack(Material.INK_SACK, 1, (short)6);
+						item = MaterialUtil.parseItemStack("PINK_DYE");
 						name = "Explosion Finished Regen";
 						cc = 'r';
 						break;

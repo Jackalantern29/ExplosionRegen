@@ -2,17 +2,18 @@ package com.jackalantern29.explosionregen;
 
 import com.jackalantern29.explosionregen.api.ExplosionParticle;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
+import com.jackalantern29.explosionregen.api.particledata.DustColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.lang.reflect.Method;
 
 public class BukkitMethods {
     private static final String MINECRAFT_PACKAGE;
@@ -21,6 +22,7 @@ public class BukkitMethods {
     private static final MethodHandle PLAY_PARTICLE;
 
     private static final MethodHandle ENUM_PARTICLE_VALUE_OF;
+    private static final MethodHandle PARTICLE_VALUE_OF;
     private static final MethodHandle GET_HANDLE;
     private static final MethodHandle PLAYER_CONNECTION;
     private static final MethodHandle SEND_PACKET;
@@ -28,6 +30,8 @@ public class BukkitMethods {
     private static final MethodHandle CREATE_BLOCK_DATA_STRING;
     private static final MethodHandle CREATE_BLOCK_DATA_MATERIAL;
     private static final MethodHandle CREATE_BLOCK_DATA_MATERIAL_STRING;
+    private static final MethodHandle GET_BLOCK_DATA;
+    private static final MethodHandle SET_BLOCK_DATA;
 
     private static final Enum[] PARTICLES;
     static {
@@ -37,6 +41,7 @@ public class BukkitMethods {
 
         MethodHandle playParticle = null;
         MethodHandle enumParticleValueOf = null;
+        MethodHandle particleValueOf = null;
         MethodHandle getHandle = null;
         MethodHandle playerConnection = null;
         MethodHandle sendPacket = null;
@@ -45,6 +50,7 @@ public class BukkitMethods {
             if(UpdateType.isPostUpdate(UpdateType.COMBAT_UPDATE) && getClass("org.bukkit.Particle") != null) {
                 playParticle = publicLookup.findVirtual(Player.class, "spawnParticle", MethodType.methodType(void.class, Particle.class, Location.class, int.class, double.class, double.class, double.class, double.class, Object.class));
                 particles = (Enum[]) getClass("org.bukkit.Particle").getEnumConstants();
+                particleValueOf = publicLookup.findStatic(getClass("org.bukkit.Particle"), "valueOf", MethodType.methodType(getClass("org.bukkit.Particle"), String.class));
             } else {
                 Class<?> packetClazz = Class.forName(MINECRAFT_PACKAGE + ".PacketPlayOutWorldParticles");
                 Class<?> enumPartClazz = Class.forName(MINECRAFT_PACKAGE + ".EnumParticle");
@@ -69,23 +75,30 @@ public class BukkitMethods {
         MethodHandle createBlockDataString = null;
         MethodHandle createBlockDataMaterial = null;
         MethodHandle createBlockDataMaterialString = null;
+        MethodHandle getBlockData = null;
+        MethodHandle setBlockData = null;
         if(getClass("org.bukkit.block.data.BlockData") != null && UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE)) {
             try {
                 createBlockDataString = publicLookup.findStatic(Bukkit.class,"createBlockData", MethodType.methodType(BlockData.class, String.class));
                 createBlockDataMaterial = publicLookup.findStatic(Bukkit.class, "createBlockData", MethodType.methodType(BlockData.class, Material.class));
                 createBlockDataMaterialString = publicLookup.findStatic(Bukkit.class, "createBlockData", MethodType.methodType(BlockData.class, Material.class, String.class));
+                getBlockData = publicLookup.findVirtual(BlockState.class, "getBlockData", MethodType.methodType(BlockData.class));
+                setBlockData = publicLookup.findVirtual(BlockState.class, "setBlockData", MethodType.methodType(void.class, BlockData.class));
             } catch (NoSuchMethodException | IllegalAccessException | NoClassDefFoundError e) {
                 e.printStackTrace();
             }
         }
         PLAY_PARTICLE = playParticle;
         ENUM_PARTICLE_VALUE_OF = enumParticleValueOf;
+        PARTICLE_VALUE_OF = particleValueOf;
         GET_HANDLE = getHandle;
         PLAYER_CONNECTION = playerConnection;
         SEND_PACKET = sendPacket;
         CREATE_BLOCK_DATA_STRING = createBlockDataString;
         CREATE_BLOCK_DATA_MATERIAL = createBlockDataMaterial;
         CREATE_BLOCK_DATA_MATERIAL_STRING = createBlockDataMaterialString;
+        GET_BLOCK_DATA = getBlockData;
+        SET_BLOCK_DATA = setBlockData;
         PARTICLES = particles;
     }
 
@@ -99,12 +112,29 @@ public class BukkitMethods {
     public static void spawnParticle(Player player, ExplosionParticle particle, Location location, int amount, double offsetX, double offsetY, double offsetZ, double extra, Object data) {
         if(UpdateType.isPostUpdate(UpdateType.COMBAT_UPDATE)) {
             try {
-                PLAY_PARTICLE.invoke(player, getClass("org.bukkit.Particle").getMethod("valueOf", String.class).invoke(null, particle.toString().toUpperCase()), location, amount, offsetX, offsetY, offsetZ, extra, data);
+                Object particleData = null;
+                if(data instanceof DustColor) {
+                    DustColor color = (DustColor)data;
+                    if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                        particleData = new Particle.DustOptions(color.getColor(), color.getSize());
+                    else {
+                        offsetX = color.getRed();
+                        offsetY = color.getGreen();
+                        offsetZ = color.getBlue();
+                    }
+                }
+                PLAY_PARTICLE.invoke(player, PARTICLE_VALUE_OF.invoke(particle.toString().toUpperCase()), location, amount, offsetX, offsetY, offsetZ, extra, particleData);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
         } else {
             try {
+                if(data instanceof DustColor) {
+                    DustColor color = (DustColor)data;
+                    offsetX = color.getRed();
+                    offsetY = color.getGreen();
+                    offsetZ = color.getBlue();
+                }
                 Object enumParticle = ENUM_PARTICLE_VALUE_OF.invoke(particle.toString().toUpperCase());
                 Object particlePacket = PLAY_PARTICLE.invoke(enumParticle, false, (float)location.getX(), (float)location.getY(), (float)location.getZ(), (float)offsetX, (float)offsetY, (float)offsetZ, (float)extra, amount);
                 Object handle = GET_HANDLE.invoke(player);
@@ -141,4 +171,29 @@ public class BukkitMethods {
             return null;
         }
     }
+
+    public static BlockData getBlockData(BlockState block) {
+        if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE) && block != null) {
+            try {
+                return (BlockData) GET_BLOCK_DATA.invoke(block);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+                return null;
+            }
+        } else
+            return null;
+    }
+
+    public static void setBlockData(BlockState block, BlockData data) {
+        if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE) && block != null) {
+            try {
+                SET_BLOCK_DATA.invoke(block, data);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+                return;
+            }
+        } else
+            return;
+    }
+
 }

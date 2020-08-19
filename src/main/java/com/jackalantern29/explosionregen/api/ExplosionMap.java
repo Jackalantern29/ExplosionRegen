@@ -1,5 +1,6 @@
 package com.jackalantern29.explosionregen.api;
 
+import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.ProfileSettings.ERProfileExplosionSettings;
@@ -7,9 +8,8 @@ import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
+import org.bukkit.Color;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -26,7 +26,9 @@ import org.bukkit.material.Bed;
 import org.bukkit.material.Chest;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class ExplosionMap implements Listener {
 	private final Map<Location, RegenBlock> blockMap = new HashMap<>();
@@ -375,15 +377,15 @@ public class ExplosionMap implements Listener {
 							}
 						}
 					}
-				}
+				} else
+					blockList.remove(block);
 			}
 			blockList.addAll(0, addLater);
 
 			if(settings.getAllowRegen()) {
 				for(Block block : new ArrayList<>(blockList)) {
-					RegenBlock regenBlock = new RegenBlock(block, settings.getBlockSettings().get(new RegenBlockData(block)).getRegenDelay(), settings.getBlockSettings().get(new RegenBlockData(block)).getDurability());
-					BlockSettingsData bs = settings.getBlockSettings().get(regenBlock.getRegenData());
-
+					BlockSettingsData bs = settings.getBlockSettings().get(new RegenBlockData(block));
+					RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
 					BlockState state = block.getState();
 					if(bs.doSaveItems() && state instanceof InventoryHolder) {
 						Inventory inventory = ((InventoryHolder)state).getInventory();
@@ -431,11 +433,15 @@ public class ExplosionMap implements Listener {
 						if(!bs.doPreventDamage()) {
 							if(bs.doRegen()) {
 								explosion.addBlock(regenBlock);
-
 								if(block.getState().getData() instanceof Bed) {
 									block.setType(Material.AIR, false);
 								}
-
+								if(ExplosionRegen.getInstance().getCoreProtect() != null) {
+									if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+										ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), BukkitMethods.getBlockData(block.getState()));
+									else
+										ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), block.getData());
+								}
 							} else {
 								Random r = new Random();
 								int random = r.nextInt(99);
@@ -443,8 +449,8 @@ public class ExplosionMap implements Listener {
 									block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(bs.getResult().getMaterial()));
 							}
 						} else {
-							regenBlock.setBlock();
 							blockList.remove(block);
+							regenBlock.setBlock();
 						}
 					} else {
 						blockList.remove(block);

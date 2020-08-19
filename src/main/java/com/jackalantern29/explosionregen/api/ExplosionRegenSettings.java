@@ -39,6 +39,7 @@ public class ExplosionRegenSettings {
 
 	private boolean enablePlugin;
 	private boolean enableProfile;
+	private boolean griefPreventionAllowExplosionRegen;
 	public ExplosionRegenSettings() {
 		if(!setup) {
 			setup();
@@ -75,6 +76,7 @@ public class ExplosionRegenSettings {
 		LinkedHashMap<String, Object> map = new LinkedHashMap<>();
 		map.put("options.enable-plugin", true);
 		map.put("options.profile-settings.enable", false);
+		map.put("options.grief-prevention-plugin.allow-explosion-regen", true);
 		map.put("chat.noPermCmd", "&c[ExplosionRegen] You do not have permission to use this command!");
 		for(String key : new ArrayList<>(map.keySet())) {
 			Object value = map.get(key);
@@ -90,6 +92,7 @@ public class ExplosionRegenSettings {
 		}
 		enablePlugin = config.getBoolean("options.enable-plugin");
 		enableProfile = config.getBoolean("options.profile-settings.enable");
+		griefPreventionAllowExplosionRegen = config.getBoolean("options.giref-prevention-plugin.allow-explosion-regen", true);
 		for(File files : Objects.requireNonNull(blocksFolder.listFiles())) {
 			if(files.getName().endsWith(".yml")) {
 				YamlConfiguration bc = YamlConfiguration.loadConfiguration(files);
@@ -118,7 +121,6 @@ public class ExplosionRegenSettings {
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
-					//Material mat = key.equalsIgnoreCase("default") ? null : Material.valueOf(key.toUpperCase());
 					RegenBlockData regenData;
 					if(key.equalsIgnoreCase("default"))
 						regenData = null;
@@ -126,8 +128,8 @@ public class ExplosionRegenSettings {
 						if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
 							regenData = new RegenBlockData(Material.valueOf(key.toUpperCase()));
 						else {
-							String mat = key.contains(":") ? key.split(":", 1)[0] : key;
-							byte data = key.contains(":") ? Byte.parseByte(key.split(":", 1)[1]) : 0;
+							String mat = key.contains(",") ? key.split(",", 2)[0] : key;
+							byte data = key.contains(",") ? Byte.parseByte(key.split(",", 2)[1]) : 0;
 							int id;
 							if(NumberUtils.isNumber(mat))
 								id = Integer.parseInt(mat);
@@ -137,14 +139,29 @@ public class ExplosionRegenSettings {
 						}
 					}
 					ConfigurationSection section = bc.getConfigurationSection(key);
-
+					RegenBlockData replaceData;
+					{
+						String mat = section.getString("replace.replace-with");
+						if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+							replaceData = new RegenBlockData(Material.valueOf(mat.toUpperCase()));
+						else {
+							String matt = mat.contains(",") ? mat.split(",")[0] : mat;
+							byte data = mat.contains(",") ? Byte.parseByte(mat.split(",")[1]) : 0;
+							int id;
+							if(NumberUtils.isNumber(matt))
+								id = Integer.parseInt(matt);
+							else
+								id = Material.getMaterial(matt.toUpperCase()).getId();
+							replaceData = new RegenBlockData(Material.getMaterial(id), data);
+						}
+					}
 					BlockSettingsData bd = new BlockSettingsData(regenData);
 					bd.setPreventDamage(section.getBoolean("prevent-damage"));
 					bd.setRegen(section.getBoolean("regen"));
 					bd.setSaveItems(section.getBoolean("save-items"));
 					bd.setMaxRegenHeight(section.getInt("max-regen-height"));
 					bd.setReplace(section.getBoolean("replace.do-replace"));
-					bd.setReplaceWith(new RegenBlockData(MaterialUtil.getMaterial(section.getString("replace.replace-with").toUpperCase())));
+					bd.setReplaceWith(replaceData);
 					bd.setDropChance(section.getInt("chance"));
 					bd.setDurability(section.getDouble("durability"));
 					bd.setRegenDelay(section.getLong("regen-delay"));
@@ -184,7 +201,10 @@ public class ExplosionRegenSettings {
 	public boolean getAllowProfileSettings() {
 		return enableProfile;
 	}
-	
+
+	public boolean getGPAllowExplosionRegen() {
+		return griefPreventionAllowExplosionRegen;
+	}
 	public String getNoPermCmdChat() {
 		return config.getString("chat.noPermCmd").replace("&", "§");
 	}
@@ -205,6 +225,5 @@ public class ExplosionRegenSettings {
 			ExplosionSettings.removeSettings(settings.getName());
 		}
 		setup();
-		
 	}
 }

@@ -1,11 +1,12 @@
 package com.jackalantern29.explosionregen.api;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
-import org.apache.commons.lang.enums.EnumUtils;
+import com.jackalantern29.explosionregen.api.particledata.DustColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -153,13 +154,15 @@ public class ParticleSettings {
 						data.setPlayAt(ParticlePlayAt.valueOf(section.getString("play-at").toUpperCase().replace("-", "_")));
 					if(section.contains("display-amount"))
 						data.setDisplayAmount(section.getInt("display-amount"));
-//					if(section.contains("option.color"))
-//						try {
-//							data.setData(new RegularColor((Color) Color.class.getField(section.getString("option.color").toLowerCase()).get(null)));
-//						} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
-//								| SecurityException e) {
-//							e.printStackTrace();
-//						}
+					if(section.contains("option.color")) {
+						try {
+							Color color = (Color) Color.class.getField(section.getString("option.color").toLowerCase()).get(null);
+							data.setData(new DustColor(org.bukkit.Color.fromRGB(color.getRed(), color.getGreen(), color.getBlue()), section.getInt("option.size", 1)));
+						} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+								| SecurityException e) {
+							e.printStackTrace();
+						}
+					}
 					particles.add(data);
 				}
 			}

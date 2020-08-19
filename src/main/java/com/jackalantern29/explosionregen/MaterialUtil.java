@@ -50,6 +50,27 @@ public class MaterialUtil {
                     return Material.getMaterial("REPEATING_COMMAND_BLOCK");
                 else
                     return Material.getMaterial("COMMAND_REPEATING");
+            case "WATCH":
+            case "CLOCK":
+                if (UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial("CLOCK");
+                else
+                    return Material.getMaterial("WATCH");
+            case "PINK_DYE":
+            case "LIME_DYE":
+            case "GRAY_DYE":
+            case "PURPLE_DYE":
+            case "LIGHT_BLUE_DYE":
+                if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial(material);
+                else
+                    return Material.getMaterial("INK_SACK");
+            case "LIGHT_GRAY_STAINED_GLASS":
+            case "LIME_STAINED_GLASS":
+                if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial(material);
+                else
+                    return Material.getMaterial("STAINED_GLASS");
         }
         return Material.getMaterial(material);
     }
@@ -71,10 +92,36 @@ public class MaterialUtil {
     public static ItemStack parseItemStack(String material, int amount) {
         if(getMaterial(material) == null)
             return null;
+        short data = 0;
         Material mat = getMaterial(material);
         if(amount <= 0)
             amount = 1;
-        return new ItemStack(mat, amount);
+        if(UpdateType.isPreUpdate(UpdateType.COLOR_UPDATE)) {
+            if(material.toUpperCase().contains("STAINED_GLASS")) {
+                String color = material.toUpperCase().replace("STAINED_GLASS", "");
+                if (color.charAt(color.length()-1) == '_')
+                    color = color.substring(0, color.length() - 1);
+                if (color.equals("LIGHT_GRAY"))
+                    data = 8;
+            } else if(material.toUpperCase().contains("DYE")) {
+                String color = material.toUpperCase().replace("DYE", "");
+                if (color.charAt(color.length()-1) == '_')
+                    color = color.substring(0, color.length() - 1);
+                if(color.equals("PURPLE"))
+                    data = 5;
+                else if (color.equals("LIGHT_GRAY"))
+                    data = 7;
+                else if(color.equals("GRAY"))
+                    data = 8;
+                else if(color.equals("PINK"))
+                    data = 9;
+                else if(color.equals("LIME"))
+                    data = 10;
+                else if(color.equals("LIGHT_BLUE"))
+                    data = 12;
+            }
+        }
+        return new ItemStack(mat, amount, data);
     }
 
     public static ItemStack parseItemStack(String material) {

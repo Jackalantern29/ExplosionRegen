@@ -20,16 +20,20 @@ public class RegenBlockData {
         } else {
             blockData = new MaterialData(material);
         }
-        //Bukkit.getPlayer("Jack").sendMessage(toString());
     }
 
     public RegenBlockData(Material material, byte data) {
-        this(material);
+        this.material = material;
         this.data = data;
         blockData = new MaterialData(material, data);
     }
     public RegenBlockData(Block block) {
-        this(block.getState().getType());
+        this.material = block.getType();
+        if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE)) {
+            blockData = BukkitMethods.getBlockData(block.getState());
+        } else {
+            blockData = block.getState().getData();
+        }
     }
 
     public Material getMaterial() {

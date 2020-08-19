@@ -1,17 +1,25 @@
 package com.jackalantern29.explosionregen.api;
 
+import com.jackalantern29.explosionregen.BukkitMethods;
+import com.jackalantern29.explosionregen.ExplosionRegen;
+import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.enums.GenerateDirection;
+import com.jackalantern29.explosionregen.api.enums.UpdateType;
+import net.coreprotect.CoreProtectAPI;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Container;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Chest;
+import org.bukkit.material.MaterialData;
 
 import java.util.*;
 
@@ -122,8 +130,8 @@ public class Explosion {
 
 	
 	public void regenerate(RegenBlock block) {
-		if(block.getType() == (Material.getMaterial("PORTAL") != null ? Material.PORTAL : Material.getMaterial("NETHER_PORTAL"))) {
-			if(block.getBlock().getType() == (Material.getMaterial("PORTAL") != null ? Material.PORTAL : Material.getMaterial("NETHER_PORTAL"))) {
+		if(block.getType() == MaterialUtil.getMaterial("NETHER_PORTAL")) {
+			if(block.getBlock().getType() == MaterialUtil.getMaterial("NETHER_PORTAL")) {
 				removeBlock(block.getLocation());
 				return;
 			} else if(block.getBlock().getType() == Material.AIR) {
@@ -134,6 +142,10 @@ public class Explosion {
 			}
 		}
 		BlockState state = block.getState();
+		BlockState bState = block.getBlock().getState();
+		if(settings.getRegenForceBlock()) {
+			block.getBlock().breakNaturally();
+		}
 		state.update(true);
 		state = block.getBlock().getState();
 		if(state instanceof InventoryHolder) {
@@ -174,8 +186,19 @@ public class Explosion {
 				sign.setLine(i, (String) block.getContents()[i]);
 			state.update(true);
 		}
+		if(bState.getType() != Material.AIR) {
+			block.getBlock().breakNaturally();
+			bState.update(true);
+		}
 		removeBlock(block.getLocation());
 		previousBlock = block;
+		CoreProtectAPI coreProtect = ExplosionRegen.getInstance().getCoreProtect();
+		if(coreProtect != null) {
+			if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+				coreProtect.logPlacement("#explosionregen", block.getLocation(), block.getBlock().getType(), BukkitMethods.getBlockData(block.getBlock().getState()));
+			else
+				coreProtect.logPlacement("#explosionregen", block.getLocation(), block.getBlock().getType(), block.getBlock().getData());
+		}
 	}
 	public void regenerateAll() {
 		for(RegenBlock block : new ArrayList<>(blocks))
@@ -197,7 +220,6 @@ public class Explosion {
 	
 	public List<RegenBlock> getQueueBlocks(List<GenerateDirection> direction) {
 		List<RegenBlock> list = new ArrayList<>();
-	//	Player jack = Bukkit.getPlayer("Jack");
 		int i = 0;
 		for(Iterator<RegenBlock> it = getBlocks(direction).iterator(); it.hasNext(); i++) {
 			try {
