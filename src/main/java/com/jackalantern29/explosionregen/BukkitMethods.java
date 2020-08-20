@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -30,8 +31,10 @@ public class BukkitMethods {
     private static final MethodHandle CREATE_BLOCK_DATA_STRING;
     private static final MethodHandle CREATE_BLOCK_DATA_MATERIAL;
     private static final MethodHandle CREATE_BLOCK_DATA_MATERIAL_STRING;
-    private static final MethodHandle GET_BLOCK_DATA;
-    private static final MethodHandle SET_BLOCK_DATA;
+    private static final MethodHandle BLOCKSTATE_GET_BLOCK_DATA;
+    private static final MethodHandle BLOCKSTATE_SET_BLOCK_DATA;
+    private static final MethodHandle BLOCK_GET_BLOCK_DATA;
+    private static final MethodHandle BLOCK_SET_BLOCK_DATA;
 
     private static final Enum[] PARTICLES;
     static {
@@ -75,15 +78,19 @@ public class BukkitMethods {
         MethodHandle createBlockDataString = null;
         MethodHandle createBlockDataMaterial = null;
         MethodHandle createBlockDataMaterialString = null;
-        MethodHandle getBlockData = null;
-        MethodHandle setBlockData = null;
+        MethodHandle blockStateGetBlockData = null;
+        MethodHandle blockStateSetBlockData = null;
+        MethodHandle blockGetBlockData = null;
+        MethodHandle blockSetBlockData = null;
         if(getClass("org.bukkit.block.data.BlockData") != null && UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE)) {
             try {
                 createBlockDataString = publicLookup.findStatic(Bukkit.class,"createBlockData", MethodType.methodType(BlockData.class, String.class));
                 createBlockDataMaterial = publicLookup.findStatic(Bukkit.class, "createBlockData", MethodType.methodType(BlockData.class, Material.class));
                 createBlockDataMaterialString = publicLookup.findStatic(Bukkit.class, "createBlockData", MethodType.methodType(BlockData.class, Material.class, String.class));
-                getBlockData = publicLookup.findVirtual(BlockState.class, "getBlockData", MethodType.methodType(BlockData.class));
-                setBlockData = publicLookup.findVirtual(BlockState.class, "setBlockData", MethodType.methodType(void.class, BlockData.class));
+                blockStateGetBlockData = publicLookup.findVirtual(BlockState.class, "getBlockData", MethodType.methodType(BlockData.class));
+                blockStateSetBlockData = publicLookup.findVirtual(BlockState.class, "setBlockData", MethodType.methodType(void.class, BlockData.class));
+                blockGetBlockData = publicLookup.findVirtual(Block.class, "getBlockData", MethodType.methodType(BlockData.class));
+                blockSetBlockData = publicLookup.findVirtual(Block.class, "setBlockData", MethodType.methodType(void.class, BlockData.class));
             } catch (NoSuchMethodException | IllegalAccessException | NoClassDefFoundError e) {
                 e.printStackTrace();
             }
@@ -97,8 +104,10 @@ public class BukkitMethods {
         CREATE_BLOCK_DATA_STRING = createBlockDataString;
         CREATE_BLOCK_DATA_MATERIAL = createBlockDataMaterial;
         CREATE_BLOCK_DATA_MATERIAL_STRING = createBlockDataMaterialString;
-        GET_BLOCK_DATA = getBlockData;
-        SET_BLOCK_DATA = setBlockData;
+        BLOCKSTATE_GET_BLOCK_DATA = blockStateGetBlockData;
+        BLOCKSTATE_SET_BLOCK_DATA = blockStateSetBlockData;
+        BLOCK_GET_BLOCK_DATA = blockGetBlockData;
+        BLOCK_SET_BLOCK_DATA = blockSetBlockData;
         PARTICLES = particles;
     }
 
@@ -175,7 +184,7 @@ public class BukkitMethods {
     public static BlockData getBlockData(BlockState block) {
         if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE) && block != null) {
             try {
-                return (BlockData) GET_BLOCK_DATA.invoke(block);
+                return (BlockData) BLOCKSTATE_GET_BLOCK_DATA.invoke(block);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
                 return null;
@@ -187,7 +196,31 @@ public class BukkitMethods {
     public static void setBlockData(BlockState block, BlockData data) {
         if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE) && block != null) {
             try {
-                SET_BLOCK_DATA.invoke(block, data);
+                BLOCKSTATE_SET_BLOCK_DATA.invoke(block, data);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+                return;
+            }
+        } else
+            return;
+    }
+
+    public static BlockData getBlockData(Block block) {
+        if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE) && block != null) {
+            try {
+                return (BlockData) BLOCK_GET_BLOCK_DATA.invoke(block);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+                return null;
+            }
+        } else
+            return null;
+    }
+
+    public static void setBlockData(Block block, BlockData data) {
+        if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE) && block != null) {
+            try {
+                BLOCK_SET_BLOCK_DATA.invoke(block, data);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
                 return;

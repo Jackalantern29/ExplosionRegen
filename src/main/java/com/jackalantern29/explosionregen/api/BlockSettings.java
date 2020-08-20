@@ -1,7 +1,9 @@
 package com.jackalantern29.explosionregen.api;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
@@ -59,6 +61,10 @@ public class BlockSettings {
 	
 	public static BlockSettings getSettings(String name) {
 		return MAP.get(name);
+	}
+
+	public static Collection<BlockSettings> getBlockSettings() {
+		return MAP.values();
 	}
 	public static void removeSettings(String name) {
 		if(getSettings(name) != null) {

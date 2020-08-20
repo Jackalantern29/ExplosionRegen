@@ -2,7 +2,6 @@ package com.jackalantern29.explosionregen.api.blockdata;
 
 import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
@@ -50,5 +49,14 @@ public class RegenBlockData {
             return ((BlockData) blockData).getAsString();
         else
             return blockData.toString();
+    }
+
+    public void applyData(Block block) {
+        if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE)) {
+            BukkitMethods.setBlockData(block, (BlockData) getBlockData());
+        } else {
+            MaterialData data = (MaterialData) getBlockData();
+            block.setTypeIdAndData(data.getItemTypeId(), data.getData(), true);
+        }
     }
 }

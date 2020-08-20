@@ -77,15 +77,24 @@ public class  ExplosionSettings {
 		MAP.put(name, this);
 	}
 	public void saveAsFile() {
-		File file;
-		if(name.equals("default"))
-			file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + "default.yml");
-		else
-			file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + "overrides" + File.separator + name + ".yml");
-		if(file.exists())
-		saveAsFile(file);
+		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + name + ".yml");
+		if(!file.exists()) {
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			saveAsFile(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-	public void saveAsFile(File file) {
+	public void saveAsFile(File file) throws IOException {
+		if(!file.exists()) {
+			file.createNewFile();
+		}
 		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 		LinkedHashMap<String, Object> map = new LinkedHashMap<>();
 		map.put("block-settings", getBlockSettings().getName().toLowerCase());
@@ -121,11 +130,7 @@ public class  ExplosionSettings {
 		boolean doSave = false;
 		for(String key : new ArrayList<>(map.keySet())) {
 			Object value = map.get(key);
-			if(value instanceof Float)
-				value = ((Float)value).doubleValue();
-			if(value instanceof Long)
-				value = ((Long)value).intValue();
-			if(!config.contains(key) || !config.get(key).equals(value)) {
+			if(!config.contains(key)) {
 				config.set(key, value); doSave = true;
 			}
 			map.remove(key);

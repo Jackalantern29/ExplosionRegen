@@ -177,7 +177,7 @@ public class InventorySettings {
 										color = ChatColor.GREEN;
 										break;
 									case ON_BLOCK_REGEN:
-										item = MaterialUtil.parseItemStack("LIGHT_BLUE");
+										item = MaterialUtil.parseItemStack("LIGHT_BLUE_DYE");
 										color = ChatColor.AQUA;
 										break;
 									case ON_EXPLODE:

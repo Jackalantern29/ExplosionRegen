@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.jackalantern29.explosionregen.MaterialUtil;
+import com.jackalantern29.explosionregen.api.Explosion;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.events.ExplosionDamageEntityEvent;
 import me.ryanhamshire.GriefPrevention.Claim;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Explosive;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Painting;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,7 +31,10 @@ import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.ExplosionSettingsOverride;
 import com.jackalantern29.explosionregen.api.ExplosionSettings;
 import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class EntityExplodeListener implements Listener {
 	private BlockState clickedBlock = null;
@@ -40,7 +47,6 @@ public class EntityExplodeListener implements Listener {
 			else
 				explode(event, event.getLocation().getBlock().getState(), event.getLocation(), event.blockList());
 		}
-		//explode(event, explosionType, explosionType.toString().toLowerCase(), event.getLocation(), event.getEntity(), event.blockList());
 	}
 	public class BlockExplodeListener implements Listener {
 		@EventHandler
@@ -111,8 +117,7 @@ public class EntityExplodeListener implements Listener {
 					if(MaterialUtil.isIndestructible(block.getType()))
 						blockList.add(block);
 				}
-		ExplosionRegen.getExplosionMap().addExplosion(settings, location, blockList, blockDamage);
-
+		Explosion explosion = ExplosionRegen.getExplosionMap().addExplosion(settings, location, blockList, blockDamage);
 	}
 
 	@EventHandler
@@ -167,6 +172,26 @@ public class EntityExplodeListener implements Listener {
 	public void onClick(PlayerInteractEvent event) {
 		if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			clickedBlock = event.getClickedBlock().getState();
+		}
+	}
+
+	@EventHandler
+	public void onItemFrameDestroy(HangingBreakEvent event) {
+		if(event.getCause() == HangingBreakEvent.RemoveCause.EXPLOSION) {
+			if(event.getEntity() instanceof ItemFrame) {
+				ItemStack item;
+				ItemFrame frame = (ItemFrame)event.getEntity();
+				Location location = event.getEntity().getLocation().clone();
+				item = frame.getItem();
+				event.getEntity().remove();
+				location.getWorld().dropItemNaturally(location, new ItemStack(Material.ITEM_FRAME));
+				if(item != null && item.getType() != Material.AIR)
+					location.getWorld().dropItemNaturally(location, item);
+			} else if(event.getEntity() instanceof Painting) {
+				Location location = event.getEntity().getLocation().clone();
+				event.getEntity().remove();
+				location.getWorld().dropItemNaturally(location, new ItemStack(Material.PAINTING));
+			}
 		}
 	}
 }

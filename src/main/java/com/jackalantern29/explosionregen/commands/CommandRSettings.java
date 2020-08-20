@@ -54,14 +54,14 @@ public class CommandRSettings implements TabExecutor {
 					return true;
 				}
 				if(args.length == 1) {
-					sender.sendMessage("§cUsage: /rsettings create <name>");
+					sender.sendMessage("§cUsage: /rsettings create <name> [blockSettings]");
 					return true;
 				} else {
 					String name = args[1];
 					BlockSettings blockSettings = args.length >= 3 ? BlockSettings.getSettings(args[2]) : BlockSettings.getSettings("default");
 					ExplosionSettings settings = ExplosionSettings.registerSettings(name, blockSettings);
 					settings.saveAsFile();
-					sender.sendMessage("Registered Explosion Settings '" + settings.getName() + "' using '" + settings.getBlockSettings() + "' block settings.");
+					sender.sendMessage("Registered Explosion Settings '" + settings.getName() + "' using '" + settings.getBlockSettings().getName() + "' block settings.");
 				}
 			} else if(args[0].equalsIgnoreCase("edit")) {
 				if(!sender.hasPermission("explosionregen.command.rsettings.edit")) {
@@ -222,12 +222,21 @@ public class CommandRSettings implements TabExecutor {
 				if(args.length == 1) {
 					if(sender.hasPermission(permission + ".server"))
 						list.add("server");
+					if(sender.hasPermission(permission + ".create"))
+						list.add("create");
 					if(sender.hasPermission(permission + ".edit"))
 						list.add("edit");
 					if(sender.hasPermission(permission + ".reload"))
 						list.add("reload");
 					return StringUtil.copyPartialMatches(args[0], list, new ArrayList<>(list.size()));
 				} else {
+					if(args[0].equalsIgnoreCase("create") && sender.hasPermission(permission + ".create")) {
+						if(args.length == 2) {
+							list.add("§7<name>");
+						} else if(args.length == 3) {
+							BlockSettings.getBlockSettings().forEach(blockSettings -> list.add(blockSettings.getName()));
+						}
+					}
 					if(args[0].equalsIgnoreCase("edit") && sender.hasPermission(permission + ".edit")) {
 						if(args.length == 2) {
 							for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings())

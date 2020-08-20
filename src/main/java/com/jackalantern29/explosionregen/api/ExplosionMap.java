@@ -4,12 +4,12 @@ import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.ProfileSettings.ERProfileExplosionSettings;
+import com.jackalantern29.explosionregen.api.blockdata.PistonData;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
 import org.bukkit.*;
-import org.bukkit.Color;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -26,7 +26,6 @@ import org.bukkit.material.Bed;
 import org.bukkit.material.Chest;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -47,7 +46,12 @@ public class ExplosionMap implements Listener {
 							Bukkit.getOnlinePlayers().forEach(player -> {
 								if (ProfileSettings.get(player.getUniqueId()).getConfigurableSettings().contains(settings)) {
 									ERProfileExplosionSettings pSettings = ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(explosion.getExplosionSettings());
-									for (ParticleData particle : pSettings.getParticleSettings(pSettings.getParticleType()).getParticles(ExplosionPhase.BLOCK_REGENERATING)) {
+									List<ParticleData> particles;
+									if(pSettings.getParticleSettings(pSettings.getParticleType()) == null)
+										particles = ParticleSettings.getSettings(pSettings.getExplosionSettings().getName() + "_vanilla").getParticles();
+									else
+										particles = pSettings.getParticleSettings(pSettings.getParticleType()).getParticles(ExplosionPhase.BLOCK_REGENERATING);
+									for (ParticleData particle : particles) {
 										Location location = null;
 										switch (particle.getPlayAt()) {
 											case ANYWHERE:
@@ -67,7 +71,12 @@ public class ExplosionMap implements Listener {
 										particle.playParticle(location, player);
 									}
 								} else {
-									for (ParticleData particle : settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.BLOCK_REGENERATING)) {
+									List<ParticleData> particles;
+									if(settings.getParticleSettings(settings.getParticleType()) == null)
+										particles = ParticleSettings.getSettings(settings.getName() + "_vanilla").getParticles();
+									else
+										particles = settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.BLOCK_REGENERATING);
+									for (ParticleData particle : particles) {
 										Location location = null;
 										switch (particle.getPlayAt()) {
 											case ANYWHERE:
@@ -89,7 +98,12 @@ public class ExplosionMap implements Listener {
 								}
 							});
 						else {
-							for (ParticleData particle : settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.BLOCK_REGENERATING)) {
+							List<ParticleData> particles;
+							if(settings.getParticleSettings(settings.getParticleType()) == null)
+								particles = ParticleSettings.getSettings(settings.getName() + "_vanilla").getParticles();
+							else
+								particles = settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.BLOCK_REGENERATING);
+							for (ParticleData particle : particles) {
 								Location location = null;
 								switch (particle.getPlayAt()) {
 									case ANYWHERE:
@@ -137,7 +151,12 @@ public class ExplosionMap implements Listener {
 											Bukkit.getOnlinePlayers().forEach(player -> {
 												if (ProfileSettings.get(player.getUniqueId()).getConfigurableSettings().contains(settings)) {
 													ERProfileExplosionSettings pSettings = ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(explosion.getExplosionSettings());
-													for (ParticleData particle : pSettings.getParticleSettings(pSettings.getParticleType()).getParticles(ExplosionPhase.ON_BLOCK_REGEN)) {
+													List<ParticleData> particles;
+													if(pSettings.getParticleSettings(pSettings.getParticleType()) == null)
+														particles = ParticleSettings.getSettings(pSettings.getExplosionSettings().getName() + "_vanilla").getParticles();
+													else
+														particles = pSettings.getParticleSettings(pSettings.getParticleType()).getParticles(ExplosionPhase.ON_BLOCK_REGEN);
+													for (ParticleData particle : particles) {
 														Location location = null;
 														switch (particle.getPlayAt()) {
 															case RANDOM:
@@ -157,7 +176,12 @@ public class ExplosionMap implements Listener {
 														particle.playParticle(location);
 													}
 												} else {
-													for (ParticleData particle : settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.ON_BLOCK_REGEN)) {
+													List<ParticleData> particles;
+													if(settings.getParticleSettings(settings.getParticleType()) == null)
+														particles = ParticleSettings.getSettings(settings.getName() + "_vanilla").getParticles();
+													else
+														particles = settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.ON_BLOCK_REGEN);
+													for (ParticleData particle : particles) {
 														Location location = null;
 														switch (particle.getPlayAt()) {
 															case RANDOM:
@@ -179,7 +203,12 @@ public class ExplosionMap implements Listener {
 												}
 											});
 										else {
-											for (ParticleData particle : settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.ON_BLOCK_REGEN)) {
+											List<ParticleData> particles;
+											if(settings.getParticleSettings(settings.getParticleType()) == null)
+												particles = ParticleSettings.getSettings(settings.getName() + "_vanilla").getParticles();
+											else
+												particles = settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.ON_BLOCK_REGEN);
+											for (ParticleData particle : particles) {
 												Location location = null;
 												switch (particle.getPlayAt()) {
 													case RANDOM:
@@ -222,7 +251,12 @@ public class ExplosionMap implements Listener {
 							Bukkit.getOnlinePlayers().forEach(player -> {
 								if (ProfileSettings.get(player.getUniqueId()).getConfigurableSettings().contains(settings)) {
 									ERProfileExplosionSettings pSettings = ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(explosion.getExplosionSettings());
-									for (ParticleData particle : pSettings.getParticleSettings(pSettings.getParticleType()).getParticles(ExplosionPhase.EXPLOSION_FINISHED_REGEN)) {
+									List<ParticleData> particles;
+									if(pSettings.getParticleSettings(pSettings.getParticleType()) == null)
+										particles = ParticleSettings.getSettings(pSettings.getExplosionSettings().getName() + "_vanilla").getParticles();
+									else
+										particles = pSettings.getParticleSettings(pSettings.getParticleType()).getParticles(ExplosionPhase.EXPLOSION_FINISHED_REGEN);
+									for (ParticleData particle : particles) {
 										Location location = null;
 										switch (particle.getPlayAt()) {
 											case ANYWHERE:
@@ -238,7 +272,12 @@ public class ExplosionMap implements Listener {
 										particle.playParticle(location);
 									}
 								} else {
-									for (ParticleData particle : settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.EXPLOSION_FINISHED_REGEN)) {
+									List<ParticleData> particles;
+									if(settings.getParticleSettings(settings.getParticleType()) == null)
+										particles = ParticleSettings.getSettings(settings.getName() + "_vanilla").getParticles();
+									else
+										particles = settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.EXPLOSION_FINISHED_REGEN);
+									for (ParticleData particle : particles) {
 										Location location = null;
 										switch (particle.getPlayAt()) {
 											case ANYWHERE:
@@ -256,7 +295,12 @@ public class ExplosionMap implements Listener {
 								}
 							});
 						else {
-							for (ParticleData particle : settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.EXPLOSION_FINISHED_REGEN)) {
+							List<ParticleData> particles;
+							if(settings.getParticleSettings(settings.getParticleType()) == null)
+								particles = ParticleSettings.getSettings(settings.getName() + "_vanilla").getParticles();
+							else
+								particles = settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.EXPLOSION_FINISHED_REGEN);
+							for (ParticleData particle : particles) {
 								Location location = null;
 								switch (particle.getPlayAt()) {
 									case ANYWHERE:
@@ -322,14 +366,18 @@ public class ExplosionMap implements Listener {
 
 			Set<Block> addLater = new HashSet<>();
 			for(Block block : new ArrayList<>(blockList)) {
-				if(block.getType() != Material.TNT) {
+				if(block.getType() != Material.TNT && block.getType() != MaterialUtil.getMaterial("PISTON_HEAD")) {
 					if(MaterialUtil.equalsMaterial(block.getType(), "NETHER_PORTAL")) {
-						if(block.getRelative(0, -1, 0).getType() == Material.AIR) {
+						if (block.getRelative(0, -1, 0).getType() == Material.AIR) {
 							addLater.add(block);
 						} else {
 							addLater.add(block.getRelative(0, 1, 0));
 						}
-					} else if(block.getType().isTransparent()) {
+					} else if(block.getType() == MaterialUtil.getMaterial("PISTON") || block.getType() == MaterialUtil.getMaterial("STICKY_PISTON")) {
+						PistonData piston = new PistonData(block);
+						piston.setExtended(false);
+						piston.applyData(block);
+					} else if(MaterialUtil.requiresGroundSupport(block.getType())) {
 						addLater.add(block);
 						blockList.remove(block);
 					} else {
@@ -377,8 +425,9 @@ public class ExplosionMap implements Listener {
 							}
 						}
 					}
-				} else
+				} else {
 					blockList.remove(block);
+				}
 			}
 			blockList.addAll(0, addLater);
 
@@ -465,7 +514,12 @@ public class ExplosionMap implements Listener {
 					Bukkit.getOnlinePlayers().forEach(player -> {
 						if(ProfileSettings.get(player.getUniqueId()).getConfigurableSettings().contains(settings)) {
 							ERProfileExplosionSettings pSettings = ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(explosion.getExplosionSettings());
-							for(ParticleData particle : pSettings.getParticleSettings(pSettings.getParticleType()).getParticles(ExplosionPhase.ON_EXPLODE)) {
+							List<ParticleData> particles;
+							if(pSettings.getParticleSettings(pSettings.getParticleType()) == null)
+								particles = ParticleSettings.getSettings(pSettings.getExplosionSettings().getName() + "_vanilla").getParticles();
+							else
+								particles = pSettings.getParticleSettings(pSettings.getParticleType()).getParticles(ExplosionPhase.ON_EXPLODE);
+							for(ParticleData particle : particles) {
 								Location loc = null;
 								switch(particle.getPlayAt()) {
 									case RANDOM:
@@ -485,7 +539,12 @@ public class ExplosionMap implements Listener {
 								particle.playParticle(loc);
 							}
 						} else {
-							for(ParticleData particle : settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.ON_BLOCK_REGEN)) {
+							List<ParticleData> particles;
+							if(settings.getParticleSettings(settings.getParticleType()) == null)
+								particles = ParticleSettings.getSettings(settings.getName() + "_vanilla").getParticles();
+							else
+								particles = settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.ON_EXPLODE);
+							for(ParticleData particle : particles) {
 								Location loc = null;
 								switch(particle.getPlayAt()) {
 									case RANDOM:
@@ -507,7 +566,12 @@ public class ExplosionMap implements Listener {
 						}
 					});
 				else {
-					for(ParticleData particle : settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.ON_BLOCK_REGEN)) {
+					List<ParticleData> particles;
+					if(settings.getParticleSettings(settings.getParticleType()) == null)
+						particles = ParticleSettings.getSettings(settings.getName() + "_vanilla").getParticles();
+					else
+						particles = settings.getParticleSettings(settings.getParticleType()).getParticles(ExplosionPhase.ON_EXPLODE);
+					for(ParticleData particle : particles) {
 						Location loc = null;
 						switch(particle.getPlayAt()) {
 							case RANDOM:

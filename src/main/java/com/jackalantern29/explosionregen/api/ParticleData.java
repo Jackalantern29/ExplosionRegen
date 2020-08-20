@@ -24,9 +24,9 @@ public class ParticleData implements Cloneable {
 	private ExplosionPhase phase;
 	
 	private int amount = 5;
-	private float offsetX = 1f;
-	private float offsetY = 1f;
-	private float offsetZ = 1f;
+	private float offsetX = 0.1f;
+	private float offsetY = 0.1f;
+	private float offsetZ = 0.1f;
 	private double speed = 0d;
 	private Object data;
 	
@@ -164,9 +164,14 @@ public class ParticleData implements Cloneable {
     	data.setCanDisplay(canDisplay);
     	return data;
     }
-	public static ParticleData getVanillaSettings(ExplosionParticle particle) {
+
+    public static ParticleData getVanillaSettings(ExplosionParticle particle) {
+		return getVanillaSettings(particle, false);
+	}
+
+	public static ParticleData getVanillaSettings(ExplosionParticle particle, boolean load) {
 		ParticleData data;
-		if(VANILLA_PARTICLES.containsKey(particle))
+		if(!load && VANILLA_PARTICLES.containsKey(particle))
 			data = VANILLA_PARTICLES.get(particle);
 		else {
 			data = new ParticleData(particle, null);
@@ -181,9 +186,9 @@ public class ParticleData implements Cloneable {
 			}
 			LinkedHashMap<String, Object> map = new LinkedHashMap<>();
 			map.put("amount", 5);
-			map.put("offset.x", 1f);
-			map.put("offset.y", 1f);
-			map.put("offset.z", 1f);
+			map.put("offset.x", 0.1f);
+			map.put("offset.y", 0.1f);
+			map.put("offset.z", 0.1f);
 			map.put("speed", 0f);
 			boolean doSave = false;
 			for(String key : new ArrayList<>(map.keySet())) {
@@ -198,9 +203,9 @@ public class ParticleData implements Cloneable {
 				}
 			}
 			data.setAmount(config.getInt("amount", 5));
-			data.setOffsetX((float)config.getDouble("offset.x", 1.0f));
-			data.setOffsetY((float)config.getDouble("offset.y", 1.0f));
-			data.setOffsetZ((float)config.getDouble("offset.z", 1.0f));
+			data.setOffsetX((float)config.getDouble("offset.x", 0.1f));
+			data.setOffsetY((float)config.getDouble("offset.y", 0.1f));
+			data.setOffsetZ((float)config.getDouble("offset.z", 0.1f));
 			data.setSpeed((float)config.getDouble("speed", 0.0f));
 			VANILLA_PARTICLES.put(particle, data);
 		}

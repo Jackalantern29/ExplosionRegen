@@ -71,6 +71,24 @@ public class MaterialUtil {
                     return Material.getMaterial(material);
                 else
                     return Material.getMaterial("STAINED_GLASS");
+            case "PISTON_EXTENSION":
+            case "PISTON_HEAD":
+                if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial("PISTON_HEAD");
+                else
+                    return Material.getMaterial("PISTON_EXTENSION");
+            case "STICKY_PISTON":
+            case "PISTON_STICKY_BASE":
+                if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial("STICKY_PISTON");
+                else
+                    return Material.getMaterial("PISTON_STICKY_BASE");
+            case "PISTON":
+            case "PISTON_BASE":
+                if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial("PISTON");
+                else
+                    return Material.getMaterial("PISTON_BASE");
         }
         return Material.getMaterial(material);
     }
@@ -126,6 +144,16 @@ public class MaterialUtil {
 
     public static ItemStack parseItemStack(String material) {
         return parseItemStack(material, 1);
+    }
+
+    public static boolean requiresGroundSupport(Material material) {
+        if(material.isTransparent())
+            return true;
+        if(material.name().contains("PRESSURE_PLATE"))
+            return true;
+        if(material.name().equals("CORNFLOWER"))
+            return true;
+        return false;
     }
 
 

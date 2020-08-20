@@ -170,7 +170,7 @@ public class ExplosionRegenSettings {
 			}
 		}
 		for(ExplosionParticle particle : ExplosionParticle.getParticles()) {
-			ParticleData.getVanillaSettings(particle);
+			ParticleData.getVanillaSettings(particle, true);
 		}
 		for(File f : particlePresetFolder.listFiles()) {
 			ParticleSettings.load(f);
@@ -217,7 +217,8 @@ public class ExplosionRegenSettings {
 		for(Explosion explosions : ExplosionRegen.getExplosionMap().getExplosions())
 			explosions.regenerateAll();
 		for(ParticleSettings settings : new ArrayList<>(ParticleSettings.getParticleSettings())) {
-			settings.saveToFile();
+			if(settings.getName().contains("_") && !settings.getName().split("_")[1].equals("vanilla"))
+				settings.saveToFile();
 			ParticleSettings.removeSettings(settings.getName());
 		}
 		for(ExplosionSettings settings : new ArrayList<>(ExplosionSettings.getRegisteredSettings())) {
