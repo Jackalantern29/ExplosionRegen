@@ -1,0 +1,7 @@
+name: ExplosionRegenSpecialEffects
+version: 3.0-EB.1
+description: Adds Special Effects for the "ExplosionRegen [Jack29]" plugin.
+main: com.jackalantern29.explosionregen.ExplosionRegenSpecialEffects
+author: Jackalantern29
+api-version: 1.13
+depend: [ExplosionRegen]
