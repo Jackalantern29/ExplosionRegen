@@ -2,8 +2,6 @@ package com.jackalantern29.explosionregen.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -12,7 +10,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.jackalantern29.explosionregen.BukkitMethods;
-import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import org.apache.commons.lang.math.NumberUtils;
@@ -23,7 +20,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import org.bukkit.material.MaterialData;
 
 public class ExplosionRegenSettings {
 	
@@ -34,8 +30,6 @@ public class ExplosionRegenSettings {
 	private final File explosionsFolder = new File(plugin.getDataFolder(), "explosions");
 	private final File profileFolder = new File(plugin.getDataFolder(), "profiles");
 	private final File blocksFolder = new File(plugin.getDataFolder(), "blocks");
-	private final File particleVanillaFolder = new File(plugin.getDataFolder() + File.separator + "particles", "vanilla");
-	private final File particlePresetFolder = new File(plugin.getDataFolder() + File.separator + "particles", "preset");
 
 	private boolean enablePlugin;
 	private boolean enableProfile;
@@ -51,12 +45,6 @@ public class ExplosionRegenSettings {
 			plugin.getDataFolder().mkdirs();
 		if(!explosionsFolder.exists()) {
 			explosionsFolder.mkdirs();
-		}
-		if(!particleVanillaFolder.exists()) {
-			particleVanillaFolder.mkdirs();
-		}
-		if(!particlePresetFolder.exists()) {
-			particlePresetFolder.mkdirs();
 		}
 		if(!blocksFolder.exists()) {
 			blocksFolder.mkdirs();
@@ -169,12 +157,6 @@ public class ExplosionRegenSettings {
 				}
 			}
 		}
-//		for(ExplosionParticle particle : ExplosionParticle.getParticles()) {
-//			ParticleData.getVanillaSettings(particle, true);
-//		}
-//		for(File f : particlePresetFolder.listFiles()) {
-//			ParticleSettings.load(f);
-//		}
 		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + "default.yml");
 		try {
 			ExplosionSettings settings = ExplosionSettings.registerSettings(file);

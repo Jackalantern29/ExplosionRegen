@@ -6,7 +6,6 @@ import com.jackalantern29.explosionregen.api.events.ExplosionSettingsLoadEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsUnloadEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
@@ -138,11 +137,24 @@ public class  ExplosionSettings {
 //		}
 //		if(getParticleSettings(ParticleType.PRESET) != null)
 //			map.put("particles.preset", getParticleSettings(ParticleType.PRESET).getName());
-		for(ExplosionSettingsPlugin plugin : plugins.values()) {
-			for(String key : plugin.getKeys())
-				map.put(plugin.getName().toLowerCase() + "." + key, plugin.get(key));
-		}
 		boolean doSave = false;
+		for(ExplosionSettingsPlugin plugin : plugins.values()) {
+			for(Map.Entry<String, Object> entry : plugin.getEntries()) {
+				String key = plugin.getName().toLowerCase() + "." + entry.getKey();
+				Object value = entry.getValue();
+				Object valueKey = config.get(key);
+				if(value instanceof Float) {
+					value = ((Float) value).doubleValue();
+					valueKey = ((Float) valueKey).doubleValue();
+				} else if(value instanceof Long) {
+					value = ((Long) value).intValue();
+					valueKey = ((Long) valueKey).intValue();
+				}
+				if(!config.contains(key) || !valueKey.equals(value)) {
+					config.set(key, value); doSave = true;
+				}
+			}
+		}
 		for(String key : new ArrayList<>(map.keySet())) {
 			Object value = map.get(key);
 			if(!config.contains(key)) {
@@ -189,7 +201,7 @@ public class  ExplosionSettings {
 	}
 
 	public void addPlugin(ExplosionSettingsPlugin plugin) {
-		plugins.put(plugin.getName(), plugin);
+		plugins.put(plugin.getName().toLowerCase(), plugin);
 		Bukkit.getConsoleSender().sendMessage("[ExplosionRegen] Added plugin '" + plugin.getName() + "'.");
 	}
 	public void removePlugin(String plugin) {
@@ -197,7 +209,7 @@ public class  ExplosionSettings {
 	}
 
 	public ExplosionSettingsPlugin getPlugin(String plugin) {
-		return plugins.get(plugin);
+		return plugins.get(plugin.toLowerCase());
 	}
 
 	public BlockSettings getBlockSettings() {

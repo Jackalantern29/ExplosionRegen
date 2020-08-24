@@ -3,6 +3,7 @@ package com.jackalantern29.explosionregen.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jackalantern29.explosionregen.InventorySettings;
 import com.jackalantern29.explosionregen.api.BlockSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -33,11 +34,13 @@ public class CommandRSettings implements TabExecutor {
 //			if(ExplosionRegen.getSettings().getAllowProfileSettings())
 //				InventorySettings.get(player.getUniqueId()).openSettings(player, false);
 //			else {
-//				if(!sender.hasPermission("explosionregen.command.rsettings.server")) {
-//					sender.sendMessage(ExplosionRegen.getSettings().getNoPermCmdChat());
-//					return true;
-//				}
-//				InventorySettings.get(player.getUniqueId()).openSettings(player, true);
+				if(!sender.hasPermission("explosionregen.command.rsettings.server")) {
+					sender.sendMessage(ExplosionRegen.getSettings().getNoPermCmdChat());
+					return true;
+				}
+				if(Bukkit.getPluginManager().getPlugin("ERSpecialEffects") != null) {
+					InventorySettings.get(player.getUniqueId()).openSettings(player, true);
+				}
 //			}
 		} else {
 			if(args[0].equalsIgnoreCase("server")) {

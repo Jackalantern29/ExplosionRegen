@@ -11,7 +11,7 @@ public class ExplosionSettingsPlugin {
     private final Map<String, Object> map = new HashMap<>();
 
     public ExplosionSettingsPlugin(Object plugin) {
-        this(plugin, plugin.getClass().getName());
+        this(plugin, plugin.getClass().getSimpleName());
     }
 
     public ExplosionSettingsPlugin(Object plugin, String name) {
@@ -75,7 +75,7 @@ public class ExplosionSettingsPlugin {
         return map.entrySet();
     }
 
-    public Object getPlugin() {
+    public Object toObject() {
         return plugin;
     }
 
