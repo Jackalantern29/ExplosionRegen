@@ -87,7 +87,7 @@ public class InventorySettings {
 
 		GuiElementGroup explosionGroup = new GuiElementGroup('q');
 		for(ExplosionSettings settings : ProfileSettings.get(player.getUniqueId()).getConfigurableSettings()) {
-			explosionGroup.addElement(new DynamicGuiElement('q', () -> new StaticGuiElement('q', settings.getDisplayItem(), click -> {selectedSettings = settings; player.sendMessage("" + (settings.getPlugin("SpecialEffects") == null));selectedEffects = (SpecialEffects) settings.getPlugin("SpecialEffects").toObject(); optionMenu.show(click.getEvent().getWhoClicked()); return true;}, settings.getDisplayName())));
+			explosionGroup.addElement(new DynamicGuiElement('q', () -> new StaticGuiElement('q', settings.getDisplayItem(), click -> {selectedSettings = settings; selectedEffects = (SpecialEffects) settings.getPlugin("SpecialEffects").toObject(); optionMenu.show(click.getEvent().getWhoClicked()); return true;}, settings.getDisplayName())));
 		}
 		explosionMenu.addElement(explosionGroup);
 		{
