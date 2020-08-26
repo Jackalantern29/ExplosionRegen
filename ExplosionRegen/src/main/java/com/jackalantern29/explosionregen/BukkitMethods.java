@@ -118,6 +118,10 @@ public class BukkitMethods {
             return null;
         }
     }
+
+    public static void loadClass(Class<?> clazz) {
+        getClass(clazz.getCanonicalName());
+    }
     public static void spawnParticle(Player player, ExplosionParticle particle, Location location, int amount, double offsetX, double offsetY, double offsetZ, double extra, Object data) {
         if(UpdateType.isPostUpdate(UpdateType.COMBAT_UPDATE)) {
             try {

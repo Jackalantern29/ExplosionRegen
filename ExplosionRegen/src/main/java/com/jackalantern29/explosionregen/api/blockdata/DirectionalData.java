@@ -1,6 +1,5 @@
 package com.jackalantern29.explosionregen.api.blockdata;
 
-import com.avaje.ebean.Update;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import org.bukkit.Material;
 import org.bukkit.block.Block;

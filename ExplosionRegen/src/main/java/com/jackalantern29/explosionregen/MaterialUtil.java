@@ -1,6 +1,7 @@
 package com.jackalantern29.explosionregen;
 
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -89,6 +90,7 @@ public class MaterialUtil {
                     return Material.getMaterial("PISTON");
                 else
                     return Material.getMaterial("PISTON_BASE");
+
         }
         return Material.getMaterial(material);
     }
@@ -107,6 +109,28 @@ public class MaterialUtil {
             return false;
 
     }
+
+    public static boolean isBedBlock(Material material) {
+        if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE)) {
+            for(DyeColor color : DyeColor.values())
+                if(Material.getMaterial(color.name() + "_BED") != null && Material.getMaterial(color.name() + "_BED").equals(material))
+                    return true;
+        } else {
+            return material == Material.getMaterial("BED_BLOCK");
+        }
+        return false;
+    }
+
+    public static boolean isChest(Material material) {
+        switch(material) {
+            case CHEST:
+            case TRAPPED_CHEST:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public static ItemStack parseItemStack(String material, int amount) {
         if(getMaterial(material) == null)
             return null;

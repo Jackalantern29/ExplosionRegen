@@ -13,11 +13,9 @@ import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import org.apache.commons.lang.math.NumberUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
 
@@ -167,8 +165,6 @@ public class ExplosionRegenSettings {
 		if(getAllowProfileSettings()) {
 			if(!profileFolder.exists())
 				profileFolder.mkdir();
-			for(Player player : Bukkit.getOnlinePlayers())
-				ProfileSettings.get(player.getUniqueId());
 		}
 		try {
 			Class.forName(BukkitMethods.class.getName());

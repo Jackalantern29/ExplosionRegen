@@ -1,11 +1,10 @@
 name: ExplosionRegen
-version: 3.0-EB.24
+version: 3.0-EB.25
 description: Regenerate blocks destroyed from Entities
 main: com.jackalantern29.explosionregen.ExplosionRegen
 author: Jackalantern29
 api-version: 1.13
 softdepend: [CoreProtect, GriefPrevention]
-loadbefore: [ERSpecialEffects]
 commands:
   rsettings:
     description: Opens a GUI Inventory used to configure explosions.

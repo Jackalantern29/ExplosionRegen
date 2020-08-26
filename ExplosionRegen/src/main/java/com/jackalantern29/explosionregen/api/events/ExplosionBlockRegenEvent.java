@@ -5,17 +5,11 @@ import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
-public class ExplosionBlockRegenEvent extends ExplosionEvent implements Cancellable {
-	private static final HandlerList handlers = new HandlerList();
+public class ExplosionBlockRegenEvent extends ExplosionRegenEvent implements Cancellable {
 
 	private boolean cancel = false;
-	private ExplosionPhase phase = ExplosionPhase.ON_BLOCK_REGEN;
 	public ExplosionBlockRegenEvent(Explosion explosion) {
-		super(explosion);
-	}
-
-	public ExplosionPhase getPhase() {
-		return phase;
+		super(explosion, ExplosionPhase.ON_BLOCK_REGEN);
 	}
 
 	@Override
@@ -27,16 +21,6 @@ public class ExplosionBlockRegenEvent extends ExplosionEvent implements Cancella
 	public void setCancelled(boolean cancel) {
 		this.cancel = cancel;
 	}
-
-	@Override
-	public HandlerList getHandlers() {
-		return handlers;
-	}
-
-	public static HandlerList getHandlerList() {
-		return handlers;
-	}
-
 }
 
 

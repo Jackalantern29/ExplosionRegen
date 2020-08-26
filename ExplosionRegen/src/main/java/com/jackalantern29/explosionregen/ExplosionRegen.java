@@ -1,9 +1,9 @@
 package com.jackalantern29.explosionregen;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.UUID;
 
+import com.jackalantern29.explosionregen.api.*;
 import com.jackalantern29.explosionregen.commands.*;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.coreprotect.CoreProtect;
@@ -13,12 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.jackalantern29.explosionregen.api.Explosion;
-import com.jackalantern29.explosionregen.api.ExplosionMap;
-import com.jackalantern29.explosionregen.api.ExplosionRegenSettings;
-import com.jackalantern29.explosionregen.api.ExplosionSettings;
 import com.jackalantern29.explosionregen.listeners.EntityExplodeListener;
-import com.jackalantern29.explosionregen.listeners.PlayerJoinListener;
 
 public class ExplosionRegen extends JavaPlugin implements Listener {
 
@@ -39,11 +34,11 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 
 		EntityExplodeListener listener = new EntityExplodeListener();
 		getServer().getPluginManager().registerEvents(listener, this);
+		BukkitMethods.loadClass(Explosion.class);
+		BukkitMethods.getClass("com.jackalantern29.explosionregen.api.ProfileSettings");
 		BukkitMethods.getClass("com.jackalantern29.explosionregen.api.ExplosionParticle");
 		if(BukkitMethods.getClass("org.bukkit.event.block.BlockExplodeEvent") != null)
 			getServer().getPluginManager().registerEvents(listener.new BlockExplodeListener(), instance);
-		getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
-		
 		{
 			getCommand("rexplode").setExecutor(new CommandRExplode());
 			CommandRSettings rsettings = new CommandRSettings();

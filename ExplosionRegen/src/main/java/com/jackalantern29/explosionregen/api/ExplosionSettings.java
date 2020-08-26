@@ -7,6 +7,7 @@ import com.jackalantern29.explosionregen.api.events.ExplosionSettingsUnloadEvent
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -63,17 +64,6 @@ public class  ExplosionSettings {
 		this.damageEntityAllow = true;
 		this.damageEntityModifier = DamageModifier.MULTIPLY;
 		this.damageEntityAmount = 1.0d;
-//		this.particleType = ParticleType.VANILLA;
-//		this.particleSettings.put(ParticleType.VANILLA, new ParticleSettings(name + "_vanilla",
-//				new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("slime")), ExplosionPhase.ON_EXPLODE, false),
-//				new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("slime")), ExplosionPhase.EXPLOSION_FINISHED_REGEN, false),
-//				new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("heart")), ExplosionPhase.ON_BLOCK_REGEN, true),
-//				new ParticleData(ParticleData.getVanillaSettings(ExplosionParticle.getParticle("flame")), ExplosionPhase.BLOCK_REGENERATING, true)));
-//		this.particleSettings.put(ParticleType.PRESET, null);
-//		this.soundSettings.setSound(ExplosionPhase.ON_EXPLODE, new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f, false));
-//		this.soundSettings.setSound(ExplosionPhase.BLOCK_REGENERATING, new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f, false));
-//		this.soundSettings.setSound(ExplosionPhase.ON_BLOCK_REGEN, new SoundData((SoundData.getSound("STEP_GRASS") != null ? SoundData.getSound("STEP_GRASS") : SoundData.getSound("BLOCK_GRASS_STEP") != null ? SoundData.getSound("BLOCK_GRASS_STEP") : Sound.values()[0]), 1f, 1f, true));
-//		this.soundSettings.setSound(ExplosionPhase.EXPLOSION_FINISHED_REGEN, new SoundData((SoundData.getSound("GHAST_SCREAM") != null ? SoundData.getSound("GHAST_SCREAM") : SoundData.getSound("ENTITY_GHAST_SCREAM") != null ? SoundData.getSound("ENTITY_GHAST_SCREAM") : Sound.values()[0]), 1f, 1f, false));
 		this.displayItem = new ItemStack(Material.TNT);
 		this.displayName = name;
 		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
@@ -81,21 +71,6 @@ public class  ExplosionSettings {
 		Bukkit.getPluginManager().callEvent(event);
 		MAP.put(name, this);
 	}
-//	public void saveAsFile() {
-//		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + name + ".yml");
-//		if(!file.exists()) {
-//			try {
-//				file.createNewFile();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		try {
-//			saveAsFile(file);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//	}
 	public void saveAsFile() {
 		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + name + ".yml");
 		if(!file.exists()) {
@@ -125,31 +100,22 @@ public class  ExplosionSettings {
 			map.put("damage." + category.name().toLowerCase() + ".modifier", getDamageModifier(category).name().toLowerCase());
 			map.put("damage." + category.name().toLowerCase() + ".amount", getDamageAmount(category));
 		}
-//		map.put("particles.type", getParticleType().name().toLowerCase());
-//		for(ExplosionPhase phase : ExplosionPhase.values()) {
-//			map.put("particles.vanilla." + phase.toString() + ".particle", getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase());
-//			map.put("particles.vanilla." + phase.toString() + ".enable", getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getCanDisplay());
-//			SoundData sound = getSoundSettings().getSound(phase);
-//			map.put("sounds." + phase.toString() + ".enable", sound.isEnable());
-//			map.put("sounds." + phase.toString() + ".sound", sound.getSound().name().toLowerCase());
-//			map.put("sounds." + phase.toString() + ".volume", sound.getVolume());
-//			map.put("sounds." + phase.toString() + ".pitch", sound.getPitch());
-//		}
-//		if(getParticleSettings(ParticleType.PRESET) != null)
-//			map.put("particles.preset", getParticleSettings(ParticleType.PRESET).getName());
 		boolean doSave = false;
 		for(ExplosionSettingsPlugin plugin : plugins.values()) {
 			for(Map.Entry<String, Object> entry : plugin.getEntries()) {
 				String key = plugin.getName().toLowerCase() + "." + entry.getKey();
 				Object value = entry.getValue();
 				Object valueKey = config.get(key);
-				if(value instanceof Float) {
+
+				if(value instanceof Float)
 					value = ((Float) value).doubleValue();
-					valueKey = ((Float) valueKey).doubleValue();
-				} else if(value instanceof Long) {
+				else if(value instanceof Long)
 					value = ((Long) value).intValue();
+
+				if(valueKey instanceof Float)
+					valueKey = ((Float) valueKey).doubleValue();
+				else if(valueKey instanceof Long)
 					valueKey = ((Long) valueKey).intValue();
-				}
 				if(!config.contains(key) || !valueKey.equals(value)) {
 					config.set(key, value); doSave = true;
 				}
@@ -191,8 +157,11 @@ public class  ExplosionSettings {
 		if(config.isConfigurationSection(name)) {
 			ConfigurationSection section = config.getConfigurationSection(name);
 			ExplosionSettingsPlugin settingsPlugin = new ExplosionSettingsPlugin(plugin);
-			for(Map.Entry<String, Object> map : section.getValues(true).entrySet())
+			for(Map.Entry<String, Object> map : section.getValues(true).entrySet()) {
+				if (map.getValue() instanceof MemorySection)
+					continue;
 				settingsPlugin.setOption(map.getKey(), map.getValue());
+			}
 			plugins.put(settingsPlugin.getName().toLowerCase(), settingsPlugin);
 			Bukkit.getConsoleSender().sendMessage("[ExplosionRegen] Loaded plugin '" + settingsPlugin.getName() + "'.");
 			return settingsPlugin;
@@ -203,9 +172,6 @@ public class  ExplosionSettings {
 	public void addPlugin(ExplosionSettingsPlugin plugin) {
 		plugins.put(plugin.getName().toLowerCase(), plugin);
 		Bukkit.getConsoleSender().sendMessage("[ExplosionRegen] Added plugin '" + plugin.getName() + "'.");
-	}
-	public void removePlugin(String plugin) {
-		plugins.remove(plugin.toLowerCase());
 	}
 
 	public ExplosionSettingsPlugin getPlugin(String plugin) {
@@ -227,14 +193,6 @@ public class  ExplosionSettings {
 	public void setDisplayName(String value) {
 		displayName = value;
 	}
-
-//	public ParticleType getParticleType() {
-//		return particleType;
-//	}
-//
-//	public void setParticleType(ParticleType type) {
-//		particleType = type;
-//	}
 
 	public boolean getAllowExplosion() {
 		return enable;
@@ -349,26 +307,6 @@ public class  ExplosionSettings {
 		}
 	}
 	
-//	public ParticleSettings getParticleSettings(ParticleType type) {
-//		return particleSettings.get(type);
-//	}
-//
-//	public void setParticleSettings(ParticleType type, ParticleSettings particleSettings) {
-//		this.particleSettings.put(type, particleSettings);
-//	}
-//
-//	public boolean getAllowSound(ExplosionPhase phase) {
-//		return soundSettings.getSound(phase).isEnable();
-//	}
-//
-//	public void setAllowSound(ExplosionPhase phase, boolean enable) {
-//		soundSettings.getSound(phase).setEnable(enable);
-//	}
-//
-//	public SoundSettings getSoundSettings() {
-//		return soundSettings;
-//	}
-	
 	public ItemStack getDisplayItem() {
 		return displayItem;
 	}
@@ -445,18 +383,6 @@ public class  ExplosionSettings {
 				settings.setDamageModifier(category, DamageModifier.valueOf(config.getString("damage." + category.name().toLowerCase() + ".modifier", settings.getDamageModifier(category).name()).toUpperCase()));
 				settings.setDamageAmount(category, config.getDouble("damage." + category.name().toLowerCase() + ".amount", settings.getDamageAmount(category)));
 			}
-//			settings.setParticleType(ParticleType.valueOf(config.getString("particles.type", settings.getParticleType().name()).toUpperCase()));
-//			for(ExplosionPhase phase : ExplosionPhase.values()) {
-//				ExplosionParticle particle = ExplosionParticle.getParticle(config.getString("particles.vanilla." + phase.toString() + ".particle", settings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString()).toUpperCase());
-//				boolean canDisplay = config.getBoolean("particles.vanilla." + phase.toString() + ".enable", settings.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getCanDisplay());
-//				settings.getParticleSettings(ParticleType.VANILLA).setParticle(0, new ParticleData(ParticleData.getVanillaSettings(particle), phase, canDisplay));
-//				Sound sound = Sound.valueOf(config.getString("sounds." + phase.toString() + ".sound", settings.getSoundSettings().getSound(phase).getSound().name()).toUpperCase());
-//				float volume = (float)config.getDouble("sounds." + phase.toString() + ".volume", settings.getSoundSettings().getSound(phase).getVolume());
-//				float pitch = (float)config.getDouble("sounds." + phase.toString() + ".pitch", settings.getSoundSettings().getSound(phase).getPitch());
-//				boolean enable = config.getBoolean("sounds." + phase.toString() + ".enable", settings.getSoundSettings().getSound(phase).isEnable());
-//				settings.getSoundSettings().setSound(phase, new SoundData(sound, volume, pitch, enable));
-//			}
-//			settings.setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(config.getString("particles.preset", Objects.nonNull(settings.getParticleSettings(ParticleType.PRESET)) ? settings.getParticleSettings(ParticleType.PRESET).getName() : null)));
 
 			if(config.isConfigurationSection("conditions")) {
 				ExplosionSettingsOverride override = settings.getConditions();

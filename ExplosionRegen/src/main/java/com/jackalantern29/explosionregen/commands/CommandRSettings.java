@@ -31,17 +31,19 @@ public class CommandRSettings implements TabExecutor {
 		}
 		if(args.length == 0) {
 			Player player = (Player)sender;
-//			if(ExplosionRegen.getSettings().getAllowProfileSettings())
-//				InventorySettings.get(player.getUniqueId()).openSettings(player, false);
-//			else {
-				if(!sender.hasPermission("explosionregen.command.rsettings.server")) {
-					sender.sendMessage(ExplosionRegen.getSettings().getNoPermCmdChat());
-					return true;
+			if(Bukkit.getPluginManager().getPlugin("ERSpecialEffects") != null) {
+				if(ExplosionRegen.getSettings().getAllowProfileSettings())
+					InventorySettings.get(player.getUniqueId()).openSettings(player, false);
+				else {
+					if(!sender.hasPermission("explosionregen.command.rsettings.server")) {
+						sender.sendMessage(ExplosionRegen.getSettings().getNoPermCmdChat());
+						return true;
+					}
+					if(Bukkit.getPluginManager().getPlugin("ERSpecialEffects") != null) {
+						InventorySettings.get(player.getUniqueId()).openSettings(player, true);
+					}
 				}
-				if(Bukkit.getPluginManager().getPlugin("ERSpecialEffects") != null) {
-					InventorySettings.get(player.getUniqueId()).openSettings(player, true);
-				}
-//			}
+			}
 		} else {
 			if(args[0].equalsIgnoreCase("server")) {
 				if(!sender.hasPermission("explosionregen.command.rsettings.server")) {

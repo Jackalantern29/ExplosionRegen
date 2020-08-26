@@ -4,13 +4,16 @@ import com.google.common.collect.ImmutableList;
 import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
+import com.jackalantern29.explosionregen.api.blockdata.BedData;
+import com.jackalantern29.explosionregen.api.blockdata.ChestData;
 import com.jackalantern29.explosionregen.api.blockdata.PistonData;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
-import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.enums.GenerateDirection;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import com.jackalantern29.explosionregen.api.events.ExplosionBlockRegenEvent;
+import com.jackalantern29.explosionregen.api.events.ExplosionBlockRegeneratingEvent;
+import com.jackalantern29.explosionregen.api.events.ExplosionRegenFinishEvent;
 import net.coreprotect.CoreProtectAPI;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Bukkit;
@@ -22,7 +25,6 @@ import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.Chest;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,7 +43,39 @@ public class Explosion {
 	private double blockDamage;
 
 	public boolean start = false;
+	static {
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(ExplosionRegen.getInstance(), () -> {
+			for(Explosion explosion : ACTIVE_EXPLOSIONS) {
+				if (!explosion.getBlocks().isEmpty()) {
+					if (explosion.getRegenTick() > 0) {
+						explosion.setRegenTick(explosion.getRegenTick() - 1);
+					} else {
+						if (explosion.getExplosionSettings().isInstantRegen()) {
+							for (RegenBlock block : explosion.getBlocks()) {
+								explosion.regenerate(block);
+							}
+						} else {
+							Set<RegenBlock> blocks = explosion.getQueueBlocks();
+							for (RegenBlock block : blocks) {
+								if (block.getRegenDelay() > 0)
+									block.setRegenDelay(block.getRegenDelay() - 1);
+								else {
+									explosion.regenerate(block);
+								}
+							}
+						}
+					}
+				} else {
+					ExplosionRegenFinishEvent e = new ExplosionRegenFinishEvent(explosion);
+					Bukkit.getPluginManager().callEvent(e);
+					explosion.remove();
+				}
 
+				ExplosionBlockRegeneratingEvent event = new ExplosionBlockRegeneratingEvent(explosion);
+				Bukkit.getPluginManager().callEvent(event);
+			}
+		}, 0, 1);
+	}
 	public Explosion(ExplosionSettings settings, Object source, Location location, List<Block> blockList) {
 		this(settings, source, location, blockList, settings.getDamageAmount(DamageCategory.BLOCK));
 	}
@@ -81,38 +115,38 @@ public class Explosion {
 							blockList.remove(block.getRelative(0, 1, 0));
 							blockList.removeAll(calculateAdjacentBlocks(block.getRelative(0, 1, 0)));
 						} else {
-							if (block.getState().getData() instanceof org.bukkit.material.Bed) {
-								org.bukkit.material.Bed bed = (org.bukkit.material.Bed) block.getState().getData();
+							if(MaterialUtil.isBedBlock(block.getType())) {
+								BedData bed = new BedData(block);
 								addLater.add(block);
 								blockList.remove(block);
 								Block bed2 = null;
 								switch (bed.getFacing()) {
 									case NORTH:
-										if (bed.isHeadOfBed())
+										if (bed.getPart() == BedData.BedPart.HEAD)
 											bed2 = block.getRelative(BlockFace.SOUTH);
 										else
 											bed2 = block.getRelative(BlockFace.NORTH);
 										break;
 									case SOUTH:
-										if (bed.isHeadOfBed())
+										if (bed.getPart() == BedData.BedPart.HEAD)
 											bed2 = block.getRelative(BlockFace.NORTH);
 										else
 											bed2 = block.getRelative(BlockFace.SOUTH);
 										break;
 									case EAST:
-										if (bed.isHeadOfBed())
+										if (bed.getPart() == BedData.BedPart.HEAD)
 											bed2 = block.getRelative(BlockFace.WEST);
 										else
 											bed2 = block.getRelative(BlockFace.EAST);
 										break;
 									case WEST:
-										if (bed.isHeadOfBed())
+										if (bed.getPart() == BedData.BedPart.HEAD)
 											bed2 = block.getRelative(BlockFace.EAST);
 										else
 											bed2 = block.getRelative(BlockFace.WEST);
 										break;
 								}
-								if (bed2 != null && bed2.getState().getData() instanceof org.bukkit.material.Bed) {
+								if (bed2 != null && MaterialUtil.isBedBlock(bed2.getType())) {
 									addLater.add(bed2);
 									blockList.remove(bed2);
 								}
@@ -125,6 +159,57 @@ public class Explosion {
 			}
 			blockList.addAll(0, addLater);
 
+			List<Block> list = new ArrayList<>(blockList);
+			List<GenerateDirection> direction = settings.getRegenerateDirections();
+			list.sort((o1, o2) -> {
+				CompareToBuilder builder = new CompareToBuilder();
+				for(GenerateDirection d : direction) {
+					switch(d) {
+						case UP:
+						case RANDOM_UP:
+							builder.append(o1.getLocation().getBlockY(), o2.getLocation().getBlockY());
+							break;
+						case DOWN:
+							builder.append(o2.getLocation().getBlockY(), o1.getLocation().getBlockY());
+							break;
+						case EAST:
+							builder.append(o1.getLocation().getBlockX(), o2.getLocation().getBlockX());
+							break;
+						case WEST:
+							builder.append(o2.getLocation().getBlockX(), o1.getLocation().getBlockX());
+							break;
+						case NORTH:
+							builder.append(o2.getLocation().getBlockZ(), o1.getLocation().getBlockZ());
+							break;
+						case SOUTH:
+							builder.append(o1.getLocation().getBlockZ(), o2.getLocation().getBlockZ());
+							break;
+					}
+				}
+				return builder.toComparison();
+			});
+			if(direction.contains(GenerateDirection.RANDOM_UP)) {
+				HashMap<Integer, List<Block>> map = new HashMap<>();
+				for(Block block : list) {
+					List<Block> l;
+					if(!map.containsKey(block.getLocation().getBlockY()))
+						l = new ArrayList<>();
+					else
+						l = map.get(block.getLocation().getBlockY());
+					l.add(block);
+					map.put(block.getLocation().getBlockY(), l);
+				}
+				list = new ArrayList<>();
+				List<Integer> ls = new ArrayList<>(map.keySet());
+				ls.sort((o1, o2) -> new CompareToBuilder().append(o1, o2).toComparison());
+				for(int i : ls) {
+					Collections.shuffle(map.get(i));
+					list.addAll(map.get(i));
+				}
+			}
+			blockList.clear();
+			blockList.addAll(list);
+
 			if (settings.getAllowRegen()) {
 				for (Block block : new ArrayList<>(blockList)) {
 					BlockSettingsData bs = settings.getBlockSettings().get(new RegenBlockData(block));
@@ -132,31 +217,34 @@ public class Explosion {
 					BlockState state = block.getState();
 					if (bs.doSaveItems() && state instanceof InventoryHolder) {
 						Inventory inventory = ((InventoryHolder) state).getInventory();
-						if (inventory instanceof DoubleChestInventory) {
-							DoubleChestInventory dChest = (DoubleChestInventory) inventory;
-							if (state.getData() instanceof Chest) {
-								Chest chest = (Chest) state.getData();
-								if (chest.getFacing() == BlockFace.NORTH) {
-									if (block.getRelative(1, 0, 0).getType() == Material.CHEST)
-										inventory = dChest.getLeftSide();
-									else
-										inventory = dChest.getRightSide();
-								} else if (chest.getFacing() == BlockFace.SOUTH) {
-									if (block.getRelative(-1, 0, 0).getType() == Material.CHEST)
-										inventory = dChest.getLeftSide();
-									else
-										inventory = dChest.getRightSide();
-								} else if (chest.getFacing() == BlockFace.EAST) {
-									if (block.getRelative(0, 0, 1).getType() == Material.CHEST)
-										inventory = dChest.getLeftSide();
-									else
-										inventory = dChest.getRightSide();
-								} else if (chest.getFacing() == BlockFace.WEST) {
-									if (block.getRelative(0, 0, -1).getType() == Material.CHEST)
-										inventory = dChest.getLeftSide();
-									else
-										inventory = dChest.getRightSide();
-								}
+						if(inventory.getHolder() instanceof Chest) {
+							Chest chest = (Chest)inventory.getHolder();
+							inventory = chest.getBlockInventory();
+						} else if(inventory.getHolder() instanceof DoubleChest) {
+							DoubleChest dChest = ((DoubleChest)inventory.getHolder());
+							Chest lChest = (Chest)dChest.getLeftSide();
+							Chest rChest = (Chest)dChest.getRightSide();
+							ChestData chest = new ChestData(block);
+							if (chest.getFacing() == BlockFace.NORTH) {
+								if (block.getRelative(1, 0, 0).getType() == Material.CHEST)
+									inventory = rChest.getBlockInventory();
+								else
+									inventory = lChest.getBlockInventory();
+							} else if (chest.getFacing() == BlockFace.SOUTH) {
+								if (block.getRelative(-1, 0, 0).getType() == Material.CHEST)
+									inventory = rChest.getBlockInventory();
+								else
+									inventory = lChest.getBlockInventory();
+							} else if (chest.getFacing() == BlockFace.EAST) {
+								if (block.getRelative(0, 0, 1).getType() == Material.CHEST)
+									inventory = rChest.getBlockInventory();
+								else
+									inventory = lChest.getBlockInventory();
+							} else if (chest.getFacing() == BlockFace.WEST) {
+								if (block.getRelative(0, 0, -1).getType() == Material.CHEST)
+									inventory = rChest.getBlockInventory();
+								else
+									inventory = lChest.getBlockInventory();
 							}
 						}
 						regenBlock.setContents(inventory.getContents());
@@ -176,7 +264,7 @@ public class Explosion {
 						if (!bs.doPreventDamage()) {
 							if (bs.doRegen()) {
 								addBlock(regenBlock);
-								if (block.getState().getData() instanceof org.bukkit.material.Bed) {
+								if (MaterialUtil.isBedBlock(block.getState().getType())) {
 									block.setType(Material.AIR, false);
 								}
 								if (ExplosionRegen.getInstance().getCoreProtect() != null) {
@@ -257,59 +345,7 @@ public class Explosion {
 	}
 	
 	public List<RegenBlock> getBlocks() {
-		return getBlocks(settings.getRegenerateDirections());
-	}
-	
-	
-	public List<RegenBlock> getBlocks(List<GenerateDirection> direction) {
-		List<RegenBlock> list = new ArrayList<>(blocks);
-		list.sort((o1, o2) -> {
-			CompareToBuilder builder = new CompareToBuilder();
-			for(GenerateDirection d : direction) {
-				switch(d) {
-				case UP:
-				case RANDOM_UP:
-					builder.append(o1.getLocation().getBlockY(), o2.getLocation().getBlockY());
-					break;
-				case DOWN:
-					builder.append(o2.getLocation().getBlockY(), o1.getLocation().getBlockY());
-					break;
-				case EAST:
-					builder.append(o1.getLocation().getBlockX(), o2.getLocation().getBlockX());
-					break;
-				case WEST:
-					builder.append(o2.getLocation().getBlockX(), o1.getLocation().getBlockX());
-					break;
-				case NORTH:
-					builder.append(o2.getLocation().getBlockZ(), o1.getLocation().getBlockZ());
-					break;
-				case SOUTH:
-					builder.append(o1.getLocation().getBlockZ(), o2.getLocation().getBlockZ());
-					break;
-				}
-			}
-			return builder.toComparison();
-		});
-		if(direction.contains(GenerateDirection.RANDOM_UP)) {
-			HashMap<Integer, List<RegenBlock>> map = new HashMap<>();
-			for(RegenBlock block : list) {
-				List<RegenBlock> l;
-				if(!map.containsKey(block.getLocation().getBlockY()))
-					l = new ArrayList<>();
-				else
-					l = map.get(block.getLocation().getBlockY());					
-				l.add(block);
-				map.put(block.getLocation().getBlockY(), l);
-			}
-			list = new ArrayList<>();
-			List<Integer> ls = new ArrayList<>(map.keySet());
-			ls.sort((o1, o2) -> new CompareToBuilder().append(o1, o2).toComparison());
-			for(int i : ls) {
-				Collections.shuffle(map.get(i));
-				list.addAll(map.get(i));
-			}
-		}
-		return list;
+		return blocks;
 	}
 	
 	public void removeBlock(Location location) {
@@ -345,31 +381,34 @@ public class Explosion {
 		state = block.getBlock().getState();
 		if(state instanceof InventoryHolder) {
 			Inventory inventory = ((InventoryHolder) state).getInventory();
-			if(inventory instanceof DoubleChestInventory) {
-				DoubleChestInventory dChest = (DoubleChestInventory)inventory;
-				if(state.getData() instanceof Chest) {
-					Chest chest = (Chest)state.getData();
-					if(chest.getFacing() == BlockFace.NORTH) {
-						if(block.getBlock().getRelative(1, 0, 0).getType() == Material.CHEST)
-							inventory = dChest.getLeftSide();
-						else
-							inventory = dChest.getRightSide();
-					} else if(chest.getFacing() == BlockFace.SOUTH) {
-						if(block.getBlock().getRelative(-1, 0, 0).getType() == Material.CHEST)
-							inventory = dChest.getLeftSide();
-						else
-							inventory = dChest.getRightSide();
-					} else if(chest.getFacing() == BlockFace.EAST) {
-						if(block.getBlock().getRelative(0, 0, 1).getType() == Material.CHEST)
-							inventory = dChest.getLeftSide();
-						else
-							inventory = dChest.getRightSide();
-					} else if(chest.getFacing() == BlockFace.WEST) {
-						if(block.getBlock().getRelative(0, 0, -1).getType() == Material.CHEST)
-							inventory = dChest.getLeftSide();
-						else
-							inventory = dChest.getRightSide();
-					}
+			if(inventory.getHolder() instanceof Chest) {
+				Chest chest = (Chest)inventory.getHolder();
+				inventory = chest.getBlockInventory();
+			} else if(inventory.getHolder() instanceof DoubleChest) {
+				DoubleChest dChest = (DoubleChest)inventory.getHolder();
+				Chest lChest = (Chest)dChest.getLeftSide();
+				Chest rChest = (Chest)dChest.getRightSide();
+				ChestData chest = new ChestData(block.getType());
+				if(chest.getFacing() == BlockFace.NORTH) {
+					if(block.getBlock().getRelative(1, 0, 0).getType() == Material.CHEST)
+						inventory = rChest.getBlockInventory();
+					else
+						inventory = lChest.getBlockInventory();
+				} else if(chest.getFacing() == BlockFace.SOUTH) {
+					if(block.getBlock().getRelative(-1, 0, 0).getType() == Material.CHEST)
+						inventory = rChest.getBlockInventory();
+					else
+						inventory = lChest.getBlockInventory();
+				} else if(chest.getFacing() == BlockFace.EAST) {
+					if(block.getBlock().getRelative(0, 0, 1).getType() == Material.CHEST)
+						inventory = rChest.getBlockInventory();
+					else
+						inventory = lChest.getBlockInventory();
+				} else if(chest.getFacing() == BlockFace.WEST) {
+					if(block.getBlock().getRelative(0, 0, -1).getType() == Material.CHEST)
+						inventory = rChest.getBlockInventory();
+					else
+						inventory = lChest.getBlockInventory();
 				}
 			}
 			if(block.getContents() != null)
@@ -412,23 +451,14 @@ public class Explosion {
 	}
 	
 	public Set<RegenBlock> getQueueBlocks() {
-		return getQueueBlocks(settings.getRegenerateDirections());
-	}
-	
-	public Set<RegenBlock> getQueueBlocks(List<GenerateDirection> direction) {
 		Set<RegenBlock> list = new HashSet<>();
-		int i = 0;
 		int queue = settings.getMaxBlockRegenQueue();
 		if(queue <= 0)
 			queue = 1;
-		for(Iterator<RegenBlock> it = getBlocks(direction).iterator(); it.hasNext(); i++) {
-			try {
-				list.add(it.next());
-			} catch(IndexOutOfBoundsException e) {
-				break;
-			}
-			if(i == queue-1)
-				break;
+		List<RegenBlock> blockList = getBlocks();
+		for (int i = 0; i < queue; i++) {
+			if(blockList.size() > i)
+				list.add(blockList.get(i));
 		}
 		return list;
 	}
