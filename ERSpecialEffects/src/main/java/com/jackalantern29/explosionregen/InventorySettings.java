@@ -41,12 +41,14 @@ public class InventorySettings {
 	private ExplosionSettings selectedSettings = null;
 	private SpecialEffects selectedEffects = null;
 
+	private SpecialEffects profileEffects = null;
 	private InventorySettings(UUID uuid) {
 		this.uuid = uuid;
 		inventories.add(this);
 	}
 	@SuppressWarnings("deprecation")
 	public void openSettings(Player player, boolean isServer) {
+		ProfileSettings profile = ProfileSettings.get(player);
 		if(explosionMenu == null) {
 			String[] rows;
 			if(ProfileSettings.get(player.getUniqueId()).getConfigurableSettings().size() <= 5)
@@ -87,7 +89,17 @@ public class InventorySettings {
 
 		GuiElementGroup explosionGroup = new GuiElementGroup('q');
 		for(ExplosionSettings settings : ProfileSettings.get(player.getUniqueId()).getConfigurableSettings()) {
-			explosionGroup.addElement(new DynamicGuiElement('q', () -> new StaticGuiElement('q', settings.getDisplayItem(), click -> {selectedSettings = settings; selectedEffects = (SpecialEffects) settings.getPlugin("SpecialEffects").toObject(); optionMenu.show(click.getEvent().getWhoClicked()); return true;}, settings.getDisplayName())));
+			explosionGroup.addElement(new DynamicGuiElement('q', () -> new StaticGuiElement('q', settings.getDisplayItem(), click -> {
+				selectedSettings = settings;
+				selectedEffects = (SpecialEffects) settings.getPlugin("SpecialEffects").toObject();
+				if(profile.getPlugin(selectedSettings, "SpecialEffects") != null) {
+					profileEffects = (SpecialEffects) profile.getPlugin(selectedSettings, "SpecialEffects").toObject();
+					optionMenu.show(click.getEvent().getWhoClicked());
+				} else {
+					player.sendMessage("§cThere are no available options to configure.");
+				}
+				return true;
+			}, settings.getDisplayName())));
 		}
 		explosionMenu.addElement(explosionGroup);
 		{
@@ -121,11 +133,26 @@ public class InventorySettings {
 					String[] toggleLore = new String[5];
 					toggleLore[0] = "§aToggle " + (fi == 0 ? "Particle" : "Sound");
 					for (int ii = 1; ii < toggleLore.length; ii++) {
-						toggleLore[ii] = (selectedPhase == ExplosionPhase.values()[ii-1] ? "§b" : "§7") +
-								StringUtils.capitaliseAllWords(ExplosionPhase.values()[ii-1].toString().replace("-", " ")) +
-								": " + (fi == 0 ? selectedEffects.getParticleSettings(ParticleType.VANILLA).getParticles(ExplosionPhase.values()[ii-1]).get(0).getCanDisplay() : selectedEffects.getAllowSound(ExplosionPhase.values()[ii-1]));
-//								((isServer ? (fi == 0 ? selectedEffects.getParticleSettings(ParticleType.VANILLA).getParticles(ExplosionPhase.values()[ii-1]).get(0).getCanDisplay() : selectedEffects.getAllowSound(ExplosionPhase.values()[ii-1])) :
-//									(fi == 0 ? ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(ExplosionPhase.values()[ii-1]).get(0).getCanDisplay() : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getAllowSound(ExplosionPhase.values()[ii-1]))) ? "§aTrue" : "§cFalse");
+						ExplosionPhase phase = ExplosionPhase.values()[ii-1];
+						String line = "";
+						if(selectedPhase == phase)
+							line = line + "§b";
+						else
+							line = line + "§7";
+						line = line + StringUtils.capitaliseAllWords(phase.toString().replace("-", " ")) + ": ";
+						if(isServer) {
+							if (fi == 0)
+								line = line + selectedEffects.getParticleSettings().getParticles(phase).get(0).getCanDisplay();
+							else
+								line = line + selectedEffects.getAllowSound(phase);
+						} else {
+							SpecialEffects effects = (SpecialEffects) profile.getPlugin(selectedSettings, "SpecialEffects").toObject();
+							if(fi == 0)
+								line = line + effects.getParticleSettings().getParticles(phase).get(0).getCanDisplay();
+							else
+								line = line + effects.getAllowSound(phase);
+						}
+						toggleLore[ii] = line;
 					}
 					Action click;
 					if(fi == 0) {
@@ -144,7 +171,7 @@ public class InventorySettings {
 						};
 					} else {
 						click = click13 -> {
-							//settings.setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase())));
+							selectedEffects.setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(ChatColor.stripColor(click13.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase())));
 							g.draw(click13.getEvent().getWhoClicked());
 							return true;
 						};
@@ -171,25 +198,31 @@ public class InventorySettings {
 							ItemStack item = MaterialUtil.parseItemStack("GRAY_DYE");
 							ChatColor color = ChatColor.GRAY;
 							for(ExplosionPhase phase : ExplosionPhase.values()) {
-								//if((isServer ? selectedEffects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle() : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle()).equals(particles)) {
-								if(selectedEffects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().equals(particles)) {
+								ExplosionParticle particle;
+								if(isServer) {
+									particle = selectedEffects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle();
+								} else {
+									SpecialEffects effect = (SpecialEffects) profile.getPlugin(selectedSettings, "SpecialEffects").toObject();
+									particle = effect.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle();
+								}
+								if(particle.equals(particles)) {
 									switch(phase) {
-									case BLOCK_REGENERATING:
-										item = MaterialUtil.parseItemStack("LIME_DYE");
-										color = ChatColor.GREEN;
-										break;
-									case ON_BLOCK_REGEN:
-										item = MaterialUtil.parseItemStack("LIGHT_BLUE_DYE");
-										color = ChatColor.AQUA;
-										break;
-									case ON_EXPLODE:
-										item = MaterialUtil.parseItemStack("PURPLE_DYE");
-										color = ChatColor.DARK_PURPLE;
-										break;
-									case EXPLOSION_FINISHED_REGEN:
-										item = MaterialUtil.parseItemStack("PINK_DYE");
-										color = ChatColor.LIGHT_PURPLE;
-										break;
+										case BLOCK_REGENERATING:
+											item = MaterialUtil.parseItemStack("LIME_DYE");
+											color = ChatColor.GREEN;
+											break;
+										case ON_BLOCK_REGEN:
+											item = MaterialUtil.parseItemStack("LIGHT_BLUE_DYE");
+											color = ChatColor.AQUA;
+											break;
+										case ON_EXPLODE:
+											item = MaterialUtil.parseItemStack("PURPLE_DYE");
+											color = ChatColor.DARK_PURPLE;
+											break;
+										case EXPLOSION_FINISHED_REGEN:
+											item = MaterialUtil.parseItemStack("PINK_DYE");
+											color = ChatColor.LIGHT_PURPLE;
+											break;
 									}
 								}
 							}
@@ -201,11 +234,12 @@ public class InventorySettings {
 									pSettings.addParticles(ParticleData.getVanillaSettings(ExplosionParticle.getParticle(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));
 									selectedEffects.setParticleSettings(ParticleType.VANILLA, pSettings);
 								} else {
-//									ParticleSettings pSettings = ProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA);
-//									boolean display = pSettings.getParticles(selectedPhase).get(0).getCanDisplay();
-//									pSettings.clearParticles(selectedPhase);
-//									pSettings.addParticles(ParticleData.getVanillaSettings(ExplosionParticle.getParticle(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));
-//									ProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setParticleSettings(ParticleType.VANILLA, pSettings);
+									SpecialEffects effect = (SpecialEffects) profile.getPlugin(selectedSettings, "SpecialEffects").toObject();
+									ParticleSettings pSettings = effect.getParticleSettings(ParticleType.VANILLA);
+									boolean display = pSettings.getParticles(selectedPhase).get(0).getCanDisplay();
+									pSettings.clearParticles(selectedPhase);
+									pSettings.addParticles(ParticleData.getVanillaSettings(ExplosionParticle.getParticle(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase()))).clone(selectedPhase, display));
+									effect.setParticleSettings(ParticleType.VANILLA, pSettings);
 								}
 								g.draw(click.getEvent().getWhoClicked()); return true;
 							}, color + StringUtils.capitaliseAllWords(particles.toString().toLowerCase().replace("_", " ")));
@@ -252,7 +286,14 @@ public class InventorySettings {
 							}
 							for(ExplosionPhase cat : ExplosionPhase.values()) {
 								//if((isServer ? selectedSettings.getSoundSettings().getSound(cat).getSound() : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(cat).getSound()) == sounds) {
-								if(selectedEffects.getSoundSettings().getSound(cat).getSound() == sounds) {
+								Sound sound;
+								if(isServer) {
+									sound = selectedEffects.getSoundSettings().getSound(cat).getSound();
+								} else {
+									SpecialEffects effects = (SpecialEffects) profile.getPlugin(selectedSettings, "SpecialEffects").toObject();
+									sound = effects.getSoundSettings().getSound(cat).getSound();
+								}
+								if(sound == sounds) {
 									item = new ItemStack(Material.NOTE_BLOCK);
 									color = ChatColor.AQUA;
 								}
@@ -262,8 +303,9 @@ public class InventorySettings {
 								data.setSound(sounds);
 								if(isServer)
 									selectedEffects.getSoundSettings().setSound(selectedPhase, data);
-//								else
-//									ProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setSound(selectedPhase, data);
+								else
+
+									((SpecialEffects)(profile.getPlugin(selectedSettings, "SpecialEffects").toObject())).getSoundSettings().setSound(selectedPhase, data);
 								g.draw(click.getEvent().getWhoClicked()); return true;}, color + StringUtils.capitaliseAllWords(sounds.toString().toLowerCase().replace("_", " ")));
 						}));
 					}
@@ -285,20 +327,20 @@ public class InventorySettings {
 									color = ChatColor.GOLD;
 								}
 							} else {
-//								if(ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.PRESET) != null && selectedSettings.getParticleSettings(ParticleType.PRESET).getName().equals(particles.getName())) {
-//									item = new ItemStack(Material.WRITTEN_BOOK);
-//									color = ChatColor.GOLD;
-//									ItemMeta meta = Objects.requireNonNull(item).getItemMeta();
-//									meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-//									item.setItemMeta(meta);
-//								}
+								if(profileEffects.getParticleSettings(ParticleType.PRESET) != null && selectedEffects.getParticleSettings(ParticleType.PRESET).getName().equals(particles.getName())) {
+									item = new ItemStack(Material.WRITTEN_BOOK);
+									color = ChatColor.GOLD;
+									ItemMeta meta = Objects.requireNonNull(item).getItemMeta();
+									meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+									item.setItemMeta(meta);
+								}
 							}
 							return new StaticGuiElement('l', item, click -> {
 								if(isServer) {
 									selectedEffects.setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toLowerCase())));
 								}
-//								else
-//									ProfileSettings.get(click.getEvent().getWhoClicked().getUniqueId()).getProfileExplosionSettings(selectedSettings).setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase())));
+								else
+									profileEffects.setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(ChatColor.stripColor(click.getEvent().getCurrentItem().getItemMeta().getDisplayName().replace(" ", "_").toUpperCase())));
 								g.draw(click.getEvent().getWhoClicked()); return true;
 							}, color + StringUtils.capitaliseAllWords(particles.getName().toLowerCase().replace("_", " ")), "§7by " + particles.getAuthor());
 						}));
@@ -346,8 +388,7 @@ public class InventorySettings {
 							removeFakeEnchant(Objects.requireNonNull(item));
 							fName = "§7" + name;
 						}
-						//String lore = "§7Selected " + (fi == 0 ? "Particle" : "Sound") + " Settings: §6" + (fi == 0 ? StringUtils.capitaliseAllWords(isServer ? selectedEffects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase() : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase()) : StringUtils.capitaliseAllWords(isServer ? selectedSettings.getSoundSettings().getSound(phase).getSound().toString().toLowerCase().replace("_", " ") : ProfileSettings.get(player.getUniqueId()).getProfileExplosionSettings(selectedSettings).getSound(phase).getSound().toString().toLowerCase().replace("_", " ")));
-						String lore = "§7Selected " + (fi == 0 ? "Particle" : "Sound") + " Settings: §6" + (fi == 0 ? StringUtils.capitaliseAllWords(selectedEffects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase()) : selectedEffects.getSoundSettings().getSound(phase).getSound().toString().toLowerCase().replace("_", " "));
+						String lore = "§7Selected " + (fi == 0 ? "Particle" : "Sound") + " Settings: §6" + (fi == 0 ? StringUtils.capitaliseAllWords(isServer ? selectedEffects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase() : profileEffects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase()) : StringUtils.capitaliseAllWords(isServer ? selectedEffects.getSoundSettings().getSound(phase).getSound().toString().toLowerCase().replace("_", " ") : profileEffects.getSoundSettings().getSound(phase).getSound().toString().toLowerCase().replace("_", " ")));
 						return new StaticGuiElement(fcc, item, click -> {selectedPhase = ExplosionPhase.valueOf(fName.substring(2).replace(" ", "_").toUpperCase()); g.draw(click.getEvent().getWhoClicked()); return true;}, fName, lore);
 					}));
 				}

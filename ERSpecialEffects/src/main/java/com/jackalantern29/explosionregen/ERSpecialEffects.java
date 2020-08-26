@@ -2,16 +2,11 @@ package com.jackalantern29.explosionregen;
 
 import com.jackalantern29.explosionregen.api.*;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 public class ERSpecialEffects extends JavaPlugin {
 
@@ -30,9 +25,8 @@ public class ERSpecialEffects extends JavaPlugin {
         for(ExplosionParticle particle : ExplosionParticle.getParticles()) {
             ParticleData.getVanillaSettings(particle, true);
         }
-        for(File f : particlePresetFolder.listFiles()) {
-            ParticleSettings.load(f);
-        }
+        if(particlePresetFolder.listFiles() != null)
+            for(File f : particlePresetFolder.listFiles()) ParticleSettings.load(f);
 
         for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
             SpecialEffects effects = new SpecialEffects(settings.getName());
@@ -65,43 +59,6 @@ public class ERSpecialEffects extends JavaPlugin {
             }
 
         }
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            for(Explosion explosion : Explosion.getActiveExplosions()) {
-                ExplosionSettings settings = explosion.getExplosionSettings();
-                SpecialEffects effects = (SpecialEffects) settings.getPlugin("SpecialEffects").toObject();
-
-                List<ParticleData> particles;
-                if(effects.getParticleSettings(effects.getParticleType()) == null)
-                    particles = ParticleSettings.getSettings(settings.getName() + "_vanilla").getParticles();
-                else
-                    particles = effects.getParticleSettings(effects.getParticleType()).getParticles(ExplosionPhase.BLOCK_REGENERATING);
-                if(!explosion.getBlocks().isEmpty()) {
-                    int random = new Random().nextInt(explosion.getBlocks().size());
-                    for (ParticleData particle : particles) {
-                        Location location = null;
-                        switch (particle.getPlayAt()) {
-                            case ANYWHERE:
-                            case RANDOM:
-                                location = explosion.getBlocks().get(random).getLocation();
-                                break;
-                            case EXPLOSION:
-                                location = explosion.getLocation();
-                                break;
-                            case NEXT_BLOCK:
-                                location = explosion.getBlocks().iterator().next().getLocation();
-                                break;
-                            case PREVIOUS_BLOCK:
-                                location = explosion.getPreviousBlock().getLocation();
-                                break;
-                        }
-                        particle.playParticle(location);
-                    }
-                    if (effects.getAllowSound(ExplosionPhase.BLOCK_REGENERATING)) {
-                        effects.getSoundSettings().getSound(ExplosionPhase.BLOCK_REGENERATING).playSound(explosion.getBlocks().get(random).getLocation());
-                    }
-                }
-            }
-        }, 0, 1);
     }
 
     @Override

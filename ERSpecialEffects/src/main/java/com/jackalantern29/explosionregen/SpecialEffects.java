@@ -42,6 +42,9 @@ public class SpecialEffects {
 		particleType = type;
 	}
 
+	public ParticleSettings getParticleSettings() {
+        return getParticleSettings(getParticleType());
+    }
     public ParticleSettings getParticleSettings(ParticleType type) {
         return particleSettings.get(type);
     }
