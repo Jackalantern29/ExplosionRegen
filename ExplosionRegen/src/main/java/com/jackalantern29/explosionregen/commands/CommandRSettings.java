@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.jackalantern29.explosionregen.InventorySettings;
 import com.jackalantern29.explosionregen.api.BlockSettings;
+import com.jackalantern29.explosionregen.api.inventory.ItemBuilder;
+import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
+import com.jackalantern29.explosionregen.api.inventory.SlotElement;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -13,6 +16,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.StringUtil;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
@@ -51,6 +55,17 @@ public class CommandRSettings implements TabExecutor {
 					return true;
 				}
 				Player player = (Player)sender;
+				SettingsMenu menu = new SettingsMenu("Select Explosion §l[Server]", 5);
+				menu.clear();
+				int i = 0;
+				for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
+					ItemStack item = new ItemBuilder(settings.getDisplayItem()).setDisplayName(settings.getDisplayName()).build();
+					menu.setItem(i, new SlotElement(item, data -> {
+						data.getWhoClicked().openInventory(settings.getSettingsMenu().getInventory());
+						return true;
+					}));
+				}
+				player.openInventory(menu.getInventory());
 //				InventorySettings.get(player.getUniqueId()).openSettings(player, true);
 			} else if(args[0].equalsIgnoreCase("create")) {
 				if(!sender.hasPermission("explosionregen.command.rsettings.server")) {
