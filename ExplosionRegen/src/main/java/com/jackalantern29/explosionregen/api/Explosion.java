@@ -14,6 +14,7 @@ import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import com.jackalantern29.explosionregen.api.events.ExplosionBlockRegenEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionBlockRegeneratingEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionRegenFinishEvent;
+import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
 import net.coreprotect.CoreProtectAPI;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Bukkit;
@@ -21,7 +22,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Bisected;
-import org.bukkit.inventory.DoubleChestInventory;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -478,5 +480,18 @@ public class Explosion {
 
 	public static Collection<Explosion> getActiveExplosions() {
 		return ACTIVE_EXPLOSIONS.stream().collect(Collectors.collectingAndThen(Collectors.toList(), ImmutableList::copyOf));
+	}
+	public static void createExplosion(Location location, ExplosionSettings settings, boolean force, float power, boolean setFire) {
+		if(force || settings.getAllowExplosion()) {
+			Listener listener = new Listener() {
+				@EventHandler(ignoreCancelled = true)
+				public void t(ExplosionTriggerEvent event) {
+					event.getExplosion().setSettings(settings);
+				}
+			};
+			ExplosionRegen.getInstance().getServer().getPluginManager().registerEvents(listener, ExplosionRegen.getInstance());
+			location.getWorld().createExplosion(location, power, setFire);
+			ExplosionTriggerEvent.getHandlerList().unregister(listener);
+		}
 	}
 }
