@@ -18,7 +18,6 @@ import com.jackalantern29.explosionregen.listeners.EntityExplodeListener;
 public class ExplosionRegen extends JavaPlugin implements Listener {
 
 	private static ExplosionRegen instance;
-	private static ExplosionMap explosions;
 	private static ExplosionRegenSettings settings;
 	public static UUID author = UUID.fromString("76763b6e-4804-4b7e-bfbd-5d87c72e7843");
 	public void onEnable() {
@@ -30,7 +29,6 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 			setEnabled(false);
 			return;
 		}
-		explosions = new ExplosionMap();
 
 		EntityExplodeListener listener = new EntityExplodeListener();
 		getServer().getPluginManager().registerEvents(listener, this);
@@ -60,9 +58,6 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 	}
 	public static ExplosionRegen getInstance() {
 		return instance;
-	}
-	public static ExplosionMap getExplosionMap() {
-		return explosions;
 	}
 	public static ExplosionRegenSettings getSettings() {
 		return settings;
