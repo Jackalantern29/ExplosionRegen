@@ -90,7 +90,36 @@ public class MaterialUtil {
                     return Material.getMaterial("PISTON");
                 else
                     return Material.getMaterial("PISTON_BASE");
-
+            case "GUNPOWDER":
+            case "SULPHUR":
+                if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial("GUNPOWDER");
+                else
+                    return Material.getMaterial("SULPHUR");
+            case "GRASS":
+            case "GRASS_BLOCK":
+                if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial("GRASS_BLOCK");
+                else
+                    return Material.getMaterial("GRASS");
+            case "WOOD_SPADE":
+            case "WOODEN_SHOVEL":
+                if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial("WOODEN_SHOVEL");
+                else
+                    return Material.getMaterial("WOOD_SPADE");
+            case "WOOD_SWORD":
+            case "WOODEN_SWORD":
+                if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial("WOODEN_SWORD");
+                else
+                    return Material.getMaterial("WOOD_SPADE");
+            case "MAP":
+            case "FILLED_MAP":
+                if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+                    return Material.getMaterial("FILLED_MAP");
+                else
+                    return Material.getMaterial("MAP");
         }
         return Material.getMaterial(material);
     }
