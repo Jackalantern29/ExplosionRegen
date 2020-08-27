@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.jackalantern29.explosionregen.api.Explosion;
 import org.apache.commons.lang.BooleanUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -227,7 +228,7 @@ public class CommandRExplode implements TabExecutor {
 			if(fireArg != null)
 				setFire = Boolean.getBoolean(fireArg);
 		}
-		ExplosionRegen.getExplosionMap().createExplosion(location, settings, false, power, setFire);
+		Explosion.createExplosion(location, settings, false, power, setFire);
 		return true;
 	}
 
