@@ -162,51 +162,152 @@ public class Explosion {
 			blockList.addAll(0, addLater);
 
 			List<Block> list = new ArrayList<>(blockList);
-			List<GenerateDirection> direction = settings.getRegenerateDirections();
+			GenerateDirection direction = settings.getRegenerateDirection();
 			list.sort((o1, o2) -> {
 				CompareToBuilder builder = new CompareToBuilder();
-				for(GenerateDirection d : direction) {
-					switch(d) {
-						case UP:
-						case RANDOM_UP:
-							builder.append(o1.getLocation().getBlockY(), o2.getLocation().getBlockY());
-							break;
-						case DOWN:
-							builder.append(o2.getLocation().getBlockY(), o1.getLocation().getBlockY());
-							break;
-						case EAST:
-							builder.append(o1.getLocation().getBlockX(), o2.getLocation().getBlockX());
-							break;
-						case WEST:
-							builder.append(o2.getLocation().getBlockX(), o1.getLocation().getBlockX());
-							break;
-						case NORTH:
-							builder.append(o2.getLocation().getBlockZ(), o1.getLocation().getBlockZ());
-							break;
-						case SOUTH:
-							builder.append(o1.getLocation().getBlockZ(), o2.getLocation().getBlockZ());
-							break;
-					}
+				switch(direction) {
+					case UP:
+					case RANDOM_UP:
+						builder.append(o1.getLocation().getBlockY(), o2.getLocation().getBlockY());
+						break;
+					case DOWN:
+					case RANDOM_DOWN:
+						builder.append(o2.getLocation().getBlockY(), o1.getLocation().getBlockY());
+						break;
+					case EAST:
+					case RANDOM_EAST:
+						builder.append(o1.getLocation().getBlockX(), o2.getLocation().getBlockX());
+						break;
+					case WEST:
+					case RANDOM_WEST:
+						builder.append(o2.getLocation().getBlockX(), o1.getLocation().getBlockX());
+						break;
+					case NORTH:
+					case RANDOM_NORTH:
+						builder.append(o2.getLocation().getBlockZ(), o1.getLocation().getBlockZ());
+						break;
+					case SOUTH:
+					case RANDOM_SOUTH:
+						builder.append(o1.getLocation().getBlockZ(), o2.getLocation().getBlockZ());
+						break;
 				}
 				return builder.toComparison();
 			});
-			if(direction.contains(GenerateDirection.RANDOM_UP)) {
-				HashMap<Integer, List<Block>> map = new HashMap<>();
-				for(Block block : list) {
-					List<Block> l;
-					if(!map.containsKey(block.getLocation().getBlockY()))
-						l = new ArrayList<>();
-					else
-						l = map.get(block.getLocation().getBlockY());
-					l.add(block);
-					map.put(block.getLocation().getBlockY(), l);
+			HashMap<Integer, List<Block>> map = new HashMap<>();
+			switch(direction) {
+				case RANDOM_UP: {
+					for (Block block : list) {
+						List<Block> l;
+						if (!map.containsKey(block.getLocation().getBlockY()))
+							l = new ArrayList<>();
+						else
+							l = map.get(block.getLocation().getBlockY());
+						l.add(block);
+						map.put(block.getLocation().getBlockY(), l);
+					}
+					list = new ArrayList<>();
+					List<Integer> ls = new ArrayList<>(map.keySet());
+					ls.sort((o1, o2) -> new CompareToBuilder().append(o1, o2).toComparison());
+					for (int i : ls) {
+						Collections.shuffle(map.get(i));
+						list.addAll(map.get(i));
+					}
+					break;
 				}
-				list = new ArrayList<>();
-				List<Integer> ls = new ArrayList<>(map.keySet());
-				ls.sort((o1, o2) -> new CompareToBuilder().append(o1, o2).toComparison());
-				for(int i : ls) {
-					Collections.shuffle(map.get(i));
-					list.addAll(map.get(i));
+				case RANDOM_DOWN: {
+					for (Block block : list) {
+						List<Block> l;
+						if (!map.containsKey(block.getLocation().getBlockY()))
+							l = new ArrayList<>();
+						else
+							l = map.get(block.getLocation().getBlockY());
+						l.add(block);
+						map.put(block.getLocation().getBlockY(), l);
+					}
+					list = new ArrayList<>();
+					List<Integer> ls = new ArrayList<>(map.keySet());
+					ls.sort((o1, o2) -> new CompareToBuilder().append(o2, o1).toComparison());
+					for (int i : ls) {
+						Collections.shuffle(map.get(i));
+						list.addAll(map.get(i));
+					}
+					break;
+				}
+				case RANDOM_EAST: {
+					for (Block block : list) {
+						List<Block> l;
+						if (!map.containsKey(block.getLocation().getBlockX()))
+							l = new ArrayList<>();
+						else
+							l = map.get(block.getLocation().getBlockX());
+						l.add(block);
+						map.put(block.getLocation().getBlockX(), l);
+					}
+					list = new ArrayList<>();
+					List<Integer> ls = new ArrayList<>(map.keySet());
+					ls.sort((o1, o2) -> new CompareToBuilder().append(o1, o2).toComparison());
+					for (int i : ls) {
+						Collections.shuffle(map.get(i));
+						list.addAll(map.get(i));
+					}
+					break;
+				}
+				case RANDOM_WEST: {
+					for (Block block : list) {
+						List<Block> l;
+						if (!map.containsKey(block.getLocation().getBlockX()))
+							l = new ArrayList<>();
+						else
+							l = map.get(block.getLocation().getBlockX());
+						l.add(block);
+						map.put(block.getLocation().getBlockX(), l);
+					}
+					list = new ArrayList<>();
+					List<Integer> ls = new ArrayList<>(map.keySet());
+					ls.sort((o1, o2) -> new CompareToBuilder().append(o2, o1).toComparison());
+					for (int i : ls) {
+						Collections.shuffle(map.get(i));
+						list.addAll(map.get(i));
+					}
+					break;
+				}
+				case RANDOM_SOUTH: {
+					for (Block block : list) {
+						List<Block> l;
+						if (!map.containsKey(block.getLocation().getBlockZ()))
+							l = new ArrayList<>();
+						else
+							l = map.get(block.getLocation().getBlockZ());
+						l.add(block);
+						map.put(block.getLocation().getBlockZ(), l);
+					}
+					list = new ArrayList<>();
+					List<Integer> ls = new ArrayList<>(map.keySet());
+					ls.sort((o1, o2) -> new CompareToBuilder().append(o1, o2).toComparison());
+					for (int i : ls) {
+						Collections.shuffle(map.get(i));
+						list.addAll(map.get(i));
+					}
+					break;
+				}
+				case RANDOM_NORTH: {
+					for (Block block : list) {
+						List<Block> l;
+						if (!map.containsKey(block.getLocation().getBlockZ()))
+							l = new ArrayList<>();
+						else
+							l = map.get(block.getLocation().getBlockZ());
+						l.add(block);
+						map.put(block.getLocation().getBlockZ(), l);
+					}
+					list = new ArrayList<>();
+					List<Integer> ls = new ArrayList<>(map.keySet());
+					ls.sort((o1, o2) -> new CompareToBuilder().append(o2, o1).toComparison());
+					for (int i : ls) {
+						Collections.shuffle(map.get(i));
+						list.addAll(map.get(i));
+					}
+					break;
 				}
 			}
 			blockList.clear();
