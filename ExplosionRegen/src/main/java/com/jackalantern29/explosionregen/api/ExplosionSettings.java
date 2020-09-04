@@ -29,7 +29,7 @@ public class  ExplosionSettings {
 	private BlockSettings blockSettings;
 	private boolean enable;
 	private boolean regenAllow;
-	private List<GenerateDirection> regenDirections = new ArrayList<>();
+	private GenerateDirection regenDirection;
 	private boolean regenInstant;
 	private long regenDelay;
 	private int regenMaxBlockQueue;
@@ -56,7 +56,7 @@ public class  ExplosionSettings {
 		this.blockSettings = blockSettings;
 		this.enable = true;
 		this.regenAllow = true;
-		this.regenDirections.add(GenerateDirection.RANDOM_UP);
+		this.regenDirection = GenerateDirection.RANDOM_UP;
 		this.regenInstant = false;
 		this.regenDelay = 200;
 		this.regenMaxBlockQueue = 1;
@@ -86,7 +86,7 @@ public class  ExplosionSettings {
 				allowRegenItem = new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §aTrue").build();
 			else
 				allowRegenItem = new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §cFalse").build();
-			ItemStack regenDirectionItem = new ItemBuilder(Material.COMPASS).setDisplayName("§fDirection: " + StringUtils.capitaliseAllWords(getRegenerateDirections().get(0).name().toLowerCase().replace("_", " "))).build();
+			ItemStack regenDirectionItem = new ItemBuilder(Material.COMPASS).setDisplayName("§fDirection: " + StringUtils.capitaliseAllWords(getRegenerateDirection().name().toLowerCase().replace("_", " "))).build();
 			ItemStack regenInstantItem;
 			if(isInstantRegen())
 				regenInstantItem = new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §aTrue").build();
@@ -180,10 +180,7 @@ public class  ExplosionSettings {
 		map.put("display-name", getDisplayName());
 		map.put("display-item", getDisplayItem().getType().name().toLowerCase());
 		map.put("regen.allow", getAllowRegen());
-		List<String> stringDirections = new ArrayList<>();
-		for(GenerateDirection direction : getRegenerateDirections())
-			stringDirections.add(direction.name().toLowerCase());
-		map.put("regen.direction", stringDirections);
+		map.put("regen.direction", getRegenerateDirection().name().toLowerCase());
 		map.put("regen.instant", isInstantRegen());
 		map.put("regen.delay", getRegenDelay());
 		map.put("regen.max-block-regen-queue", getMaxBlockRegenQueue());
@@ -302,13 +299,13 @@ public class  ExplosionSettings {
 	public void setAllowRegen(boolean value) {
 		regenAllow = value;
 	}
-	
-	public List<GenerateDirection> getRegenerateDirections() {
-		return regenDirections;
+
+	public GenerateDirection getRegenerateDirection() {
+		return regenDirection;
 	}
 
-	public void setRegenerateDirections(List<GenerateDirection> value) {
-		regenDirections = value;
+	public void setRegenerateDirection(GenerateDirection direction) {
+		regenDirection = direction;
 	}
 	
 	public boolean isInstantRegen() {
@@ -465,11 +462,7 @@ public class  ExplosionSettings {
 			settings.setDisplayName(config.getString("display-name", settings.getDisplayName()));
 			settings.setDisplayItem(new ItemStack(Material.valueOf(config.getString("display-item", settings.getDisplayItem().getType().name()).toUpperCase())));
 			settings.setAllowRegen(config.getBoolean("regen.allow", settings.getAllowRegen()));
-			List<GenerateDirection> directions = new ArrayList<>();
-			for(Object direction : config.getList("regen.directions", settings.getRegenerateDirections())) {
-				directions.add(GenerateDirection.valueOf((direction).toString().toUpperCase()));
-			}
-			settings.setRegenerateDirections(directions);
+			settings.setRegenerateDirection(GenerateDirection.valueOf(config.getString("regen.direction", settings.getRegenerateDirection().name()).toUpperCase()));
 			settings.setInstantRegen(config.getBoolean("regen.instant", settings.isInstantRegen()));
 			settings.setRegenDelay(config.getLong("regen.delay", settings.getRegenDelay()));
 			settings.setMaxBlockRegenQueue(config.getInt("regen.max-block-regen-queue", settings.getMaxBlockRegenQueue()));
