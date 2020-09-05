@@ -7,6 +7,5 @@ You can report any bugs, share suggestions, or get support at http://discord.gg/
 ### License
 ExplosionRegen is licensed under the [GPL license](https://github.com/Jackalantern29/ExplosionRegen/blob/master/LICENSE).
 
-InventoryGUI & AnvilGUI are open-source softwares that are included & released under the MIT license. Below are their respective repository which contains the license:
+InventoryGUI is an open-source software that is included in the 'ERSpecialEffects' plugin & is released under the MIT license. Below is repository which contains the license:
  - https://github.com/Phoenix616/InventoryGui
- - https://github.com/WesJD/AnvilGUI
