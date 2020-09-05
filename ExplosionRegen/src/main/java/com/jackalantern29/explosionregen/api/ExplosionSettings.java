@@ -51,6 +51,7 @@ public class  ExplosionSettings {
 	private final ExplosionSettingsOverride conditions;
 
 	private final SettingsMenu menu;
+	private final SettingsMenu bsMenu;
 	private ExplosionSettings(String name, BlockSettings blockSettings) {
 		this.name = name;
 		this.blockSettings = blockSettings;
@@ -72,7 +73,10 @@ public class  ExplosionSettings {
 		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
 
 		menu = new SettingsMenu(getDisplayName(), 54);
-		menu.setUpdate("menu", () -> {
+		bsMenu = new SettingsMenu(getDisplayName() + " §l[Block Settings]", 54);
+		ItemStack closeItem = new ItemBuilder(Material.BARRIER).setDisplayName("§c§lClose Menu").build();
+		menu.setUpdate("menu", (player) -> {
+
 			ItemStack blockSettingsItem = new ItemBuilder(Material.STONE).setDisplayName("§fBlock Settings").setLine(0, "§7Selected: §n" + getBlockSettings().getName()).build();
 			ItemStack enableItem;
 			if(getAllowExplosion())
@@ -80,7 +84,6 @@ public class  ExplosionSettings {
 			else
 				enableItem = new ItemBuilder(Material.APPLE).setDisplayName("§fAllow Explosion: §cFalse").build();
 			ItemStack displayNameItem = new ItemBuilder(Material.PAPER).setDisplayName("§fDisplay Name: '" + getDisplayName() + "'").build();
-			ItemStack closeItem = new ItemBuilder(Material.BARRIER).setDisplayName("§c§lClose Menu").build();
 			ItemStack allowRegenItem;
 			if(getAllowRegen())
 				allowRegenItem = new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §aTrue").build();
@@ -137,11 +140,17 @@ public class  ExplosionSettings {
 			ItemStack damageEntityAmountItem = new ItemBuilder(Material.FEATHER).setDisplayName("§fEntity Damage Amount: §6" + getDamageAmount(DamageCategory.ENTITY)).build();
 			ItemStack pluginsItem = new ItemBuilder(MaterialUtil.getMaterial("FILLED_MAP")).setDisplayName("§fPlugins §7[§6" + plugins.size() + "§7]").build();
 
-			menu.setItem(0, new SlotElement(blockSettingsItem, data -> true));
+			menu.setItem(0, new SlotElement(blockSettingsItem, data -> {
+				data.getWhoClicked().openInventory(bsMenu.getInventory(data.getWhoClicked()));
+				return true;
+			}));
 			menu.setItem(2, new SlotElement(enableItem, data -> true));
 			menu.setItem(4, new SlotElement(getDisplayItem(), data -> true));
 			menu.setItem(6, new SlotElement(displayNameItem, data -> true));
-			menu.setItem(8, new SlotElement(closeItem, data -> true));
+			menu.setItem(8, new SlotElement(closeItem, data -> {
+				data.getWhoClicked().closeInventory();
+				return true;
+			}));
 			menu.setItem(18, new SlotElement(allowRegenItem, data -> true));
 			menu.setItem(20, new SlotElement(regenDirectionItem, data -> true));
 			menu.setItem(21, new SlotElement(regenInstantItem, data -> true));
@@ -160,6 +169,30 @@ public class  ExplosionSettings {
 			menu.setItem(53, new SlotElement(pluginsItem, data -> true));
 		});
 
+		bsMenu.setUpdate("menu", (player) -> {
+			for(BlockSettingsData blockData : getBlockSettings().getBlockDatas()) {
+				List<String> lore = new ArrayList<>();
+				lore.add("§9Prevent Damage: " + (blockData.doPreventDamage() ? "§aTrue" : "§cFalse"));
+				lore.add("§9Regenerate: " + (blockData.doRegen() ? "§aTrue" : "§cFalse"));
+				lore.add("§9Save Items: " + (blockData.doSaveItems() ? "§aTrue" : "§cFalse"));
+				lore.add("§9Replace: ");
+				lore.add("§9  Can Replace: " + (blockData.doReplace() ? "§aTrue" : "§cFalse"));
+				lore.add("§9  Replace With: §6" + blockData.getReplaceWith().toString());
+				lore.add("§9Drop Chance: §6" + blockData.getDropChance());
+				lore.add("§9Durability: §6" + blockData.getDurability());
+				lore.add("§9Delay: §6" + blockData.getRegenDelay());
+				ItemStack blockItem;
+				if(blockData.getRegenData() == null)
+					blockItem = new ItemBuilder(Material.PAPER).setDisplayName("§fDefault").setLore(lore).build();
+				else
+					blockItem = new ItemBuilder(blockData.getRegenData().getMaterial()).setDisplayName("§f" + blockData.getRegenData().toString()).setLore(lore).build();
+				bsMenu.addItem(new SlotElement(blockItem, data -> true));
+			}
+			bsMenu.setItem(8, new SlotElement(closeItem, data -> {
+				data.getWhoClicked().openInventory(menu.getInventory(data.getWhoClicked()));
+				return true;
+			}));
+		});
 		ExplosionSettingsLoadEvent event = new ExplosionSettingsLoadEvent(this);
 		Bukkit.getPluginManager().callEvent(event);
 		MAP.put(name, this);
