@@ -61,7 +61,7 @@ public class CommandRSettings implements TabExecutor {
 				for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
 					ItemStack item = new ItemBuilder(settings.getDisplayItem()).setDisplayName(settings.getDisplayName()).build();
 					menu.setItem(i, new SlotElement(item, data -> {
-						data.getWhoClicked().openInventory(settings.getSettingsMenu().getInventory());
+						data.getWhoClicked().openInventory(settings.getSettingsMenu().getInventory(data.getWhoClicked()));
 						return true;
 					}));
 				}
