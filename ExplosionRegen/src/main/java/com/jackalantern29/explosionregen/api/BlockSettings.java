@@ -29,6 +29,8 @@ public class BlockSettings {
 		this.settings.put(string, settings);
 	}
 	public BlockSettingsData get(RegenBlockData regenData) {
+		if(regenData == null)
+			return this.settings.get("");
 		if(this.settings.containsKey(regenData.toString())) {
 			return this.settings.get(regenData.toString());
 		} else {
@@ -49,6 +51,10 @@ public class BlockSettings {
 			this.settings.put(regenData.toString(), to);
 			return to;
 		}
+	}
+
+	public Collection<BlockSettingsData> getBlockDatas() {
+		return settings.values();
 	}
 	public static BlockSettings registerBlockSettings(String name, BlockSettingsData...settings ) {
 		if(!MAP.containsKey(name)) {
