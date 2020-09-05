@@ -2,18 +2,14 @@ package com.jackalantern29.explosionregen.api.inventory;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.Callable;
 
 public class SettingsMenu {
     private String title;
@@ -49,8 +45,6 @@ public class SettingsMenu {
             else
                 inventory = Bukkit.createInventory(null, 54, title);
         }
-        for(DynamicUpdate update : map.values())
-            update.update();
         for (int i = 0; i < elements.length; i++) {
             SlotElement element = elements[i];
             if(element != null) {
@@ -64,8 +58,17 @@ public class SettingsMenu {
     public Inventory getInventory() {
         if(inventory == null)
             build();
-        for(DynamicUpdate update : map.values())
-            update.update();
+        return inventory;
+    }
+
+    public Inventory getInventory(HumanEntity player) {
+        if(inventory == null)
+            build();
+        if(!map.isEmpty()) {
+            clear();
+            for(DynamicUpdate update : map.values())
+                update.update(player);
+        }
         return inventory;
     }
 
@@ -88,6 +91,11 @@ public class SettingsMenu {
             inventory.setItem(index, element.getItem());
     }
 
+    public void addItem(SlotElement element) {
+        int slot = inventory.firstEmpty();
+        if(slot != -1)
+            setItem(slot, element);
+    }
     public void clear() {
         elements = new SlotElement[slots];
         if(inventory != null)
@@ -102,15 +110,23 @@ public class SettingsMenu {
     }
 
     public void update(String id) {
-        if(map.containsKey(id))
-            map.get(id).update();
+        if(map.containsKey(id)) {
+            for(HumanEntity player : inventory.getViewers())
+                map.get(id).update(player);
+        }
+    }
+
+    public void update(String id, HumanEntity player) {
+        if(map.containsKey(id)) {
+            map.get(id).update(player);
+        }
     }
 
     public void setUpdate(String id, DynamicUpdate update) {
         map.put(id, update);
     }
     public interface DynamicUpdate {
-        public void update();
+        public void update(HumanEntity player);
     }
     private class ClickListen implements Listener {
         @EventHandler
