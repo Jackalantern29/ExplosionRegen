@@ -1,6 +1,5 @@
 package com.jackalantern29.explosionregen.api.events;
 
-import com.jackalantern29.explosionregen.api.ExplosionSettings;
 import com.jackalantern29.explosionregen.api.ProfileSettings;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;

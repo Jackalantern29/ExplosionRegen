@@ -72,15 +72,15 @@ public class ProfileSettings {
 					e.printStackTrace();
 				}
 			config = YamlConfiguration.loadConfiguration(file);
+			ProfileLoadEvent event = new ProfileLoadEvent(this);
+			Bukkit.getPluginManager().callEvent(event);
+			save();
 		} else {
 			file = null;
 			config = null;
 		}
 		profiles.add(this);
 		getConfigurableSettings();
-		ProfileLoadEvent event = new ProfileLoadEvent(this);
-		Bukkit.getPluginManager().callEvent(event);
-		save();
 	}
 
 	public Player getPlayer() {
