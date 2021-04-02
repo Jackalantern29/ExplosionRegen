@@ -39,6 +39,10 @@ import org.bukkit.inventory.ItemStack;
 
 public class EntityExplodeListener implements Listener {
 	private BlockState clickedBlock = null;
+
+	/**
+	 * Called when an entity explodes
+	 */
 	@EventHandler
 	public void onExplode(EntityExplodeEvent event) {
 		Entity entity = event.getEntity();
@@ -49,14 +53,24 @@ public class EntityExplodeListener implements Listener {
 				explode(event, event.getLocation().getBlock().getState(), event.getLocation(), event.blockList());
 		}
 	}
-	public class BlockExplodeListener implements Listener {
-		@EventHandler
-		public void onExplode(BlockExplodeEvent event) {
-			if(!event.isCancelled()) {
-				explode(event, event.getBlock().getState(), event.getBlock().getLocation(), event.blockList());
-			}
+
+	/**
+	 * Called when a block explodes
+	 */
+	@EventHandler
+	public void onExplode(BlockExplodeEvent event) {
+		if(!event.isCancelled()) {
+			explode(event, event.getBlock().getState(), event.getBlock().getLocation(), event.blockList());
 		}
 	}
+
+	/**
+	 * Find the settings that will be overridden from the source with the used settings
+	 *
+	 * @param settings The settings used for the source
+	 * @param source The entity/block explosion
+	 * @return The settings that would override the previous settings
+	 */
 	private ExplosionSettings calculateOverrides(ExplosionSettings settings, Object source) {
 		ExplosionSettings newSettings = settings;
 
@@ -74,7 +88,19 @@ public class EntityExplodeListener implements Listener {
 		return newSettings;
 	}
 
+	/**
+	 * Called when an entity or block explodes
+	 *
+	 * Sets the explosion's settings & start the explosion's regen delay
+	 *
+	 * @param event The explosion event (EntityExplodeEvent/BlockExplodeEvent)
+	 * @param what The entity or block that exploded
+	 * @param location The location the explosion occurred
+	 * @param blockList List of blocks added to the damaged list
+	 */
 	private void explode(Event event, Object what, Location location, List<Block> blockList) {
+		//Check if GriefPrevention is active and allow regeneration
+		//TODO check if explosions can still damage based on claimed owner's preference
 		if(!ExplosionRegen.getSettings().getGPAllowExplosionRegen() && ExplosionRegen.getInstance().getGriefPrevention() != null) {
 			for(Claim claims : ExplosionRegen.getInstance().getGriefPrevention().dataStore.getClaims()) {
 				if(claims.areExplosivesAllowed) {
@@ -86,15 +112,19 @@ public class EntityExplodeListener implements Listener {
 				}
 			}
 		}
+		//Start with default explosion before checking source modification.
 		ExplosionSettings settings = ExplosionSettings.getSettings("default");
 		if(settings.getConditions() != null) {
 			if(!settings.getConditions().doMeetConditions(what))
 				return;
 		}
 		Explosion explosion = new Explosion(settings, what, location, blockList);
+		//Find which settings we should override based on the explosion's met conditions
 		settings = calculateOverrides(settings, what);
 		if(!settings.getOverrides().isEmpty())
 			settings = calculateOverrides(settings, what);
+
+		//Trigger the event, and update the explosion settings
 		ExplosionTriggerEvent e = new ExplosionTriggerEvent(explosion);
 		if(!settings.getAllowDamage(DamageCategory.BLOCK))
 			e.setCancelled(true);
@@ -112,6 +142,9 @@ public class EntityExplodeListener implements Listener {
 		}
 		else if(event instanceof BlockExplodeEvent)
 			((BlockExplodeEvent) event).setYield(0.0f);
+
+		//Scan the nearby radius to add blocks that can be destroyed.
+		//TODO update scan to accurately destroy blocks
 		for (int x = powerRadius * -1; x <= powerRadius; x++)
 			for (int y = powerRadius * -1; y <= powerRadius; y++)
 				for (int z = powerRadius * -1; z <= powerRadius; z++) {
@@ -119,9 +152,14 @@ public class EntityExplodeListener implements Listener {
 					if(MaterialUtil.isIndestructible(block.getType()) && !settings.getBlockSettings().get(new RegenBlockData(block.getType())).doPreventDamage())
 						blockList.add(block);
 				}
+
+		//Start explosion regen delay
 		explosion.start();
 	}
 
+	/**
+	 * Called when an explosion damages a players
+	 */
 	@EventHandler
 	public void onDamage(EntityDamageEvent event) {
 		ExplosionSettings settings = ExplosionSettings.getSettings("default");
@@ -171,6 +209,9 @@ public class EntityExplodeListener implements Listener {
 		}
 	}
 
+	/**
+	 * Saves the block clicked which will be used for when a block such as a bed explodes
+	 */
 	@EventHandler
 	public void onClick(PlayerInteractEvent event) {
 		if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -178,6 +219,9 @@ public class EntityExplodeListener implements Listener {
 		}
 	}
 
+	/**
+	 * Allows item frames & paintings to always drop
+	 */
 	@EventHandler
 	public void onItemFrameDestroy(HangingBreakEvent event) {
 		if(event.getCause() == HangingBreakEvent.RemoveCause.EXPLOSION) {
