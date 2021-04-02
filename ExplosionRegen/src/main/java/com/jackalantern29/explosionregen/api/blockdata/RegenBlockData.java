@@ -56,7 +56,8 @@ public class RegenBlockData {
             BukkitMethods.setBlockData(block, (BlockData) getBlockData());
         } else {
             MaterialData data = (MaterialData) getBlockData();
-            block.setTypeIdAndData(data.getItemTypeId(), data.getData(), true);
+            //Legacy Support Disabled
+            //block.setTypeIdAndData(data.getItemTypeId(), data.getData(), true);
         }
     }
 }

@@ -414,12 +414,13 @@ public class Explosion {
 					list.add(block.getRelative(0, -1, 0));
 			}
 		} else {
-			if(block.getType() == Material.DOUBLE_PLANT) {
+			//Legacy Support Disabled
+/*			if(block.getType() == Material.DOUBLE_PLANT) {
 				if(block.getRelative(0, 1, 0).getType() == Material.DOUBLE_PLANT)
 					list.add(block.getRelative(0, 1, 0));
 				else if(block.getRelative(0, -1, 0).getType() == Material.DOUBLE_PLANT)
 					list.add(block.getRelative(0, 1, 0));
-			}
+			}*/
 		}
 		return list;
 	}

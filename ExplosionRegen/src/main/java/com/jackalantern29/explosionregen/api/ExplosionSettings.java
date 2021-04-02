@@ -99,7 +99,8 @@ public class  ExplosionSettings {
 			ItemStack regenMaxBlockItem = new ItemBuilder(Material.CHEST).setDisplayName("§fMax Block Queue: §6" + getMaxBlockRegenQueue()).build();
 			ItemStack regenForceItem;
 			if(getRegenForceBlock())
-				regenForceItem = new ItemBuilder(Material.EYE_OF_ENDER).setDisplayName("§fForce Block Regen: §aTrue").build();
+				//regenForceItem = new ItemBuilder(Material.EYE_OF_ENDER).setDisplayName("§fForce Block Regen: §aTrue").build();
+				regenForceItem = new ItemBuilder(Material.ENDER_EYE).setDisplayName("§fForce Block Regen: §aTrue").build();
 			else
 				regenForceItem = new ItemBuilder(Material.ENDER_PEARL).setDisplayName("§fForce Block Regen: §aFalse").build();
 			ItemStack damageInfoItem = new ItemBuilder(MaterialUtil.getMaterial("GUNPOWDER")).setDisplayName("§f- Damage -")

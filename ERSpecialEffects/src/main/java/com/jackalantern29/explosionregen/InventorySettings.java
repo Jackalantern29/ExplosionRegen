@@ -392,12 +392,18 @@ public class InventorySettings {
 						return new StaticGuiElement(fcc, item, click -> {selectedPhase = ExplosionPhase.valueOf(fName.substring(2).replace(" ", "_").toUpperCase()); g.draw(click.getEvent().getWhoClicked()); return true;}, fName, lore);
 					}));
 				}
-				g.addElement(new GuiPageElement('z', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)5) : new ItemStack(Material.getMaterial("LIME_STAINED_GLASS_PANE")), PageAction.PREVIOUS, "§7Previous"));
-				g.addElement(new GuiPageElement('v', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)5) : new ItemStack(Material.getMaterial("LIME_STAINED_GLASS_PANE")), PageAction.NEXT, "§7Next"));
+				g.addElement(new GuiPageElement('z', new ItemStack(Material.getMaterial("LIME_STAINED_GLASS_PANE")), PageAction.PREVIOUS, "§7Previous"));
+				g.addElement(new GuiPageElement('v', new ItemStack(Material.getMaterial("LIME_STAINED_GLASS_PANE")), PageAction.NEXT, "§7Next"));
+				//Legacy Support Disabled
+				//g.addElement(new GuiPageElement('z', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)5) : new ItemStack(Material.getMaterial("LIME_STAINED_GLASS_PANE")), PageAction.PREVIOUS, "§7Previous"));
+				//g.addElement(new GuiPageElement('v', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)5) : new ItemStack(Material.getMaterial("LIME_STAINED_GLASS_PANE")), PageAction.NEXT, "§7Next"));
 			}
 		}
 		explosionMenu.addElement(explosionGroup);
-		explosionMenu.addElement('e', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)15) : new ItemStack(Material.getMaterial("BLACK_STAINED_GLASS_PANE")), click -> true, " ");
+		explosionMenu.addElement('e', new ItemStack(Material.getMaterial("BLACK_STAINED_GLASS_PANE")), click -> true, " ");
+
+		//Legacy Support Disabled
+		//explosionMenu.addElement('e', Material.getMaterial("STAINED_GLASS_PANE") != null ? new ItemStack(Material.STAINED_GLASS_PANE, 1, (short)15) : new ItemStack(Material.getMaterial("BLACK_STAINED_GLASS_PANE")), click -> true, " ");
 		explosionMenu.build();
 		explosionMenu.show(player);
 	}

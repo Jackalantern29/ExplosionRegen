@@ -107,38 +107,40 @@ public class ExplosionRegenSettings {
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
-					RegenBlockData regenData;
+					RegenBlockData regenData = null;
 					if(key.equalsIgnoreCase("default"))
 						regenData = null;
 					else {
 						if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
 							regenData = new RegenBlockData(Material.valueOf(key.toUpperCase()));
 						else {
-							String mat = key.contains(",") ? key.split(",", 2)[0] : key;
+							//Legacy Support Disabled
+/*							String mat = key.contains(",") ? key.split(",", 2)[0] : key;
 							byte data = key.contains(",") ? Byte.parseByte(key.split(",", 2)[1]) : 0;
 							int id;
 							if(NumberUtils.isNumber(mat))
 								id = Integer.parseInt(mat);
 							else
 								id = Material.getMaterial(mat.toUpperCase()).getId();
-							regenData = new RegenBlockData(Material.getMaterial(id), data);
+							regenData = new RegenBlockData(Material.getMaterial(id), data);*/
 						}
 					}
 					ConfigurationSection section = bc.getConfigurationSection(key);
-					RegenBlockData replaceData;
+					RegenBlockData replaceData = null;
 					{
 						String mat = section.getString("replace.replace-with");
 						if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
 							replaceData = new RegenBlockData(Material.valueOf(mat.toUpperCase()));
 						else {
-							String matt = mat.contains(",") ? mat.split(",")[0] : mat;
+							//Legacy Support Disabled
+/*							String matt = mat.contains(",") ? mat.split(",")[0] : mat;
 							byte data = mat.contains(",") ? Byte.parseByte(mat.split(",")[1]) : 0;
 							int id;
 							if(NumberUtils.isNumber(matt))
 								id = Integer.parseInt(matt);
 							else
 								id = Material.getMaterial(matt.toUpperCase()).getId();
-							replaceData = new RegenBlockData(Material.getMaterial(id), data);
+							replaceData = new RegenBlockData(Material.getMaterial(id), data);*/
 						}
 					}
 					BlockSettingsData bd = new BlockSettingsData(regenData);
