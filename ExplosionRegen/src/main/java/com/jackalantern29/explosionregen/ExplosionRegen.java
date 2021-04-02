@@ -35,8 +35,6 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 		BukkitMethods.loadClass(Explosion.class);
 		BukkitMethods.getClass("com.jackalantern29.explosionregen.api.ProfileSettings");
 		BukkitMethods.getClass("com.jackalantern29.explosionregen.api.ExplosionParticle");
-		if(BukkitMethods.getClass("org.bukkit.event.block.BlockExplodeEvent") != null)
-			getServer().getPluginManager().registerEvents(listener.new BlockExplodeListener(), instance);
 		{
 			getCommand("rexplode").setExecutor(new CommandRExplode());
 			CommandRSettings rsettings = new CommandRSettings();
