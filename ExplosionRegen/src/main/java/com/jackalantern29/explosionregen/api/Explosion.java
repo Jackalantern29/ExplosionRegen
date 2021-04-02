@@ -52,7 +52,7 @@ public class Explosion {
 					if (explosion.getRegenTick() > 0) {
 						explosion.setRegenTick(explosion.getRegenTick() - 1);
 					} else {
-						if (explosion.getExplosionSettings().isInstantRegen()) {
+						if (explosion.getSettings().isInstantRegen()) {
 							for (RegenBlock block : explosion.getBlocks()) {
 								explosion.regenerate(block);
 							}
@@ -78,9 +78,26 @@ public class Explosion {
 			}
 		}, 0, 1);
 	}
+
+	/**
+	 *
+	 * @param settings The settings this explosion will use.
+	 * @param source The source of this explosion.
+	 * @param location The location of this explosion.
+	 * @param blockList List of blocks that was damaged in this explosion.
+	 */
 	public Explosion(ExplosionSettings settings, Object source, Location location, List<Block> blockList) {
 		this(settings, source, location, blockList, settings.getDamageAmount(DamageCategory.BLOCK));
 	}
+
+	/**
+	 *
+	 * @param settings The settings this explosion will use.
+	 * @param source The source of this explosion.
+	 * @param location The location of this explosion.
+	 * @param blockList List of blocks that was damaged in this explosion.
+	 * @param blockDamage The amount of damage this explosion does to blocks.
+	 */
 	public Explosion(ExplosionSettings settings, Object source, Location location, List<Block> blockList, double blockDamage) {
 		this.settings = settings;
 		this.source = source;
@@ -90,9 +107,14 @@ public class Explosion {
 		this.blockDamage = blockDamage;
 	}
 
+	/***
+	 * Adds any necessary blocks to the list
+	 * Starts the regen delay
+	 */
 	public void start() {
 		if(start)
 			return;
+
 		if(blockList != null && !blockList.isEmpty()) {
 			Set<Block> addLater = new HashSet<>();
 			for (Block block : new ArrayList<>(blockList)) {
@@ -397,12 +419,30 @@ public class Explosion {
 		}
 	}
 
+	/**
+	 * Get the settings that is used in this explosion
+	 *
+	 * @return The explosion's settings
+	 */
 	public ExplosionSettings getSettings() {
 		return settings;
 	}
+
+	/**
+	 * Sets the settings for this explosion
+	 *
+	 * @param settings The new settings to be used
+	 */
 	public void setSettings(ExplosionSettings settings) {
 		this.settings = settings;
 	}
+
+	/**
+	 * Gets a list of adjacent blocks that requires support from the target block
+	 *
+	 * @param block The block used to check nearby blocks
+	 * @return List of adjacent blocks that were added
+	 */
 	private List<Block> calculateAdjacentBlocks(Block block) {
 		List<Block> list = new ArrayList<>();
 		if(UpdateType.isPostUpdate(UpdateType.COLOR_UPDATE)) {
@@ -425,14 +465,20 @@ public class Explosion {
 		return list;
 	}
 
-	public ExplosionSettings getExplosionSettings() {
-		return settings;
-	}
-	
+	/**
+	 * Gets the location of this explosion
+	 *
+	 * @return The explosion's location
+	 */
 	public Location getLocation() {
 		return location;
 	}
-	
+
+	/**
+	 * Add additional blocks to the regen list
+	 *
+	 * @param blocks The list of blocks to add
+	 */
 	public void addBlocks(List<RegenBlock> blocks) {
 		for(RegenBlock b0 : blocks) {
 			boolean doadd = true;
@@ -444,26 +490,42 @@ public class Explosion {
 				this.blocks.add(b0);
 		}
 	}
+
+	/**
+	 * The block to add to the regen list
+	 *
+	 * @param block The block to add
+	 */
 	public void addBlock(RegenBlock block) {
 		blocks.add(block);
 	}
-	
+
+	/**
+	 * Returns a list of blocks to be regenerated
+	 *
+	 * @return List of blocks to regenerate
+	 */
 	public List<RegenBlock> getBlocks() {
 		return blocks;
 	}
-	
+
+	/**
+	 * Removes the block from the regen list
+	 *
+	 * @param location The location of the block to remove
+	 */
 	public void removeBlock(Location location) {
 		for(RegenBlock block : new ArrayList<>(getBlocks())) {
 			if(block.getLocation().equals(location))
 				blocks.remove(block);
 		}
 	}
-	
-	public boolean canRegenerate() {
-		return true;
-	}
 
-	
+	/**
+	 * Regenerates the block in this explosion
+	 *
+	 * @param block The block to regenerate
+	 */
 	public void regenerate(RegenBlock block) {
 		if(block.getType() == MaterialUtil.getMaterial("NETHER_PORTAL")) {
 			if(block.getBlock().getType() == MaterialUtil.getMaterial("NETHER_PORTAL")) {
@@ -540,20 +602,38 @@ public class Explosion {
 		ExplosionBlockRegenEvent e = new ExplosionBlockRegenEvent(this);
 		Bukkit.getPluginManager().callEvent(e);
 	}
+
+	/**
+	 * Regenerates all blocks in this explosion.
+	 */
 	public void regenerateAll() {
 		for(RegenBlock block : new ArrayList<>(blocks))
 			regenerate(block);
 	}
 
-	
+	/**
+	 * Gets the remaining ticks before regen phase starts
+	 *
+	 * @return The remaining ticks
+	 */
 	public long getRegenTick() {
 		return regenTick;
 	}
-	
+
+	/**
+	 * Sets the remaining ticks before regen phase starts
+	 *
+	 * @param regenTick The remaining ticks to be set
+	 */
 	public void setRegenTick(long regenTick) {
 		this.regenTick = regenTick;
 	}
-	
+
+	/**
+	 * Gets a list of blocks next to be regenerated
+	 *
+	 * @return List of blocks to be regenerated next
+	 */
 	public Set<RegenBlock> getQueueBlocks() {
 		Set<RegenBlock> list = new HashSet<>();
 		int queue = settings.getMaxBlockRegenQueue();
@@ -566,23 +646,42 @@ public class Explosion {
 		}
 		return list;
 	}
-	public RegenBlock getPreviousBlock() {
-		return previousBlock;
-	}
 
+	/**
+	 * Removes this explosion, regenerating all blocks damaged
+	 */
 	public void remove() {
 		remove(true);
 	}
 
+	/**
+	 * Removes this explosion, and rather blocks should regenerate or not
+	 *
+	 * @param regenerate Should the destroyed blocks regenerate
+	 */
 	public void remove(boolean regenerate) {
 		if(regenerate)
 			regenerateAll();
 		ACTIVE_EXPLOSIONS.remove(this);
 	}
 
+	/**
+	 * Gets a list of currently active explosions
+	 *
+	 * @return List of currently active explosions
+	 */
 	public static Collection<Explosion> getActiveExplosions() {
 		return ACTIVE_EXPLOSIONS.stream().collect(Collectors.collectingAndThen(Collectors.toList(), ImmutableList::copyOf));
 	}
+
+	/**
+	 * Creates an explosion
+	 * @param location The location to create the explosion
+	 * @param settings The settings the explosion will use
+	 * @param force Force the explosion
+	 * @param power The power of the explosion
+	 * @param setFire Create fire from the explosion
+	 */
 	public static void createExplosion(Location location, ExplosionSettings settings, boolean force, float power, boolean setFire) {
 		if(force || settings.getAllowExplosion()) {
 			Listener listener = new Listener() {
