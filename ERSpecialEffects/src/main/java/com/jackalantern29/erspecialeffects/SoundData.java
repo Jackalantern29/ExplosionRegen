@@ -1,4 +1,4 @@
-package com.jackalantern29.explosionregen;
+package com.jackalantern29.erspecialeffects;
 
 import org.bukkit.Location;
 import org.bukkit.Sound;

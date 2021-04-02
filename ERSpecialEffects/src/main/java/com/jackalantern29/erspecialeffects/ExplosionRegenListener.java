@@ -1,5 +1,6 @@
-package com.jackalantern29.explosionregen;
+package com.jackalantern29.erspecialeffects;
 
+import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.*;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.events.*;
@@ -38,9 +39,10 @@ public class ExplosionRegenListener implements Listener {
 			}
 			effects.setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(plugin.getString("particles.preset", Objects.nonNull(effects.getParticleSettings(ParticleType.PRESET)) ? effects.getParticleSettings(ParticleType.PRESET).getName() : null)));
 		}
-		for(ProfileSettings profile : ProfileSettings.getProfiles()) {
-			addPluginToProfile(profile, settings);
-		}
+		if(ExplosionRegen.getSettings().getAllowProfileSettings())
+			for(ProfileSettings profile : ProfileSettings.getProfiles()) {
+				addPluginToProfile(profile, settings);
+			}
 	}
 
 	@EventHandler

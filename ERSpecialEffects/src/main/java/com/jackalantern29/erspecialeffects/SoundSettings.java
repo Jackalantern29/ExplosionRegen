@@ -1,4 +1,4 @@
-package com.jackalantern29.explosionregen;
+package com.jackalantern29.erspecialeffects;
 
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import org.bukkit.Location;

@@ -1,25 +1,8 @@
-package com.jackalantern29.explosionregen;
+package com.jackalantern29.erspecialeffects;
 
-import com.jackalantern29.explosionregen.api.ExplosionParticle;
-import com.jackalantern29.explosionregen.api.ExplosionSettings;
-import com.jackalantern29.explosionregen.api.ProfileSettings;
-import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
-import de.themoep.inventorygui.*;
-import de.themoep.inventorygui.GuiElement.Action;
-import de.themoep.inventorygui.GuiPageElement.PageAction;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.*;
-
-public class InventorySettings {
+//This code was used for previous versions for the plugin's inventory menu. Starting EB.31, the code is disabled and a new system for the inventory menu is currently being worked on.
+public class InventorySettings {/*
 	private static final List<InventorySettings> inventories = new ArrayList<>();
 	private final UUID uuid;
 	
@@ -425,4 +408,4 @@ public class InventorySettings {
 		meta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
 		item.setItemMeta(meta);
 	}
-}
+*/}

@@ -1,4 +1,4 @@
-package com.jackalantern29.explosionregen;
+package com.jackalantern29.erspecialeffects;
 
 public enum ParticlePlayAt {
 	ANYWHERE,

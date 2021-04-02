@@ -1,4 +1,4 @@
-package com.jackalantern29.explosionregen.particledata;
+package com.jackalantern29.erspecialeffects.particledata;
 
 import org.bukkit.Color;
 
