@@ -88,7 +88,7 @@ public class ExplosionRegenListener implements Listener {
         Explosion explosion = event.getExplosion();
 		ExplosionPhase phase = event.getPhase();
         if(!explosion.getBlocks().isEmpty()) {
-			ExplosionSettings settings = explosion.getExplosionSettings();
+			ExplosionSettings settings = explosion.getSettings();
 			for(Player player : Bukkit.getOnlinePlayers()) {
 				SpecialEffects effects;
 				if(ExplosionRegen.getSettings().getAllowProfileSettings()) {
