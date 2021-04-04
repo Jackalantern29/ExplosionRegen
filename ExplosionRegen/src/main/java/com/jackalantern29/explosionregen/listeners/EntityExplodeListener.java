@@ -64,29 +64,6 @@ public class EntityExplodeListener implements Listener {
 		}
 	}
 
-	/**
-	 * Find the settings that will be overridden from the source with the used settings
-	 *
-	 * @param settings The settings used for the source
-	 * @param source The entity/block explosion
-	 * @return The settings that would override the previous settings
-	 */
-	private ExplosionSettings calculateOverrides(ExplosionSettings settings, Object source) {
-		ExplosionSettings newSettings = settings;
-
-		if(source instanceof Entity) {
-			int conditions = 0;
-			for(ExplosionSettingsOverride override : new ArrayList<>(settings.getOverrides())) {
-				if(override.doMeetConditions(source)) {
-					if(override.countConditions() > conditions) {
-						conditions = override.countConditions();
-						newSettings = override.getExplosionSettings();
-					}
-				}
-			}
-		}
-		return newSettings;
-	}
 
 	/**
 	 * Called when an entity or block explodes
@@ -118,21 +95,11 @@ public class EntityExplodeListener implements Listener {
 			if(!settings.getConditions().doMeetConditions(what))
 				return;
 		}
-		Explosion explosion = new Explosion(settings, what, location, blockList);
-		//Find which settings we should override based on the explosion's met conditions
 		settings = calculateOverrides(settings, what);
 		if(!settings.getOverrides().isEmpty())
 			settings = calculateOverrides(settings, what);
+		Explosion explosion = new Explosion(settings, what, location, blockList);
 
-		//Trigger the event, and update the explosion settings
-		ExplosionTriggerEvent e = new ExplosionTriggerEvent(explosion);
-		if(!settings.getAllowDamage(DamageCategory.BLOCK))
-			e.setCancelled(true);
-		Bukkit.getPluginManager().callEvent(e);
-		settings = e.getExplosion().getSettings();
-		double blockDamage = e.getExplosion().getSettings().getDamageAmount(DamageCategory.ENTITY);
-		if(e.isCancelled())
-			return;
 		int powerRadius = 5;
 		if(event instanceof EntityExplodeEvent) {
 			EntityExplodeEvent explodeEvent = (EntityExplodeEvent)event;
@@ -142,21 +109,32 @@ public class EntityExplodeListener implements Listener {
 		}
 		else if(event instanceof BlockExplodeEvent)
 			((BlockExplodeEvent) event).setYield(0.0f);
-
-		//Scan the nearby radius to add blocks that can be destroyed.
-		//TODO update scan to accurately destroy blocks
-		for (int x = powerRadius * -1; x <= powerRadius; x++)
-			for (int y = powerRadius * -1; y <= powerRadius; y++)
-				for (int z = powerRadius * -1; z <= powerRadius; z++) {
-					Block block = location.getBlock().getRelative(x, y, z);
-					if(MaterialUtil.isIndestructible(block.getType()) && !settings.getBlockSettings().get(new RegenBlockData(block.getType())).doPreventDamage())
-						blockList.add(block);
-				}
-
-		//Start explosion regen delay
-		explosion.start();
 	}
 
+	/**
+	 * @deprecated This method will soon be removed
+	 * Find the settings that will be overridden from the source with the used settings
+	 *
+	 * @param settings The settings used for the source
+	 * @param source The entity/block explosion
+	 * @return The settings that would override the previous settings
+	 */
+	private ExplosionSettings calculateOverrides(ExplosionSettings settings, Object source) {
+		ExplosionSettings newSettings = settings;
+
+		if(source instanceof Entity) {
+			int conditions = 0;
+			for(ExplosionSettingsOverride override : new ArrayList<>(settings.getOverrides())) {
+				if(override.doMeetConditions(source)) {
+					if(override.countConditions() > conditions) {
+						conditions = override.countConditions();
+						newSettings = override.getExplosionSettings();
+					}
+				}
+			}
+		}
+		return newSettings;
+	}
 	/**
 	 * Called when an explosion damages a players
 	 */

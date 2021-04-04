@@ -44,7 +44,6 @@ public class Explosion {
 	private long regenTick;
 	private double blockDamage;
 
-	public boolean start = false;
 	static {
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(ExplosionRegen.getInstance(), () -> {
 			for(Explosion explosion : ACTIVE_EXPLOSIONS) {
@@ -105,16 +104,37 @@ public class Explosion {
 		this.regenTick = settings.getRegenDelay();
 		this.blockList = blockList;
 		this.blockDamage = blockDamage;
+
+		//Trigger the event, and update the explosion settings
+		ExplosionTriggerEvent e = new ExplosionTriggerEvent(this);
+		if(!settings.getAllowDamage(DamageCategory.BLOCK))
+			e.setCancelled(true);
+		Bukkit.getPluginManager().callEvent(e);
+		settings = e.getExplosion().getSettings();
+		blockDamage = e.getExplosion().getSettings().getDamageAmount(DamageCategory.ENTITY);
+		if(e.isCancelled())
+			return;
+		int powerRadius = 5;
+
+		//Scan the nearby radius to add blocks that can be destroyed.
+		//TODO update scan to accurately destroy blocks
+		for (int x = powerRadius * -1; x <= powerRadius; x++)
+			for (int y = powerRadius * -1; y <= powerRadius; y++)
+				for (int z = powerRadius * -1; z <= powerRadius; z++) {
+					Block block = location.getBlock().getRelative(x, y, z);
+					if(MaterialUtil.isIndestructible(block.getType()) && !settings.getBlockSettings().get(new RegenBlockData(block.getType())).doPreventDamage())
+						blockList.add(block);
+				}
+
+
+		start();
 	}
 
 	/***
 	 * Adds any necessary blocks to the list
 	 * Starts the regen delay
 	 */
-	public void start() {
-		if(start)
-			return;
-
+	private void start() {
 		if(blockList != null && !blockList.isEmpty()) {
 			Set<Block> addLater = new HashSet<>();
 			for (Block block : new ArrayList<>(blockList)) {
@@ -415,7 +435,6 @@ public class Explosion {
 				}
 			}
 			ACTIVE_EXPLOSIONS.add(this);
-			start = true;
 		}
 	}
 
@@ -629,6 +648,9 @@ public class Explosion {
 		this.regenTick = regenTick;
 	}
 
+	public RegenBlock getPreviousBlock() {
+		return previousBlock;
+	}
 	/**
 	 * Gets a list of blocks next to be regenerated
 	 *
