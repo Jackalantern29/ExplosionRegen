@@ -21,6 +21,7 @@ public class RegenBlock {
 	public RegenBlock(Block block, long regenDelay, double durability) {
 		this(block, new RegenBlockData(block), regenDelay, durability);
 	}
+
 	public RegenBlock(Block block, RegenBlockData toBlock, long regenDelay, double durability) {
 		this.block = block.getState();
 		this.regenDelay = regenDelay;
@@ -59,6 +60,7 @@ public class RegenBlock {
 	public void setRegenData(RegenBlockData regenData) {
 		this.regenData = regenData;
 	}
+
 	public void setBlock() {
 		block.setType(regenData.getMaterial());
 		if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
@@ -73,6 +75,7 @@ public class RegenBlock {
 				ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), block.getData().getData());
 		}
 	}
+
 	public double getDurability() {
 		return durability;
 	}
