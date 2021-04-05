@@ -20,6 +20,7 @@ import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.event.EventHandler;
@@ -44,6 +45,7 @@ public class Explosion {
 	private long regenTick;
 	private double blockDamage;
 
+	private static final List<Material> SUPPORT_NEED = new ArrayList<>();
 	static {
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(ExplosionRegen.getInstance(), () -> {
 			for(Explosion explosion : ACTIVE_EXPLOSIONS) {
@@ -76,6 +78,45 @@ public class Explosion {
 				Bukkit.getPluginManager().callEvent(event);
 			}
 		}, 0, 1);
+
+		SUPPORT_NEED.addAll(Tag.FLOWERS.getValues());
+		SUPPORT_NEED.add(Material.GRASS);
+		SUPPORT_NEED.add(Material.TORCH);
+		SUPPORT_NEED.add(Material.REDSTONE_TORCH);
+		SUPPORT_NEED.add(Material.REDSTONE_WIRE);
+		SUPPORT_NEED.add(Material.REPEATER);
+		SUPPORT_NEED.add(Material.COMPARATOR);
+		SUPPORT_NEED.add(Material.TRIPWIRE);
+		SUPPORT_NEED.addAll(Tag.SAPLINGS.getValues());
+		SUPPORT_NEED.add(Material.BROWN_MUSHROOM);
+		SUPPORT_NEED.add(Material.RED_MUSHROOM);
+		SUPPORT_NEED.addAll(Tag.RAILS.getValues());
+		SUPPORT_NEED.add(Material.SEA_PICKLE);
+		SUPPORT_NEED.add(Material.CRIMSON_FUNGUS);
+		SUPPORT_NEED.add(Material.WARPED_FUNGUS);
+		SUPPORT_NEED.addAll(Tag.BUTTONS.getValues());
+		SUPPORT_NEED.addAll(Tag.PRESSURE_PLATES.getValues());
+		SUPPORT_NEED.add(Material.LEVER);
+		SUPPORT_NEED.add(Material.LADDER);
+		SUPPORT_NEED.add(Material.TRIPWIRE_HOOK);
+		SUPPORT_NEED.addAll(Tag.CARPETS.getValues());
+		SUPPORT_NEED.add(Material.DEAD_BRAIN_CORAL);
+		SUPPORT_NEED.add(Material.DEAD_BUBBLE_CORAL);
+		SUPPORT_NEED.add(Material.DEAD_FIRE_CORAL);
+		SUPPORT_NEED.add(Material.DEAD_HORN_CORAL);
+		SUPPORT_NEED.add(Material.DEAD_TUBE_CORAL);
+		SUPPORT_NEED.add(Material.DEAD_BRAIN_CORAL_FAN);
+		SUPPORT_NEED.add(Material.DEAD_BUBBLE_CORAL_FAN);
+		SUPPORT_NEED.add(Material.DEAD_FIRE_CORAL_FAN);
+		SUPPORT_NEED.add(Material.DEAD_HORN_CORAL_FAN);
+		SUPPORT_NEED.add(Material.DEAD_TUBE_CORAL_FAN);
+		SUPPORT_NEED.add(Material.DEAD_BRAIN_CORAL_WALL_FAN);
+		SUPPORT_NEED.add(Material.DEAD_BUBBLE_CORAL_WALL_FAN);
+		SUPPORT_NEED.add(Material.DEAD_FIRE_CORAL_WALL_FAN);
+		SUPPORT_NEED.add(Material.DEAD_HORN_CORAL_WALL_FAN);
+		SUPPORT_NEED.add(Material.DEAD_TUBE_CORAL_WALL_FAN);
+		SUPPORT_NEED.addAll(Tag.SIGNS.getValues());
+		SUPPORT_NEED.addAll(Tag.BANNERS.getValues());
 	}
 
 	/**
@@ -105,6 +146,7 @@ public class Explosion {
 		this.blockList = blockList;
 		this.blockDamage = blockDamage;
 
+		shiftBlocks(blockList);
 		//Trigger the event, and update the explosion settings
 		ExplosionTriggerEvent e = new ExplosionTriggerEvent(this);
 		if(!settings.getAllowDamage(DamageCategory.BLOCK))
@@ -126,11 +168,89 @@ public class Explosion {
 						blockList.add(block);
 				}
 
-
-		start();
+		startDelay();
+		//start();
 	}
 
+	private List<Block> shiftBlocks(List<Block> list) {
+		List<Block> shift = new ArrayList<>();
+		for(Block block : new ArrayList<>(list)) {
+			for(Material material : getSupportNeededMaterials()) {
+				if(block.getType() == material) {
+					shift.add(block);
+					list.remove(block);
+				}
+			}
+		}
+		list.addAll(0, shift);
+		return list;
+	}
+
+	public static List<Material> getSupportNeededMaterials() {
+		return SUPPORT_NEED;
+	}
+	private void startDelay() {
+		if(blockList == null || blockList.isEmpty())
+			return;
+
+		if(settings.getAllowRegen()) {
+			for (Block block : new ArrayList<>(blockList)) {
+				BlockSettingsData bs = settings.getBlockSettings().get(new RegenBlockData(block));
+				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
+				BlockState state = block.getState();
+
+				if(state instanceof Container) {
+					if(bs.doSaveItems()) {
+						Inventory inventory = ((Container) state).getInventory();
+						regenBlock.setContents(inventory.getContents());
+						inventory.clear();
+					} else {
+						((Container) regenBlock.getState()).getInventory().clear();
+						((Container) regenBlock.getState()).getSnapshotInventory().clear();
+						state.update(true);
+					}
+				}
+				if (BLOCK_MAP.containsKey(block.getLocation())) {
+					RegenBlock b = BLOCK_MAP.get(block.getLocation());
+					regenBlock.setDurability(b.getDurability() - blockDamage);
+					BLOCK_MAP.remove(block.getLocation());
+				} else {
+					regenBlock.setDurability(regenBlock.getDurability() - blockDamage);
+				}
+				if (regenBlock.getDurability() <= 0.0d) {
+					if (!bs.doPreventDamage()) {
+						if (bs.doRegen()) {
+							addBlock(regenBlock);
+							if (MaterialUtil.isBedBlock(block.getState().getType())) {
+								block.setType(Material.AIR, false);
+							}
+							if (ExplosionRegen.getInstance().getCoreProtect() != null) {
+								if (UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+									ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), BukkitMethods.getBlockData(block.getState()));
+								else
+									ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), block.getData());
+							}
+						} else {
+							Random r = new Random();
+							int random = r.nextInt(99);
+							if (random <= bs.getDropChance() - 1)
+								block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(bs.getResult().getMaterial()));
+						}
+					} else {
+						blockList.remove(block);
+						regenBlock.setBlock();
+					}
+				} else {
+					blockList.remove(block);
+					BLOCK_MAP.put(block.getLocation(), regenBlock);
+				}
+			}
+		}
+		ACTIVE_EXPLOSIONS.add(this);
+
+	}
 	/***
+	 * @deprecated Use {@link Explosion#startDelay()}
 	 * Adds any necessary blocks to the list
 	 * Starts the regen delay
 	 */
@@ -557,6 +677,7 @@ public class Explosion {
 					block.getState().setType(Material.AIR);
 			}
 		}
+
 		BlockState state = block.getState();
 		BlockState bState = block.getBlock().getState();
 		if(settings.getRegenForceBlock()) {
@@ -564,38 +685,8 @@ public class Explosion {
 		}
 		state.update(true);
 		state = block.getBlock().getState();
-		if(state instanceof InventoryHolder) {
-			Inventory inventory = ((InventoryHolder) state).getInventory();
-			if(inventory.getHolder() instanceof Chest) {
-				Chest chest = (Chest)inventory.getHolder();
-				inventory = chest.getBlockInventory();
-			} else if(inventory.getHolder() instanceof DoubleChest) {
-				DoubleChest dChest = (DoubleChest)inventory.getHolder();
-				Chest lChest = (Chest)dChest.getLeftSide();
-				Chest rChest = (Chest)dChest.getRightSide();
-				ChestData chest = new ChestData(block.getType());
-				if(chest.getFacing() == BlockFace.NORTH) {
-					if(block.getBlock().getRelative(1, 0, 0).getType() == Material.CHEST)
-						inventory = rChest.getBlockInventory();
-					else
-						inventory = lChest.getBlockInventory();
-				} else if(chest.getFacing() == BlockFace.SOUTH) {
-					if(block.getBlock().getRelative(-1, 0, 0).getType() == Material.CHEST)
-						inventory = rChest.getBlockInventory();
-					else
-						inventory = lChest.getBlockInventory();
-				} else if(chest.getFacing() == BlockFace.EAST) {
-					if(block.getBlock().getRelative(0, 0, 1).getType() == Material.CHEST)
-						inventory = rChest.getBlockInventory();
-					else
-						inventory = lChest.getBlockInventory();
-				} else if(chest.getFacing() == BlockFace.WEST) {
-					if(block.getBlock().getRelative(0, 0, -1).getType() == Material.CHEST)
-						inventory = rChest.getBlockInventory();
-					else
-						inventory = lChest.getBlockInventory();
-				}
-			}
+		if(state instanceof Container) {
+			Inventory inventory = ((Container) state).getInventory();
 			if(block.getContents() != null)
 				inventory.setContents((ItemStack[]) block.getContents());
 			state.update(true);
@@ -661,10 +752,20 @@ public class Explosion {
 		int queue = settings.getMaxBlockRegenQueue();
 		if(queue <= 0)
 			queue = 1;
-		List<RegenBlock> blockList = getBlocks();
+		List<RegenBlock> blockList = getBlocks(); // All blocks in list
+		List<RegenBlock> blockList2 = new ArrayList<>(getBlocks()); // All blocks that don't need support
+		for(RegenBlock block : new ArrayList<>(blockList2)) {
+			for(Material material : Explosion.getSupportNeededMaterials()) {
+				if(block.getType() == material)
+					blockList2.remove(block);
+			}
+		}
+		if(!blockList2.isEmpty())
+			blockList = blockList2;
 		for (int i = 0; i < queue; i++) {
-			if(blockList.size() > i)
+			if(blockList.size() > i) {
 				list.add(blockList.get(i));
+			}
 		}
 		return list;
 	}
