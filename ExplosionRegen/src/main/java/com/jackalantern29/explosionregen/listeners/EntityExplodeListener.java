@@ -138,7 +138,7 @@ public class EntityExplodeListener implements Listener {
 	/**
 	 * Called when an explosion damages a players
 	 */
-	@EventHandler
+	//@EventHandler disabled - this event should not initiate another Explosion object.
 	public void onDamage(EntityDamageEvent event) {
 		ExplosionSettings settings = ExplosionSettings.getSettings("default");
 		Object what;
