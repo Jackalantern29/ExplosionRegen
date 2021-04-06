@@ -23,6 +23,7 @@ import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
@@ -216,7 +217,7 @@ public class Explosion {
 			if (!bs.doPreventDamage()) {
 				if (bs.doRegen()) {
 					addBlock(regenBlock);
-					if (MaterialUtil.isBedBlock(block.getState().getType())) {
+					if (MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) {
 						block.setType(Material.AIR, false);
 					}
 					if (ExplosionRegen.getInstance().getCoreProtect() != null) {
@@ -251,21 +252,41 @@ public class Explosion {
 				BlockSettingsData bs = settings.getBlockSettings().get(new RegenBlockData(block));
 				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
 
-				damageBlock(regenBlock, bs, block);
-
-				if(block.getType() == Material.CHEST) {
-					org.bukkit.block.data.type.Chest chest = (org.bukkit.block.data.type.Chest)block.getBlockData();
-					BlockFace face = chest.getFacing();
-					org.bukkit.block.data.type.Chest.Type type = chest.getType();
+				{
 					Block part = null;
-					if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Chest.Type.LEFT) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Chest.Type.RIGHT)) {
-						part = block.getLocation().clone().add(1, 0, 0).getBlock();
-					} else if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Chest.Type.RIGHT) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Chest.Type.LEFT)) {
-						part = block.getLocation().clone().add(-1, 0, 0).getBlock();
-					} else if((face == BlockFace.EAST && type == org.bukkit.block.data.type.Chest.Type.LEFT) || (face == BlockFace.WEST && type == org.bukkit.block.data.type.Chest.Type.RIGHT)) {
-						part = block.getLocation().clone().add(0, 0, 1).getBlock();
-					} else if((face == BlockFace.EAST && type == org.bukkit.block.data.type.Chest.Type.RIGHT) || (face == BlockFace.WEST && type == org.bukkit.block.data.type.Chest.Type.LEFT)) {
-						part = block.getLocation().clone().add(0, 0, -1).getBlock();
+					if(block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST) {
+						org.bukkit.block.data.type.Chest chest = (org.bukkit.block.data.type.Chest)block.getBlockData();
+						BlockFace face = chest.getFacing();
+						org.bukkit.block.data.type.Chest.Type type = chest.getType();
+						if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Chest.Type.LEFT) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Chest.Type.RIGHT)) {
+							part = block.getRelative(1, 0, 0);
+						} else if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Chest.Type.RIGHT) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Chest.Type.LEFT)) {
+							part = block.getRelative(-1, 0, 0);
+						} else if((face == BlockFace.EAST && type == org.bukkit.block.data.type.Chest.Type.LEFT) || (face == BlockFace.WEST && type == org.bukkit.block.data.type.Chest.Type.RIGHT)) {
+							part = block.getRelative(0, 0, 1);
+						} else if((face == BlockFace.EAST && type == org.bukkit.block.data.type.Chest.Type.RIGHT) || (face == BlockFace.WEST && type == org.bukkit.block.data.type.Chest.Type.LEFT)) {
+							part = block.getRelative(0, 0, -1);
+						}
+					} else if(block.getType().name().endsWith("_BED")) {
+						org.bukkit.block.data.type.Bed bed = (org.bukkit.block.data.type.Bed) block.getBlockData();
+						BlockFace face = bed.getFacing();
+						org.bukkit.block.data.type.Bed.Part type = bed.getPart();
+						if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Bed.Part.HEAD) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Bed.Part.FOOT)) {
+							part = block.getRelative(0, 0, 1);
+						} else if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Bed.Part.FOOT) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Bed.Part.HEAD)) {
+							part = block.getRelative(0, 0, -1);
+						} else if((face == BlockFace.EAST && type == org.bukkit.block.data.type.Bed.Part.HEAD) || (face == BlockFace.WEST && type == org.bukkit.block.data.type.Bed.Part.FOOT)) {
+							part = block.getRelative(-1, 0, 0);
+						} else {
+							part = block.getRelative(1, 0, 0);
+						}
+					} else if(block.getType().name().contains("_DOOR")) {
+						Door door = (Door)block.getBlockData();
+						Bisected.Half type = door.getHalf();
+						if(type == Bisected.Half.BOTTOM)
+							part = block.getRelative(0, 1, 0);
+						else
+							part = block.getRelative(0, -1, 0);
 					}
 					if(part != null) {
 						BlockSettingsData bsPart = settings.getBlockSettings().get(new RegenBlockData(part));
@@ -275,8 +296,9 @@ public class Explosion {
 						damageBlock(regenBlockPart, bsPart, part);
 					}
 				}
-
+				damageBlock(regenBlock, bs, block);
 			}
+
 		}
 		ACTIVE_EXPLOSIONS.add(this);
 
