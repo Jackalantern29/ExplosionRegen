@@ -74,8 +74,6 @@ public class EntityExplodeListener implements Listener {
 	private void explode(Event event, Object what, Location location, List<Block> blockList) {
 		if(!ExplosionRegen.getSettings().getWorlds().contains(location.getWorld().getName()))
 			return;
-		//Check if GriefPrevention is active and allow regeneration
-		//TODO check if explosions can still damage based on claimed owner's preference
 		if(!ExplosionRegen.getSettings().getGPAllowExplosionRegen() && ExplosionRegen.getInstance().getGriefPrevention() != null) {
 			for(Claim claims : ExplosionRegen.getInstance().getGriefPrevention().dataStore.getClaims()) {
 				if(claims.areExplosivesAllowed) {
@@ -134,9 +132,9 @@ public class EntityExplodeListener implements Listener {
 		return newSettings;
 	}
 	/**
-	 * Called when an explosion damages a players
+	 * Called when an explosion damages an entity
 	 */
-	//@EventHandler disabled - this event should not initiate another Explosion object.
+	@EventHandler
 	public void onDamage(EntityDamageEvent event) {
 		ExplosionSettings settings = ExplosionSettings.getSettings("default");
 		Object what;
@@ -156,12 +154,11 @@ public class EntityExplodeListener implements Listener {
 		settings = calculateOverrides(settings, what);
 		if(!settings.getOverrides().isEmpty())
 			settings = calculateOverrides(settings, what);
-		Explosion explosion = new Explosion(settings, what, location, null, 0);
-		ExplosionDamageEntityEvent e = new ExplosionDamageEntityEvent(explosion);
+		ExplosionDamageEntityEvent e = new ExplosionDamageEntityEvent(settings, what, location);
 		if(!settings.getAllowDamage(DamageCategory.ENTITY))
 			e.setCancelled(true);
 		Bukkit.getPluginManager().callEvent(e);
-		settings = e.getExplosion().getSettings();
+		settings = e.getSettings();
 		double entityDamage = e.getEntityDamage();
 		if(!e.isCancelled()) {
 			DamageCategory category = DamageCategory.ENTITY;

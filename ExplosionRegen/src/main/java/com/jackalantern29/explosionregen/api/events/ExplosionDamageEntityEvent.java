@@ -11,17 +11,19 @@ import org.bukkit.event.HandlerList;
 
 import java.util.List;
 
-public class ExplosionDamageEntityEvent extends ExplosionEvent implements Cancellable {
+public class ExplosionDamageEntityEvent extends Event implements Cancellable {
 	private static final HandlerList handlers = new HandlerList();
 
+	private ExplosionSettings settings;
+	private Object source;
+	private Location location;
 	private double entityDamage;
 	private boolean cancel = false;
-	public ExplosionDamageEntityEvent(Explosion explosion) {
-		this(explosion, explosion.getSettings().getDamageAmount(DamageCategory.ENTITY));
-	}
-	public ExplosionDamageEntityEvent(Explosion explosion, double entityDamage) {
-		super(explosion);
-		this.entityDamage = entityDamage;
+	public ExplosionDamageEntityEvent(ExplosionSettings settings, Object source, Location location) {
+		this.settings = settings;
+		this.source = source;
+		this.location = location;
+		this.entityDamage = settings.getDamageAmount(DamageCategory.ENTITY);
 	}
 
 	public double getEntityDamage() {
@@ -30,6 +32,30 @@ public class ExplosionDamageEntityEvent extends ExplosionEvent implements Cancel
 
 	public void setEntityDamage(double entityDamage) {
 		this.entityDamage = entityDamage;
+	}
+
+	public ExplosionSettings getSettings() {
+		return settings;
+	}
+
+	public void setSettings(ExplosionSettings settings) {
+		this.settings = settings;
+	}
+
+	public Object getSource() {
+		return source;
+	}
+
+	public void setSource(Object source) {
+		this.source = source;
+	}
+
+	public Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		this.location = location;
 	}
 
 	@Override
