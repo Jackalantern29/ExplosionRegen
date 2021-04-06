@@ -15,8 +15,8 @@ public class RegenBlock {
 	private final BlockState block;
 	private long regenDelay;
 	private RegenBlockData regenData;
-	private Object[] content;
 	private double durability;
+	private RegenBlock part = null;
 
 	public RegenBlock(Block block, long regenDelay, double durability) {
 		this(block, new RegenBlockData(block), regenDelay, durability);
@@ -83,12 +83,12 @@ public class RegenBlock {
 	public void setDurability(double durability) {
 		this.durability = durability;
 	}
-	
-	public void setContents(Object[] contents) {
-		this.content = contents;
+
+	public RegenBlock getPart() {
+		return part;
 	}
-	
-	public Object[] getContents() {
-		return content;
+
+	public void setPart(RegenBlock part) {
+		this.part = part;
 	}
 }
