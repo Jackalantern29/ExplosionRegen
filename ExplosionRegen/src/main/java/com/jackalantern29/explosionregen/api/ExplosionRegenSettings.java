@@ -4,16 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
-import org.apache.commons.lang.math.NumberUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -24,7 +22,7 @@ public class ExplosionRegenSettings {
 	private static boolean setup = false;
 	private final ExplosionRegen plugin = ExplosionRegen.getInstance();
 	private final File configFile = new File(plugin.getDataFolder(), "config.yml");
-	private final YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+	private YamlConfiguration config;
 	private final File explosionsFolder = new File(plugin.getDataFolder(), "explosions");
 	private final File profileFolder = new File(plugin.getDataFolder(), "profiles");
 	private final File blocksFolder = new File(plugin.getDataFolder(), "blocks");
@@ -32,6 +30,7 @@ public class ExplosionRegenSettings {
 	private boolean enablePlugin;
 	private boolean enableProfile;
 	private boolean griefPreventionAllowExplosionRegen;
+	private List<String> allowWorlds = new ArrayList<>();
 	public ExplosionRegenSettings() {
 		if(!setup) {
 			setup();
@@ -39,6 +38,7 @@ public class ExplosionRegenSettings {
 		}
 	}
 	private void setup() {
+		config = YamlConfiguration.loadConfiguration(configFile);
 		if(!plugin.getDataFolder().exists())
 			plugin.getDataFolder().mkdirs();
 		if(!explosionsFolder.exists()) {
@@ -63,6 +63,12 @@ public class ExplosionRegenSettings {
 		map.put("options.enable-plugin", true);
 		map.put("options.profile-settings.enable", false);
 		map.put("options.grief-prevention-plugin.allow-explosion-regen", true);
+
+		List<String> worldList = new ArrayList<>();
+		for(World world : Bukkit.getWorlds())
+			worldList.add(world.getName());
+		map.put("allow_worlds", worldList);
+
 		map.put("chat.noPermCmd", "&c[ExplosionRegen] You do not have permission to use this command!");
 		for(String key : new ArrayList<>(map.keySet())) {
 			Object value = map.get(key);
@@ -78,7 +84,8 @@ public class ExplosionRegenSettings {
 		}
 		enablePlugin = config.getBoolean("options.enable-plugin");
 		enableProfile = config.getBoolean("options.profile-settings.enable");
-		griefPreventionAllowExplosionRegen = config.getBoolean("options.giref-prevention-plugin.allow-explosion-regen", true);
+		griefPreventionAllowExplosionRegen = config.getBoolean("options.grief-prevention-plugin.allow-explosion-regen", true);
+		allowWorlds.addAll(config.getStringList("allow_worlds"));
 		for(File files : Objects.requireNonNull(blocksFolder.listFiles())) {
 			if(files.getName().endsWith(".yml")) {
 				YamlConfiguration bc = YamlConfiguration.loadConfiguration(files);
@@ -188,7 +195,10 @@ public class ExplosionRegenSettings {
 	public String getNoPermCmdChat() {
 		return config.getString("chat.noPermCmd").replace("&", "§");
 	}
-	
+
+	public List<String> getWorlds() {
+		return allowWorlds;
+	}
 	public ProfileSettings getProfileSettings(UUID uuid) {
 		return ProfileSettings.get(uuid);
 	}
@@ -205,6 +215,7 @@ public class ExplosionRegenSettings {
 			settings.saveAsFile();
 			ExplosionSettings.removeSettings(settings.getName());
 		}
+		allowWorlds.clear();
 		setup();
 	}
 }

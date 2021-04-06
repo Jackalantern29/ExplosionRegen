@@ -3,9 +3,7 @@ package com.jackalantern29.explosionregen.listeners;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.Explosion;
-import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.events.ExplosionDamageEntityEvent;
 import me.ryanhamshire.GriefPrevention.Claim;
@@ -31,8 +29,6 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.ExplosionSettingsOverride;
 import com.jackalantern29.explosionregen.api.ExplosionSettings;
-import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
-import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -76,6 +72,8 @@ public class EntityExplodeListener implements Listener {
 	 * @param blockList List of blocks added to the damaged list
 	 */
 	private void explode(Event event, Object what, Location location, List<Block> blockList) {
+		if(!ExplosionRegen.getSettings().getWorlds().contains(location.getWorld().getName()))
+			return;
 		//Check if GriefPrevention is active and allow regeneration
 		//TODO check if explosions can still damage based on claimed owner's preference
 		if(!ExplosionRegen.getSettings().getGPAllowExplosionRegen() && ExplosionRegen.getInstance().getGriefPrevention() != null) {
