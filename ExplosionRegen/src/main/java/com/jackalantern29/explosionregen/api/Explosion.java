@@ -216,7 +216,8 @@ public class Explosion {
 		if (regenBlock.getDurability() <= 0.0d) {
 			if (!bs.doPreventDamage()) {
 				if (bs.doRegen()) {
-					addBlock(regenBlock);
+					if(regenBlock.getType() != Material.TNT)
+						addBlock(regenBlock);
 					if (MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) {
 						block.setType(Material.AIR, false);
 					}
