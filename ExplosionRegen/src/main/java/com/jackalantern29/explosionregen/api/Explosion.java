@@ -189,61 +189,93 @@ public class Explosion {
 	public static List<Material> getSupportNeededMaterials() {
 		return SUPPORT_NEED;
 	}
+
+	private void damageBlock(RegenBlock regenBlock, BlockSettingsData bs, Block block) {
+		BlockState state = block.getState();
+		if(state instanceof Container) {
+			if(bs.doSaveItems()) {
+				Inventory inventory;
+				if(block.getType() == Material.CHEST) {
+					inventory = ((Chest)state).getBlockInventory();
+				} else
+					inventory = ((Container) state).getInventory();
+				inventory.clear();
+			} else {
+				((Container) regenBlock.getState()).getSnapshotInventory().clear();
+				state.update(true);
+			}
+		}
+		if (BLOCK_MAP.containsKey(block.getLocation())) {
+			RegenBlock b = BLOCK_MAP.get(block.getLocation());
+			regenBlock.setDurability(b.getDurability() - blockDamage);
+			BLOCK_MAP.remove(block.getLocation());
+		} else {
+			regenBlock.setDurability(regenBlock.getDurability() - blockDamage);
+		}
+		if (regenBlock.getDurability() <= 0.0d) {
+			if (!bs.doPreventDamage()) {
+				if (bs.doRegen()) {
+					addBlock(regenBlock);
+					if (MaterialUtil.isBedBlock(block.getState().getType())) {
+						block.setType(Material.AIR, false);
+					}
+					if (ExplosionRegen.getInstance().getCoreProtect() != null) {
+						if (UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+							ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), BukkitMethods.getBlockData(block.getState()));
+						else
+							ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), block.getData());
+					}
+				} else {
+					Random r = new Random();
+					int random = r.nextInt(99);
+					if (random <= bs.getDropChance() - 1)
+						block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(bs.getResult().getMaterial()));
+				}
+			} else {
+				blockList.remove(block);
+				regenBlock.setBlock();
+			}
+		} else {
+			blockList.remove(block);
+			BLOCK_MAP.put(block.getLocation(), regenBlock);
+		}
+	}
 	private void startDelay() {
 		if(blockList == null || blockList.isEmpty())
 			return;
 
 		if(settings.getAllowRegen()) {
 			for (Block block : new ArrayList<>(blockList)) {
+				if(hasBlock(block.getLocation()))
+					continue;
 				BlockSettingsData bs = settings.getBlockSettings().get(new RegenBlockData(block));
 				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
-				BlockState state = block.getState();
 
-				if(state instanceof Container) {
-					if(bs.doSaveItems()) {
-						Inventory inventory = ((Container) state).getInventory();
-						regenBlock.setContents(inventory.getContents());
-						inventory.clear();
-					} else {
-						((Container) regenBlock.getState()).getInventory().clear();
-						((Container) regenBlock.getState()).getSnapshotInventory().clear();
-						state.update(true);
+				damageBlock(regenBlock, bs, block);
+
+				if(block.getType() == Material.CHEST) {
+					org.bukkit.block.data.type.Chest chest = (org.bukkit.block.data.type.Chest)block.getBlockData();
+					BlockFace face = chest.getFacing();
+					org.bukkit.block.data.type.Chest.Type type = chest.getType();
+					Block part = null;
+					if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Chest.Type.LEFT) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Chest.Type.RIGHT)) {
+						part = block.getLocation().clone().add(1, 0, 0).getBlock();
+					} else if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Chest.Type.RIGHT) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Chest.Type.LEFT)) {
+						part = block.getLocation().clone().add(-1, 0, 0).getBlock();
+					} else if((face == BlockFace.EAST && type == org.bukkit.block.data.type.Chest.Type.LEFT) || (face == BlockFace.WEST && type == org.bukkit.block.data.type.Chest.Type.RIGHT)) {
+						part = block.getLocation().clone().add(0, 0, 1).getBlock();
+					} else if((face == BlockFace.EAST && type == org.bukkit.block.data.type.Chest.Type.RIGHT) || (face == BlockFace.WEST && type == org.bukkit.block.data.type.Chest.Type.LEFT)) {
+						part = block.getLocation().clone().add(0, 0, -1).getBlock();
+					}
+					if(part != null) {
+						BlockSettingsData bsPart = settings.getBlockSettings().get(new RegenBlockData(part));
+						RegenBlock regenBlockPart = new RegenBlock(part, bsPart.getReplaceWith(), bsPart.getRegenDelay(), bsPart.getDurability());
+						regenBlock.setPart(regenBlockPart);
+						regenBlockPart.setPart(regenBlock);
+						damageBlock(regenBlockPart, bsPart, part);
 					}
 				}
-				if (BLOCK_MAP.containsKey(block.getLocation())) {
-					RegenBlock b = BLOCK_MAP.get(block.getLocation());
-					regenBlock.setDurability(b.getDurability() - blockDamage);
-					BLOCK_MAP.remove(block.getLocation());
-				} else {
-					regenBlock.setDurability(regenBlock.getDurability() - blockDamage);
-				}
-				if (regenBlock.getDurability() <= 0.0d) {
-					if (!bs.doPreventDamage()) {
-						if (bs.doRegen()) {
-							addBlock(regenBlock);
-							if (MaterialUtil.isBedBlock(block.getState().getType())) {
-								block.setType(Material.AIR, false);
-							}
-							if (ExplosionRegen.getInstance().getCoreProtect() != null) {
-								if (UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-									ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), BukkitMethods.getBlockData(block.getState()));
-								else
-									ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), block.getData());
-							}
-						} else {
-							Random r = new Random();
-							int random = r.nextInt(99);
-							if (random <= bs.getDropChance() - 1)
-								block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(bs.getResult().getMaterial()));
-						}
-					} else {
-						blockList.remove(block);
-						regenBlock.setBlock();
-					}
-				} else {
-					blockList.remove(block);
-					BLOCK_MAP.put(block.getLocation(), regenBlock);
-				}
+
 			}
 		}
 		ACTIVE_EXPLOSIONS.add(this);
@@ -512,11 +544,11 @@ public class Explosion {
 									inventory = lChest.getBlockInventory();
 							}
 						}
-						regenBlock.setContents(inventory.getContents());
+						//regenBlock.setContents(inventory.getContents());
 						inventory.clear();
 					} else if (state instanceof Sign) {
 						Sign sign = (Sign) state;
-						regenBlock.setContents(sign.getLines());
+						//regenBlock.setContents(sign.getLines());
 					}
 					if (BLOCK_MAP.containsKey(block.getLocation())) {
 						RegenBlock b = BLOCK_MAP.get(block.getLocation());
@@ -660,6 +692,22 @@ public class Explosion {
 		}
 	}
 
+	public boolean hasBlock(Location location) {
+		for(RegenBlock block : getBlocks()) {
+			if (block.getLocation().equals(location))
+				return true;
+		}
+		return false;
+	}
+
+	public RegenBlock getBlock(Location location) {
+		for(RegenBlock block : getBlocks()) {
+			if(block.getLocation().equals(location))
+				return block;
+		}
+		return null;
+	}
+
 	/**
 	 * Regenerates the block in this explosion
 	 *
@@ -684,18 +732,6 @@ public class Explosion {
 			block.getBlock().breakNaturally();
 		}
 		state.update(true);
-		state = block.getBlock().getState();
-		if(state instanceof Container) {
-			Inventory inventory = ((Container) state).getInventory();
-			if(block.getContents() != null)
-				inventory.setContents((ItemStack[]) block.getContents());
-			state.update(true);
-		} else if(state instanceof Sign) {
-			Sign sign = (Sign)state;
-			for(int i = 0; i < 4; i++)
-				sign.setLine(i, (String) block.getContents()[i]);
-			state.update(true);
-		}
 		if(bState.getType() != Material.AIR) {
 			block.getBlock().breakNaturally();
 			bState.update(true);
@@ -711,6 +747,10 @@ public class Explosion {
 		}
 		ExplosionBlockRegenEvent e = new ExplosionBlockRegenEvent(this);
 		Bukkit.getPluginManager().callEvent(e);
+		if(block.getPart() != null) {
+			block.getPart().setPart(null);
+			regenerate(block.getPart());
+		}
 	}
 
 	/**
