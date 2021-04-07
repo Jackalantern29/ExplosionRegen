@@ -474,7 +474,35 @@ public class  ExplosionSettings {
 			map.put("damage." + category.name().toLowerCase() + ".modifier", getDamageModifier(category).name().toLowerCase());
 			map.put("damage." + category.name().toLowerCase() + ".amount", getDamageAmount(category));
 		}
+		for(ExplosionCondition condition : getConditions().getConditions()) {
+			map.put("conditions." + condition.name().toLowerCase(), getConditions().getSimpleConditionValue(condition));
+		}
+		for(ExplosionSettingsOverride override : getOverrides()) {
+			map.put("override." + override.getName() + ".settings", override.getExplosionSettings().getName());
+			for(ExplosionCondition condition : override.getConditions()) {
+				map.put("override." + override.getName() + ".conditions." + condition.name().toLowerCase(), override.getSimpleConditionValue(condition));
+			}
+		}
 		boolean doSave = false;
+		for(Map.Entry<String, Object> entry : new HashSet<>(map.entrySet())) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			Object valueKey = config.get(key);
+
+			if(value instanceof Float)
+				value = ((Float) value).doubleValue();
+			else if(value instanceof Long)
+				value = ((Long) value).intValue();
+
+			if(valueKey instanceof Float)
+				valueKey = ((Float) valueKey).doubleValue();
+			else if(valueKey instanceof Long)
+				valueKey = ((Long) valueKey).intValue();
+			if(!config.contains(key) || (!valueKey.equals(value) && saveChanges)) {
+				config.set(key, value); doSave = true;
+			}
+			map.remove(key);
+		}
 		for(ExplosionSettingsPlugin plugin : plugins.values()) {
 			for(Map.Entry<String, Object> entry : plugin.getEntries()) {
 				String key = plugin.getName().toLowerCase() + "." + entry.getKey();
@@ -494,25 +522,6 @@ public class  ExplosionSettings {
 					config.set(key, value); doSave = true;
 				}
 			}
-		}
-		for(Map.Entry<String, Object> entry : new HashSet<>(map.entrySet())) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			Object valueKey = config.get(key);
-
-			if(value instanceof Float)
-				value = ((Float) value).doubleValue();
-			else if(value instanceof Long)
-				value = ((Long) value).intValue();
-
-			if(valueKey instanceof Float)
-				valueKey = ((Float) valueKey).doubleValue();
-			else if(valueKey instanceof Long)
-				valueKey = ((Long) valueKey).intValue();
-			if(!config.contains(key) || (!valueKey.equals(value) && saveChanges)) {
-				config.set(key, value); doSave = true;
-			}
-			map.remove(key);
 		}
 		if(doSave) {
 			try {
@@ -764,6 +773,9 @@ public class  ExplosionSettings {
 		return menu;
 	}
 
+	public static ExplosionSettings registerSettings(String name) {
+		return registerSettings(name, BlockSettings.getBlockSettings().iterator().next());
+	}
 	public static ExplosionSettings registerSettings(String name, BlockSettings blockSettings) {
 		if(getSettings(name) != null)
 			return getSettings(name);
@@ -832,7 +844,7 @@ public class  ExplosionSettings {
 			}
 			if(config.isConfigurationSection("override")) {
 				for(String key : config.getConfigurationSection("override").getKeys(false)) {
-					ExplosionSettingsOverride override = new ExplosionSettingsOverride(key, ExplosionSettings.getSettings(config.getString("override." + key + ".settings")));//addOverride(key, t);
+					ExplosionSettingsOverride override = new ExplosionSettingsOverride(key, ExplosionSettings.registerSettings(config.getString("override." + key + ".settings")));//addOverride(key, t);
 					for(String k : config.getConfigurationSection("override." + key + ".conditions").getKeys(false)) {
 						ExplosionCondition condition = ExplosionCondition.valueOf(k.toUpperCase());
 						Object value = null;
