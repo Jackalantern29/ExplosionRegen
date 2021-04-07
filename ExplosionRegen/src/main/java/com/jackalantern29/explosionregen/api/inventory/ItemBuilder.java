@@ -43,6 +43,7 @@ public class ItemBuilder {
             lore.set(index, line);
         else
             lore.add(index, line);
+        meta.setLore(lore);
         return this;
     }
 
