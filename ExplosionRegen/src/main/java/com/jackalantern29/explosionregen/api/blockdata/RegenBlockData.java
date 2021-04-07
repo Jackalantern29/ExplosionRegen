@@ -21,6 +21,11 @@ public class RegenBlockData {
         }
     }
 
+    public RegenBlockData(BlockData data) {
+        this.material = data.getMaterial();
+        this.blockData = data;
+    }
+
     public RegenBlockData(Material material, byte data) {
         this.material = material;
         this.data = data;
