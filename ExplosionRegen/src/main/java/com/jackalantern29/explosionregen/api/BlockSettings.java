@@ -7,6 +7,7 @@ import java.util.*;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -55,7 +56,13 @@ public class BlockSettings {
 	}
 
 	public Collection<BlockSettingsData> getBlockDatas() {
-		return settings.values();
+		List<BlockSettingsData> list = new ArrayList<>(settings.values());
+		list.sort((o1, o2) -> {
+			CompareToBuilder builder = new CompareToBuilder();
+			builder.append(o1.getRegenData() != null ? o1.getRegenData().toString() : "default", o2.getRegenData() != null ? o2.getRegenData().toString() : "default");
+			return builder.toComparison();
+		});
+		return list;
 	}
 
 	public void saveAsFile() {
