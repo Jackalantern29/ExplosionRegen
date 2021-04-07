@@ -15,6 +15,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.StringUtil;
 
@@ -26,6 +27,22 @@ import com.jackalantern29.explosionregen.api.enums.ExplosionCondition;
 
 public class CommandRSettings implements TabExecutor {
 
+	private static SettingsMenu menu = new SettingsMenu("Select Explosion §l[Server]", 5);
+
+	public static Inventory inventoryMenu;
+	static {
+		menu.clear();
+		menu.setUpdate("menu", () -> {
+			for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
+				ItemStack item = new ItemBuilder(settings.getDisplayItem()).setDisplayName(settings.getDisplayName()).build();
+				menu.addItem(new SlotElement(item, data -> {
+					data.getWhoClicked().openInventory(settings.getSettingsMenu().getInventory(data.getWhoClicked()));
+					return true;
+				}));
+			}
+		});
+		inventoryMenu = menu.getInventory();
+	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if(!sender.hasPermission("explosionregen.command.rsettings")) {
@@ -56,15 +73,6 @@ public class CommandRSettings implements TabExecutor {
 					return true;
 				}
 				Player player = (Player)sender;
-				SettingsMenu menu = new SettingsMenu("Select Explosion §l[Server]", 5);
-				menu.clear();
-				for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
-					ItemStack item = new ItemBuilder(settings.getDisplayItem()).setDisplayName(settings.getDisplayName()).build();
-					menu.addItem(new SlotElement(item, data -> {
-						data.getWhoClicked().openInventory(settings.getSettingsMenu().getInventory(data.getWhoClicked()));
-						return true;
-					}));
-				}
 				player.openInventory(menu.getInventory());
 //				InventorySettings.get(player.getUniqueId()).openSettings(player, true);
 			} else if(args[0].equalsIgnoreCase("create")) {
