@@ -50,6 +50,9 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 		for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
 			settings.saveAsFile();
 		}
+		for(BlockSettings settings : BlockSettings.getBlockSettings()) {
+			settings.saveAsFile();
+		}
 		for(Explosion explosions : Explosion.getActiveExplosions()) {
 			explosions.regenerateAll();
 		}
