@@ -25,9 +25,7 @@ public class SettingsMenu {
         elements = new SlotElement[slots];
         this.listener = new ClickListen();
         Bukkit.getPluginManager().registerEvents(listener, ExplosionRegen.getInstance());
-    }
 
-    public Inventory build() {
         Inventory inventory;
         if(slots <= 5)
             inventory = Bukkit.createInventory(null, InventoryType.HOPPER, title);
@@ -45,25 +43,14 @@ public class SettingsMenu {
             else
                 inventory = Bukkit.createInventory(null, 54, title);
         }
-        for (int i = 0; i < elements.length; i++) {
-            SlotElement element = elements[i];
-            if(element != null) {
-                inventory.setItem(i, element.getItem());
-            }
-        }
         this.inventory = inventory;
-        return inventory;
     }
 
     public Inventory getInventory() {
-        if(inventory == null)
-            build();
         return inventory;
     }
 
     public Inventory getInventory(HumanEntity player) {
-        if(inventory == null)
-            build();
         if(!map.isEmpty()) {
             clear();
             for(DynamicUpdate update : map.values())
