@@ -97,6 +97,8 @@ public class EntityExplodeListener implements Listener {
 			((Cancellable)event).setCancelled(true);
 			return;
 		}
+		if(!settings.getConditions().doMeetConditions(what))
+			return;
 		Explosion explosion = new Explosion(settings, what, location, blockList);
 
 		int powerRadius = 5;
@@ -131,7 +133,7 @@ public class EntityExplodeListener implements Listener {
 				}
 			}
 		}
-		if(!newSettings.getOverrides().isEmpty())
+		if(!newSettings.getOverrides().isEmpty() && newSettings != settings)
 			newSettings = calculateOverrides(settings, source);
 		return newSettings;
 	}
