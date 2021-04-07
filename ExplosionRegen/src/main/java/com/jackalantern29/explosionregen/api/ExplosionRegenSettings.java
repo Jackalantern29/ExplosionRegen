@@ -90,13 +90,17 @@ public class ExplosionRegenSettings {
 		for(File file : Objects.requireNonNull(blocksFolder.listFiles())) {
 			BlockSettings.registerSettings(file);
 		}
-
 		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + "default.yml");
-		try {
-			ExplosionSettings settings = ExplosionSettings.registerSettings(file);
-			settings.saveAsFile();
-		} catch (IOException e) {
-			e.printStackTrace();
+		List<File> fileList = new ArrayList<>(Arrays.asList(explosionsFolder.listFiles()));
+		if(!fileList.contains(file))
+			fileList.add(file);
+		for(File f : fileList) {
+			try {
+				ExplosionSettings settings = ExplosionSettings.registerSettings(f);
+				settings.saveAsFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		if(getAllowProfileSettings()) {
 			if(!profileFolder.exists())
