@@ -253,7 +253,6 @@ public class Explosion {
 					continue;
 				BlockSettingsData bs = settings.getBlockSettings().get(new RegenBlockData(block));
 				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
-				Bukkit.getPlayer("Jack").sendMessage("§a" + block.getType().name() + ", " + bs.getReplaceWith().getMaterial().name());
 				{
 					Block part = null;
 					if(block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST) {
