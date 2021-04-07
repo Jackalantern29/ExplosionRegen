@@ -49,7 +49,7 @@ public class Explosion {
 	private static final List<Material> SUPPORT_NEED = new ArrayList<>();
 	static {
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(ExplosionRegen.getInstance(), () -> {
-			for(Explosion explosion : ACTIVE_EXPLOSIONS) {
+			for(Explosion explosion : new ArrayList<>(ACTIVE_EXPLOSIONS)) {
 				if (!explosion.getBlocks().isEmpty()) {
 					if (explosion.getRegenTick() > 0) {
 						explosion.setRegenTick(explosion.getRegenTick() - 1);
