@@ -58,10 +58,9 @@ public class CommandRSettings implements TabExecutor {
 				Player player = (Player)sender;
 				SettingsMenu menu = new SettingsMenu("Select Explosion §l[Server]", 5);
 				menu.clear();
-				int i = 0;
 				for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
 					ItemStack item = new ItemBuilder(settings.getDisplayItem()).setDisplayName(settings.getDisplayName()).build();
-					menu.setItem(i, new SlotElement(item, data -> {
+					menu.addItem(new SlotElement(item, data -> {
 						data.getWhoClicked().openInventory(settings.getSettingsMenu().getInventory(data.getWhoClicked()));
 						return true;
 					}));
@@ -74,14 +73,21 @@ public class CommandRSettings implements TabExecutor {
 					return true;
 				}
 				if(args.length == 1) {
-					sender.sendMessage("§cUsage: /rsettings create <name> [blockSettings]");
+					sender.sendMessage("§cUsage: /rsettings create <explosion|block> <name>");
 					return true;
 				} else {
-					String name = args[1];
-					BlockSettings blockSettings = args.length >= 3 ? BlockSettings.getSettings(args[2]) : BlockSettings.getSettings("default");
-					ExplosionSettings settings = ExplosionSettings.registerSettings(name, blockSettings);
-					settings.saveAsFile();
-					sender.sendMessage("Registered Explosion Settings '" + settings.getName() + "' using '" + settings.getBlockSettings().getName() + "' block settings.");
+					String type = args[1];
+					String name = args[2];
+					if(type.equalsIgnoreCase("explosion")) {
+						BlockSettings blockSettings = args.length >= 4 ? BlockSettings.getSettings(args[3]) : BlockSettings.getSettings("default");
+						ExplosionSettings settings = ExplosionSettings.registerSettings(name, blockSettings);
+						settings.saveAsFile();
+						sender.sendMessage("Registered Explosion Settings '" + settings.getName() + "' using '" + settings.getBlockSettings().getName() + "' block settings.");
+					} else if(type.equalsIgnoreCase("block")) {
+						BlockSettings settings = BlockSettings.createSettings(name);
+						settings.saveAsFile();
+						sender.sendMessage("[ExplosionRegen] Created Block Settings '" + name + "'.");
+					}
 				}
 			} else if(args[0].equalsIgnoreCase("edit")) {
 				if(!sender.hasPermission("explosionregen.command.rsettings.edit")) {
@@ -252,8 +258,11 @@ public class CommandRSettings implements TabExecutor {
 				} else {
 					if(args[0].equalsIgnoreCase("create") && sender.hasPermission(permission + ".create")) {
 						if(args.length == 2) {
-							list.add("§7<name>");
+							list.add("explosion");
+							list.add("block");
 						} else if(args.length == 3) {
+							list.add("<name>");
+						} else if(args.length == 4) {
 							BlockSettings.getBlockSettings().forEach(blockSettings -> list.add(blockSettings.getName()));
 						}
 					}
@@ -273,9 +282,9 @@ public class CommandRSettings implements TabExecutor {
 						} else if(args.length == 5) {
 							if(args[2].equalsIgnoreCase("override")) {
 								if(args[4].length() == 0)
-									list.add("§7<override> <settings> <condition> <value>");
+									list.add("<override> <settings> <condition> <value>");
 								else
-									list.add("§7" + args[4] + " <settings> <condition> <value>");
+									list.add(args[4] + " <settings> <condition> <value>");
 							} else if(args[2].equalsIgnoreCase("condition")) {
 								for(ExplosionCondition condition : ExplosionCondition.values())
 									list.add(condition.name().toLowerCase());
@@ -289,7 +298,7 @@ public class CommandRSettings implements TabExecutor {
 								switch(ExplosionCondition.valueOf(args[4].toUpperCase())) {
 								case CUSTOM_NAME:
 									if(args[5].length() == 0)
-										list.add("§7<custom name>");
+										list.add("<custom name>");
 									else
 										list.add(args[5]);
 									return list;
@@ -336,7 +345,7 @@ public class CommandRSettings implements TabExecutor {
 								switch(ExplosionCondition.valueOf(args[6].toUpperCase())) {
 								case CUSTOM_NAME:
 									if(args[7].length() == 0)
-										list.add("§7<custom name>");
+										list.add("<custom name>");
 									else
 										list.add(args[7]);
 									return list;
