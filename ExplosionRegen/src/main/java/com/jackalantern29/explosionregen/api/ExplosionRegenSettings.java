@@ -119,7 +119,7 @@ public class ExplosionRegenSettings {
 						regenData = null;
 					else {
 						if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-							regenData = new RegenBlockData(Material.valueOf(key.toUpperCase()));
+							regenData = new RegenBlockData(Bukkit.createBlockData(key));
 						else {
 							//Legacy Support Disabled
 /*							String mat = key.contains(",") ? key.split(",", 2)[0] : key;
@@ -137,7 +137,8 @@ public class ExplosionRegenSettings {
 					{
 						String mat = section.getString("replace.replace-with");
 						if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-							replaceData = new RegenBlockData(Material.valueOf(mat.toUpperCase()));
+							replaceData = new RegenBlockData(Bukkit.createBlockData(mat));
+							//replaceData = new RegenBlockData(Material.valueOf(mat.toUpperCase()));
 						else {
 							//Legacy Support Disabled
 /*							String matt = mat.contains(",") ? mat.split(",")[0] : mat;
