@@ -125,6 +125,24 @@ public class BlockSettings {
 		}
 	}
 
+	public static BlockSettings createSettings(String name) {
+		if(getSettings(name) != null)
+			return getSettings(name);
+		BlockSettings settings;
+		Bukkit.getConsoleSender().sendMessage("[ExplosionRegen] Created Block Settings '" + name + "'.");
+
+		if(!MAP.containsKey(name)) {
+			settings = new BlockSettings(name);
+			MAP.put(name, settings);
+		} else
+			return MAP.get(name);
+
+		BlockSettingsData bd = new BlockSettingsData(null);
+		settings.add(bd);
+
+		return settings;
+	}
+
 	public static BlockSettings registerSettings(File file) {
 		BlockSettings settings = null;
 		if(file.getName().endsWith(".yml")) {
@@ -164,38 +182,13 @@ public class BlockSettings {
 				if(key.equalsIgnoreCase("default"))
 					regenData = null;
 				else {
-					if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-						regenData = new RegenBlockData(Bukkit.createBlockData(key));
-					else {
-						//Legacy Support Disabled
-/*							String mat = key.contains(",") ? key.split(",", 2)[0] : key;
-							byte data = key.contains(",") ? Byte.parseByte(key.split(",", 2)[1]) : 0;
-							int id;
-							if(NumberUtils.isNumber(mat))
-								id = Integer.parseInt(mat);
-							else
-								id = Material.getMaterial(mat.toUpperCase()).getId();
-							regenData = new RegenBlockData(Material.getMaterial(id), data);*/
-					}
+					regenData = new RegenBlockData(Bukkit.createBlockData(key));
 				}
 				ConfigurationSection section = bc.getConfigurationSection(key);
-				RegenBlockData replaceData = null;
+				RegenBlockData replaceData;
 				{
 					String mat = section.getString("replace.replace-with");
-					if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-						replaceData = new RegenBlockData(Bukkit.createBlockData(mat));
-						//replaceData = new RegenBlockData(Material.valueOf(mat.toUpperCase()));
-					else {
-						//Legacy Support Disabled
-/*							String matt = mat.contains(",") ? mat.split(",")[0] : mat;
-							byte data = mat.contains(",") ? Byte.parseByte(mat.split(",")[1]) : 0;
-							int id;
-							if(NumberUtils.isNumber(matt))
-								id = Integer.parseInt(matt);
-							else
-								id = Material.getMaterial(matt.toUpperCase()).getId();
-							replaceData = new RegenBlockData(Material.getMaterial(id), data);*/
-					}
+					replaceData = new RegenBlockData(Bukkit.createBlockData(mat));
 				}
 				BlockSettingsData bd = new BlockSettingsData(regenData);
 				bd.setPreventDamage(section.getBoolean("prevent-damage"));
