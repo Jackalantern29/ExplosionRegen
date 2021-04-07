@@ -13,6 +13,7 @@ import com.jackalantern29.explosionregen.api.inventory.SlotElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
@@ -295,8 +296,25 @@ public class  ExplosionSettings {
 				data.getWhoClicked().openInventory(menu.getInventory(data.getWhoClicked()));
 				return true;
 			}));
+			SettingsMenu switchMenu = new SettingsMenu("§lSwitch Settings", 9);
+
+			switchMenu.setUpdate("menu", () -> {
+				switchMenu.setItem(8, new SlotElement(closeItem, data -> {
+					data.getWhoClicked().openInventory(bsMenu.getInventory(data.getWhoClicked()));
+					return true;
+				}));
+				for(BlockSettings settings : BlockSettings.getBlockSettings()) {
+					switchMenu.addItem(new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName(settings.getName().equals(getBlockSettings().getName()) ? "§a" + settings.getName() : settings.getName()).build(), data -> {
+						if(data.getItem().hasItemMeta())
+							setBlockSettings(BlockSettings.getSettings(ChatColor.stripColor(data.getItem().getItemMeta().getDisplayName())));
+						switchMenu.clear();
+						switchMenu.update("menu");
+						return true;
+					}));
+				}
+			});
 			bsMenu.setItem(17, new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§aSwitch Settings").build(), data -> {
-				//TODO
+				switchMenu.sendInventory(data.getWhoClicked());
 				return true;
 			}));
 			for(BlockSettingsData blockData : getBlockSettings().getBlockDatas()) {
