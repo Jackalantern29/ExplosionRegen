@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.Set;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Creeper;
@@ -11,6 +12,7 @@ import org.bukkit.entity.Entity;
 
 import com.jackalantern29.explosionregen.api.enums.WeatherType;
 import com.jackalantern29.explosionregen.api.enums.ExplosionCondition;
+import org.bukkit.entity.EntityType;
 
 public class ExplosionSettingsOverride {
 
@@ -26,6 +28,7 @@ public class ExplosionSettingsOverride {
 	
 	public boolean doMeetConditions(Object what) {
 		int conditionsMet = 0;
+
 		for(ExplosionCondition con : conditions.keySet()) {
 			Location location = null;
 			if(what instanceof Entity)
@@ -124,6 +127,20 @@ public class ExplosionSettingsOverride {
 	}
 	public Object getConditionValue(ExplosionCondition condition) {
 		return conditions.get(condition);
+	}
+
+	public Object getSimpleConditionValue(ExplosionCondition condition) {
+		Object value = getConditionValue(condition);
+		if(value instanceof EntityType)
+			return ((EntityType)value).name().toLowerCase();
+		else if(value instanceof Material)
+			return ((Material)value).name().toLowerCase();
+		else if(value instanceof WeatherType)
+			return ((WeatherType)value).name().toLowerCase();
+		else if(value instanceof World)
+			return ((World)value).getName();
+		else
+			return value;
 	}
 	public String getName() {
 		return name;
