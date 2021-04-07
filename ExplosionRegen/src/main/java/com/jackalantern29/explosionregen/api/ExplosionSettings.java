@@ -10,6 +10,7 @@ import com.jackalantern29.explosionregen.api.inventory.InputMode;
 import com.jackalantern29.explosionregen.api.inventory.ItemBuilder;
 import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
 import com.jackalantern29.explosionregen.api.inventory.SlotElement;
+import com.jackalantern29.explosionregen.commands.CommandRSettings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
@@ -168,7 +169,7 @@ public class  ExplosionSettings {
 				return true;
 			}));
 			menu.setItem(8, new SlotElement(closeItem, data -> {
-				data.getWhoClicked().closeInventory();
+				data.getWhoClicked().openInventory(CommandRSettings.inventoryMenu);
 				return true;
 			}));
 			menu.setItem(18, new SlotElement(allowRegenItem, data -> {
@@ -313,7 +314,7 @@ public class  ExplosionSettings {
 					}));
 				}
 			});
-			bsMenu.setItem(17, new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§aSwitch Settings").build(), data -> {
+			bsMenu.setItem(17, new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§aSwitch Settings").setLine(0, "§fCurrent: §d" + getBlockSettings().getName()).build(), data -> {
 				switchMenu.sendInventory(data.getWhoClicked());
 				return true;
 			}));
