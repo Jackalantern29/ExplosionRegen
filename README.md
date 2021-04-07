@@ -6,6 +6,3 @@ You can download Early Builds of this plugin on at http://discord.gg/ucyZdQU.
 You can report any bugs, share suggestions, or get support at http://discord.gg/ucyZdQU.
 ### License
 ExplosionRegen is licensed under the [GPL license](https://github.com/Jackalantern29/ExplosionRegen/blob/master/LICENSE).
-
-InventoryGUI is an open-source software that is included in the 'ERSpecialEffects' plugin & is released under the MIT license. Below is repository which contains the license:
- - https://github.com/Phoenix616/InventoryGui
