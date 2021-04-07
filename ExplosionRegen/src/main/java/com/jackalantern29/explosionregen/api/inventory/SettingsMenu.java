@@ -72,6 +72,12 @@ public class SettingsMenu {
         return inventory;
     }
 
+    public void sendInventory(HumanEntity player) {
+        player.openInventory(inventory);
+        for(DynamicUpdate update : map.values())
+            update.update(player);
+    }
+
     public int getSlots() {
         return slots;
     }
