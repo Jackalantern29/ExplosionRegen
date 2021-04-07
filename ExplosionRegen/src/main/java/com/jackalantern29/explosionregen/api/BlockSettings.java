@@ -94,7 +94,7 @@ public class BlockSettings {
 			map.put(type + ".regen-delay", block.getRegenDelay());
 		}
 		boolean doSave = false;
-		for(Map.Entry<String, Object> entry : map.entrySet()) {
+		for(Map.Entry<String, Object> entry : new HashSet<>(map.entrySet())) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			Object valueKey = config.get(key);
@@ -109,12 +109,6 @@ public class BlockSettings {
 			else if(valueKey instanceof Long)
 				valueKey = ((Long) valueKey).intValue();
 			if(!config.contains(key) || !valueKey.equals(value)) {
-				config.set(key, value); doSave = true;
-			}
-		}
-		for(String key : new ArrayList<>(map.keySet())) {
-			Object value = map.get(key);
-			if(!config.contains(key)) {
 				config.set(key, value); doSave = true;
 			}
 			map.remove(key);

@@ -80,7 +80,7 @@ public class  ExplosionSettings {
 		ItemStack closeItem = new ItemBuilder(Material.BARRIER).setDisplayName("§c§lClose Menu").build();
 
 		// Sets the main menu
-		menu.setUpdate("menu", (player) -> {
+		menu.setUpdate("menu", () -> {
 
 			ItemStack blockSettingsItem = new ItemBuilder(Material.STONE).setDisplayName("§fBlock Settings").setLine(0, "§7Selected: §n" + getBlockSettings().getName()).build();
 			ItemStack enableItem;
@@ -94,12 +94,12 @@ public class  ExplosionSettings {
 				allowRegenItem = new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §aTrue").build();
 			else
 				allowRegenItem = new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §cFalse").build();
-			ItemStack regenDirectionItem = new ItemBuilder(Material.COMPASS).setDisplayName("§fDirection: " + StringUtils.capitaliseAllWords(getRegenerateDirection().name().toLowerCase().replace("_", " "))).build();
+			ItemStack regenDirectionItem = new ItemBuilder(Material.COMPASS).setDisplayName("§fDirection: §6" + StringUtils.capitaliseAllWords(getRegenerateDirection().name().toLowerCase().replace("_", " "))).build();
 			ItemStack regenInstantItem;
 			if(isInstantRegen())
 				regenInstantItem = new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §aTrue").build();
 			else
-				regenInstantItem = new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §aFalse").build();
+				regenInstantItem = new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §cFalse").build();
 			ItemStack regenDelayItem = new ItemBuilder(Material.REDSTONE).setDisplayName("§fRegen Delay: §6" + getRegenDelay()).build();
 			ItemStack regenMaxBlockItem = new ItemBuilder(Material.CHEST).setDisplayName("§fMax Block Queue: §6" + getMaxBlockRegenQueue()).build();
 			ItemStack regenForceItem;
@@ -107,7 +107,7 @@ public class  ExplosionSettings {
 				//regenForceItem = new ItemBuilder(Material.EYE_OF_ENDER).setDisplayName("§fForce Block Regen: §aTrue").build();
 				regenForceItem = new ItemBuilder(Material.ENDER_EYE).setDisplayName("§fForce Block Regen: §aTrue").build();
 			else
-				regenForceItem = new ItemBuilder(Material.ENDER_PEARL).setDisplayName("§fForce Block Regen: §aFalse").build();
+				regenForceItem = new ItemBuilder(Material.ENDER_PEARL).setDisplayName("§fForce Block Regen: §cFalse").build();
 			ItemStack damageInfoItem = new ItemBuilder(MaterialUtil.getMaterial("GUNPOWDER")).setDisplayName("§f- Damage -")
 					.setLine(0, "§fBlock:")
 					.setLine(1, "  §fAllow:    " + (getAllowDamage(DamageCategory.BLOCK) ? "§aTrue" : "§cFalse"))
@@ -150,44 +150,157 @@ public class  ExplosionSettings {
 				data.getWhoClicked().openInventory(bsMenu.getInventory(data.getWhoClicked()));
 				return true;
 			}));
-			menu.setItem(2, new SlotElement(enableItem, data -> true));
+			menu.setItem(2, new SlotElement(enableItem, data -> {
+				setAllowExplosion(!getAllowExplosion());
+				menu.update("menu");
+				return true;
+			}));
 			menu.setItem(4, new SlotElement(getDisplayItem(), data -> true));
-			menu.setItem(6, new SlotElement(displayNameItem, data -> true));
+			menu.setItem(6, new SlotElement(displayNameItem, data -> {
+				InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+					setDisplayName(input);
+					Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
+					return true;
+				}));
+				return true;
+			}));
 			menu.setItem(8, new SlotElement(closeItem, data -> {
 				data.getWhoClicked().closeInventory();
 				return true;
 			}));
-			menu.setItem(18, new SlotElement(allowRegenItem, data -> true));
-			menu.setItem(20, new SlotElement(regenDirectionItem, data -> true));
-			menu.setItem(21, new SlotElement(regenInstantItem, data -> true));
-			menu.setItem(22, new SlotElement(regenDelayItem, data -> true));
-			menu.setItem(24, new SlotElement(regenMaxBlockItem, data -> true));
-			menu.setItem(26, new SlotElement(regenForceItem, data -> true));
+			menu.setItem(18, new SlotElement(allowRegenItem, data -> {
+				setAllowRegen(!getAllowRegen());
+				menu.update("menu");
+				return true;
+			}));
+			menu.setItem(20, new SlotElement(regenDirectionItem, data -> {
+				if(getRegenerateDirection().ordinal() == GenerateDirection.values().length-1)
+					setRegenerateDirection(GenerateDirection.values()[0]);
+				else
+					setRegenerateDirection(GenerateDirection.values()[getRegenerateDirection().ordinal()+1]);
+				menu.update("menu");
+				return true;
+			}));
+
+			menu.setItem(21, new SlotElement(regenInstantItem, data -> {
+				setInstantRegen(!isInstantRegen());
+				menu.update("menu");
+				return true;
+			}));
+			menu.setItem(22, new SlotElement(regenDelayItem, data -> {
+				data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+				InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+					try {
+						long l = Long.parseLong(input);
+						setRegenDelay(l);
+						data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
+						return true;
+					} catch(NumberFormatException e) {
+						data.getWhoClicked().sendMessage("§cInvalid number.");
+						return false;
+					}
+				}));
+				return true;
+			}));
+			menu.setItem(24, new SlotElement(regenMaxBlockItem, data -> {
+				data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+				InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+					try {
+						int value = Integer.parseInt(input);
+						setMaxBlockRegenQueue(value);
+						data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
+						return true;
+					} catch(NumberFormatException e) {
+						data.getWhoClicked().sendMessage("§cInvalid number.");
+						return false;
+					}
+				}));
+				return true;
+			}));
+			menu.setItem(26, new SlotElement(regenForceItem, data -> {
+				setRegenForceBlock(!getRegenForceBlock());
+				menu.update("menu");
+				return true;
+			}));
 			menu.setItem(30, new SlotElement(damageInfoItem, data -> true));
 			menu.setItem(37, new SlotElement(damageBlockInfoItem, data -> true));
 			menu.setItem(41, new SlotElement(damageEntityInfoItem, data -> true));
-			menu.setItem(45, new SlotElement(damageBlockAllowItem, data -> true));
-			menu.setItem(46, new SlotElement(damageBlockModifierItem, data -> true));
-			menu.setItem(47, new SlotElement(damageBlockAmountItem, data -> true));
-			menu.setItem(49, new SlotElement(damageEntityAllowItem, data -> true));
-			menu.setItem(50, new SlotElement(damageEntityModifierItem, data -> true));
-			menu.setItem(51, new SlotElement(damageEntityAmountItem, data -> true));
+			menu.setItem(45, new SlotElement(damageBlockAllowItem, data -> {
+				setAllowDamage(DamageCategory.BLOCK, !getAllowDamage(DamageCategory.BLOCK));
+				menu.update("menu");
+				return true;
+			}));
+			menu.setItem(46, new SlotElement(damageBlockModifierItem, data -> {
+				if(getDamageModifier(DamageCategory.BLOCK).ordinal() == DamageModifier.values().length-1)
+					setDamageModifier(DamageCategory.BLOCK, DamageModifier.values()[0]);
+				else
+					setDamageModifier(DamageCategory.BLOCK, DamageModifier.values()[getDamageModifier(DamageCategory.BLOCK).ordinal()+1]);
+				menu.update("menu");
+				return true;
+			}));
+			menu.setItem(47, new SlotElement(damageBlockAmountItem, data -> {
+				data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+				InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+					try {
+						int value = Integer.parseInt(input);
+						setDamageAmount(DamageCategory.BLOCK, value);
+						data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
+						return true;
+					} catch(NumberFormatException e) {
+						data.getWhoClicked().sendMessage("§cInvalid number.");
+						return false;
+					}
+				}));
+				return true;
+			}));
+			menu.setItem(49, new SlotElement(damageEntityAllowItem, data -> {
+				setAllowDamage(DamageCategory.ENTITY, !getAllowDamage(DamageCategory.ENTITY));
+				menu.update("menu");
+				return true;
+			}));
+			menu.setItem(50, new SlotElement(damageEntityModifierItem, data -> {
+				if(getDamageModifier(DamageCategory.ENTITY).ordinal() == DamageModifier.values().length-1)
+					setDamageModifier(DamageCategory.ENTITY, DamageModifier.values()[0]);
+				else
+					setDamageModifier(DamageCategory.ENTITY, DamageModifier.values()[getDamageModifier(DamageCategory.ENTITY).ordinal()+1]);
+				menu.update("menu");
+				return true;
+			}));
+			menu.setItem(51, new SlotElement(damageEntityAmountItem, data -> {
+				data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+				InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+					try {
+						int value = Integer.parseInt(input);
+						setDamageAmount(DamageCategory.ENTITY, value);
+						data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
+						return true;
+					} catch(NumberFormatException e) {
+						data.getWhoClicked().sendMessage("§cInvalid number.");
+						return false;
+					}
+				}));
+				return true;
+			}));
 			menu.setItem(53, new SlotElement(pluginsItem, data -> true));
 		});
 
-		bsMenu.setUpdate("menu", (player) -> {
+		bsMenu.setUpdate("menu", () -> {
 			bsMenu.setItem(8, new SlotElement(closeItem, data -> {
 				data.getWhoClicked().openInventory(menu.getInventory(data.getWhoClicked()));
 				return true;
 			}));
 			bsMenu.setItem(17, new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§aSwitch Settings").build(), data -> {
-				//TODO Add inventory to switch block settings
+				//TODO
 				return true;
 			}));
 			for(BlockSettingsData blockData : getBlockSettings().getBlockDatas()) {
 				SettingsMenu blockMenu = new SettingsMenu(blockData.getRegenData() == null ? "Default" : blockData.getRegenData().toString(), 18);
 
-				blockMenu.setUpdate("menu", p -> {
+				blockMenu.setUpdate("menu", () -> {
 					blockMenu.setItem(8, new SlotElement(closeItem, data -> {
 						data.getWhoClicked().openInventory(bsMenu.getInventory(data.getWhoClicked()));
 						return true;
@@ -361,9 +474,21 @@ public class  ExplosionSettings {
 				}
 			}
 		}
-		for(String key : new ArrayList<>(map.keySet())) {
-			Object value = map.get(key);
-			if(!config.contains(key)) {
+		for(Map.Entry<String, Object> entry : new HashSet<>(map.entrySet())) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			Object valueKey = config.get(key);
+
+			if(value instanceof Float)
+				value = ((Float) value).doubleValue();
+			else if(value instanceof Long)
+				value = ((Long) value).intValue();
+
+			if(valueKey instanceof Float)
+				valueKey = ((Float) valueKey).doubleValue();
+			else if(valueKey instanceof Long)
+				valueKey = ((Long) valueKey).intValue();
+			if(!config.contains(key) || !valueKey.equals(value)) {
 				config.set(key, value); doSave = true;
 			}
 			map.remove(key);

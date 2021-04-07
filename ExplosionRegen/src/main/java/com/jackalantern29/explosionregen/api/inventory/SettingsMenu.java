@@ -67,15 +67,16 @@ public class SettingsMenu {
         if(!map.isEmpty()) {
             clear();
             for(DynamicUpdate update : map.values())
-                update.update(player);
+                update.update();
         }
         return inventory;
     }
 
     public void sendInventory(HumanEntity player) {
         player.openInventory(inventory);
-        for(DynamicUpdate update : map.values())
-            update.update(player);
+        if(!map.isEmpty())
+            for(DynamicUpdate update : map.values())
+                update.update();
     }
 
     public int getSlots() {
@@ -117,14 +118,7 @@ public class SettingsMenu {
 
     public void update(String id) {
         if(map.containsKey(id)) {
-            for(HumanEntity player : inventory.getViewers())
-                map.get(id).update(player);
-        }
-    }
-
-    public void update(String id, HumanEntity player) {
-        if(map.containsKey(id)) {
-            map.get(id).update(player);
+            map.get(id).update();
         }
     }
 
@@ -132,7 +126,7 @@ public class SettingsMenu {
         map.put(id, update);
     }
     public interface DynamicUpdate {
-        public void update(HumanEntity player);
+        public void update();
     }
     private class ClickListen implements Listener {
         @EventHandler
