@@ -1,18 +1,15 @@
 package com.jackalantern29.explosionregen.api;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.enums.*;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsLoadEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsUnloadEvent;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
-import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
@@ -189,10 +186,18 @@ public class  ExplosionSettings {
 		displayName = value;
 	}
 
+	/**
+	 *
+	 * @return If this explosion should can trigger
+	 */
 	public boolean getAllowExplosion() {
 		return enable;
 	}
 
+	/**
+	 * Should this explosion explode
+	 * @param value
+	 */
 	public void setAllowExplosion(boolean value) {
 		enable = value;
 	}

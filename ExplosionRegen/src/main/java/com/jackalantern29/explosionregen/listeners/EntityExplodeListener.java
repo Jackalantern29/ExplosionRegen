@@ -16,6 +16,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Explosive;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -92,8 +93,10 @@ public class EntityExplodeListener implements Listener {
 				return;
 		}
 		settings = calculateOverrides(settings, what);
-		if(!settings.getOverrides().isEmpty())
-			settings = calculateOverrides(settings, what);
+		if(!settings.getAllowExplosion()) {
+			((Cancellable)event).setCancelled(true);
+			return;
+		}
 		Explosion explosion = new Explosion(settings, what, location, blockList);
 
 		int powerRadius = 5;
@@ -108,7 +111,6 @@ public class EntityExplodeListener implements Listener {
 	}
 
 	/**
-	 * @deprecated This method will soon be removed
 	 * Find the settings that will be overridden from the source with the used settings
 	 *
 	 * @param settings The settings used for the source
@@ -129,6 +131,8 @@ public class EntityExplodeListener implements Listener {
 				}
 			}
 		}
+		if(!newSettings.getOverrides().isEmpty())
+			newSettings = calculateOverrides(settings, source);
 		return newSettings;
 	}
 	/**
@@ -152,8 +156,10 @@ public class EntityExplodeListener implements Listener {
 				return;
 		}
 		settings = calculateOverrides(settings, what);
-		if(!settings.getOverrides().isEmpty())
-			settings = calculateOverrides(settings, what);
+		if(!settings.getAllowExplosion()) {
+			event.setCancelled(true);
+			return;
+		}
 		ExplosionDamageEntityEvent e = new ExplosionDamageEntityEvent(settings, what, location);
 		if(!settings.getAllowDamage(DamageCategory.ENTITY))
 			e.setCancelled(true);
