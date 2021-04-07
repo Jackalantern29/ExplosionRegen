@@ -86,85 +86,11 @@ public class ExplosionRegenSettings {
 		enableProfile = config.getBoolean("options.profile-settings.enable");
 		griefPreventionAllowExplosionRegen = config.getBoolean("options.grief-prevention-plugin.allow-explosion-regen", true);
 		allowWorlds.addAll(config.getStringList("allow_worlds"));
-		for(File files : Objects.requireNonNull(blocksFolder.listFiles())) {
-			if(files.getName().endsWith(".yml")) {
-				YamlConfiguration bc = YamlConfiguration.loadConfiguration(files);
-				LinkedHashMap<String, Object> saveMap = new LinkedHashMap<>();
-				BlockSettings bs = BlockSettings.registerBlockSettings(files.getName().substring(0, files.getName().length()-4));
-				for(String key : bc.getKeys(false)) {
-					saveMap.put(key + ".prevent-damage", false);
-					saveMap.put(key + ".regen", true);
-					saveMap.put(key + ".save-items", true);
-					saveMap.put(key + ".replace.do-replace", false);
-					saveMap.put(key + ".replace.replace-with", Material.AIR.name().toLowerCase());
-					saveMap.put(key + ".chance", 30);
-					saveMap.put(key + ".durability", 1.0d);
-					saveMap.put(key + ".regen-delay", 0);
-					boolean saveBC = false;
-					for(String k : new ArrayList<>(saveMap.keySet())) {
-						if(!bc.contains(k)) {
-							bc.set(k, saveMap.get(k));
-							saveBC = true;
-						}
-						saveMap.remove(k);
-					}
-					if(saveBC)
-						try {
-							bc.save(files);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					RegenBlockData regenData = null;
-					if(key.equalsIgnoreCase("default"))
-						regenData = null;
-					else {
-						if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-							regenData = new RegenBlockData(Bukkit.createBlockData(key));
-						else {
-							//Legacy Support Disabled
-/*							String mat = key.contains(",") ? key.split(",", 2)[0] : key;
-							byte data = key.contains(",") ? Byte.parseByte(key.split(",", 2)[1]) : 0;
-							int id;
-							if(NumberUtils.isNumber(mat))
-								id = Integer.parseInt(mat);
-							else
-								id = Material.getMaterial(mat.toUpperCase()).getId();
-							regenData = new RegenBlockData(Material.getMaterial(id), data);*/
-						}
-					}
-					ConfigurationSection section = bc.getConfigurationSection(key);
-					RegenBlockData replaceData = null;
-					{
-						String mat = section.getString("replace.replace-with");
-						if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-							replaceData = new RegenBlockData(Bukkit.createBlockData(mat));
-							//replaceData = new RegenBlockData(Material.valueOf(mat.toUpperCase()));
-						else {
-							//Legacy Support Disabled
-/*							String matt = mat.contains(",") ? mat.split(",")[0] : mat;
-							byte data = mat.contains(",") ? Byte.parseByte(mat.split(",")[1]) : 0;
-							int id;
-							if(NumberUtils.isNumber(matt))
-								id = Integer.parseInt(matt);
-							else
-								id = Material.getMaterial(matt.toUpperCase()).getId();
-							replaceData = new RegenBlockData(Material.getMaterial(id), data);*/
-						}
-					}
-					BlockSettingsData bd = new BlockSettingsData(regenData);
-					bd.setPreventDamage(section.getBoolean("prevent-damage"));
-					bd.setRegen(section.getBoolean("regen"));
-					bd.setSaveItems(section.getBoolean("save-items"));
-					bd.setMaxRegenHeight(section.getInt("max-regen-height"));
-					bd.setReplace(section.getBoolean("replace.do-replace"));
-					bd.setReplaceWith(replaceData);
-					bd.setDropChance(section.getInt("chance"));
-					bd.setDurability(section.getDouble("durability"));
-					bd.setRegenDelay(section.getLong("regen-delay"));
-					bs.add(bd);
-				}
-			}
+
+		for(File file : Objects.requireNonNull(blocksFolder.listFiles())) {
+			BlockSettings.registerSettings(file);
 		}
+
 		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + "default.yml");
 		try {
 			ExplosionSettings settings = ExplosionSettings.registerSettings(file);

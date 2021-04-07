@@ -55,6 +55,8 @@ public class  ExplosionSettings {
 	private final ExplosionSettingsOverride conditions;
 
 	private final SettingsMenu menu;
+
+	private boolean saveChanges = false;
 	private ExplosionSettings(String name, BlockSettings blockSettings) {
 		this.name = name;
 		this.blockSettings = blockSettings;
@@ -488,7 +490,7 @@ public class  ExplosionSettings {
 				valueKey = ((Float) valueKey).doubleValue();
 			else if(valueKey instanceof Long)
 				valueKey = ((Long) valueKey).intValue();
-			if(!config.contains(key) || !valueKey.equals(value)) {
+			if(!config.contains(key) || (!valueKey.equals(value) && saveChanges)) {
 				config.set(key, value); doSave = true;
 			}
 			map.remove(key);
@@ -549,6 +551,7 @@ public class  ExplosionSettings {
 
 	public void setBlockSettings(BlockSettings blockSettings) {
 		this.blockSettings = blockSettings;
+		saveChanges = true;
 	}
 
 	public String getDisplayName() {
@@ -557,6 +560,7 @@ public class  ExplosionSettings {
 
 	public void setDisplayName(String value) {
 		displayName = value;
+		saveChanges = true;
 	}
 
 	/**
@@ -573,6 +577,7 @@ public class  ExplosionSettings {
 	 */
 	public void setAllowExplosion(boolean value) {
 		enable = value;
+		saveChanges = true;
 	}
 
 	public boolean getAllowRegen() {
@@ -581,6 +586,7 @@ public class  ExplosionSettings {
 
 	public void setAllowRegen(boolean value) {
 		regenAllow = value;
+		saveChanges = true;
 	}
 
 	public GenerateDirection getRegenerateDirection() {
@@ -589,6 +595,7 @@ public class  ExplosionSettings {
 
 	public void setRegenerateDirection(GenerateDirection direction) {
 		regenDirection = direction;
+		saveChanges = true;
 	}
 	
 	public boolean isInstantRegen() {
@@ -597,6 +604,7 @@ public class  ExplosionSettings {
 
 	public void setInstantRegen(boolean value) {
 		regenInstant = value;
+		saveChanges = true;
 	}
 	
 	public long getRegenDelay() {
@@ -605,6 +613,7 @@ public class  ExplosionSettings {
 
 	public void setRegenDelay(long value) {
 		regenDelay = value;
+		saveChanges = true;
 	}
 	
 	public int getMaxBlockRegenQueue() {
@@ -614,10 +623,12 @@ public class  ExplosionSettings {
 
 	public void setMaxBlockRegenQueue(int value) {
 		regenMaxBlockQueue = value;
+		saveChanges = true;
 	}
 
 	public void setRegenForceBlock(boolean value) {
 		this.regenForceBlock = value;
+		saveChanges = true;
 	}
 
 	public boolean getRegenForceBlock() {
@@ -640,6 +651,7 @@ public class  ExplosionSettings {
 			damageEntityAllow = value;
 			break;
 		}
+		saveChanges = true;
 	}
 	
 	public DamageModifier getDamageModifier(DamageCategory category) {
@@ -659,6 +671,7 @@ public class  ExplosionSettings {
 			damageEntityModifier = value;
 			break;
 		}
+		saveChanges = true;
 	}
 
 	public double getDamageAmount(DamageCategory category) {
@@ -678,6 +691,7 @@ public class  ExplosionSettings {
 			damageEntityAmount = value;
 			break;
 		}
+		saveChanges = true;
 	}
 	
 	public ItemStack getDisplayItem() {
@@ -688,6 +702,7 @@ public class  ExplosionSettings {
 		if(item != null && item.getType() != Material.AIR) {
 			displayItem = new ItemBuilder(item).setDisplayName(getDisplayName()).build();
 		}
+		saveChanges = true;
 	}
 
 	public void addOrSetOverride(ExplosionSettingsOverride override) {
@@ -700,18 +715,22 @@ public class  ExplosionSettings {
 			newOverride = override;
 			overrides.put(newOverride.getName(), newOverride);
 		}
+		saveChanges = true;
 	}
 
 	public void addOrSetCondition(ExplosionSettingsOverride override) {
 		for(ExplosionCondition condition : override.getConditions())
 			conditions.setCondition(condition, override.getConditionValue(condition));
+		saveChanges = true;
 	}
 
 	public void removeOverride(String name) {
 		overrides.remove(name);
+		saveChanges = true;
 	}
 	public void removeCondition(ExplosionCondition condition) {
 		conditions.removeCondition(condition);
+		saveChanges = true;
 	}
 	
 	public Collection<ExplosionSettingsOverride> getOverrides() {
@@ -830,7 +849,7 @@ public class  ExplosionSettings {
 					settings.addOrSetOverride(override);
 				}
 			}
-
+			settings.saveChanges = false;
 			return settings;
 		} else {
 			file.createNewFile();

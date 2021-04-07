@@ -7,15 +7,18 @@ import java.util.*;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
+import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 public class BlockSettings {
 	private static final Map<String, BlockSettings> MAP = new HashMap<>();
 	private final String name;
 	private final Map<String, BlockSettingsData> settings = new HashMap<>();
-	
+
 	private BlockSettings(String name, BlockSettingsData... settings) {
 		this.name = name;
 		for(BlockSettingsData setting : settings)
@@ -121,15 +124,94 @@ public class BlockSettings {
 			}
 		}
 	}
-	public static BlockSettings registerBlockSettings(String name, BlockSettingsData...settings ) {
-		if(!MAP.containsKey(name)) {
-			BlockSettings setting = new BlockSettings(name, settings);
-			MAP.put(name, setting);
-			return setting;
-		} else
-			return MAP.get(name);
+
+	public static BlockSettings registerSettings(File file) {
+		BlockSettings settings = null;
+		if(file.getName().endsWith(".yml")) {
+			YamlConfiguration bc = YamlConfiguration.loadConfiguration(file);
+			LinkedHashMap<String, Object> saveMap = new LinkedHashMap<>();
+
+			String name = file.getName().substring(0, file.getName().length()-4);
+			if(!MAP.containsKey(name)) {
+				settings = new BlockSettings(name);
+				MAP.put(name, settings);
+			} else
+				settings = MAP.get(name);
+			for(String key : bc.getKeys(false)) {
+				saveMap.put(key + ".prevent-damage", false);
+				saveMap.put(key + ".regen", true);
+				saveMap.put(key + ".save-items", true);
+				saveMap.put(key + ".replace.do-replace", false);
+				saveMap.put(key + ".replace.replace-with", Material.AIR.name().toLowerCase());
+				saveMap.put(key + ".chance", 30);
+				saveMap.put(key + ".durability", 1.0d);
+				saveMap.put(key + ".regen-delay", 0);
+				boolean saveBC = false;
+				for(String k : new ArrayList<>(saveMap.keySet())) {
+					if(!bc.contains(k)) {
+						bc.set(k, saveMap.get(k));
+						saveBC = true;
+					}
+					saveMap.remove(k);
+				}
+				if(saveBC)
+					try {
+						bc.save(file);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				RegenBlockData regenData = null;
+				if(key.equalsIgnoreCase("default"))
+					regenData = null;
+				else {
+					if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+						regenData = new RegenBlockData(Bukkit.createBlockData(key));
+					else {
+						//Legacy Support Disabled
+/*							String mat = key.contains(",") ? key.split(",", 2)[0] : key;
+							byte data = key.contains(",") ? Byte.parseByte(key.split(",", 2)[1]) : 0;
+							int id;
+							if(NumberUtils.isNumber(mat))
+								id = Integer.parseInt(mat);
+							else
+								id = Material.getMaterial(mat.toUpperCase()).getId();
+							regenData = new RegenBlockData(Material.getMaterial(id), data);*/
+					}
+				}
+				ConfigurationSection section = bc.getConfigurationSection(key);
+				RegenBlockData replaceData = null;
+				{
+					String mat = section.getString("replace.replace-with");
+					if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+						replaceData = new RegenBlockData(Bukkit.createBlockData(mat));
+						//replaceData = new RegenBlockData(Material.valueOf(mat.toUpperCase()));
+					else {
+						//Legacy Support Disabled
+/*							String matt = mat.contains(",") ? mat.split(",")[0] : mat;
+							byte data = mat.contains(",") ? Byte.parseByte(mat.split(",")[1]) : 0;
+							int id;
+							if(NumberUtils.isNumber(matt))
+								id = Integer.parseInt(matt);
+							else
+								id = Material.getMaterial(matt.toUpperCase()).getId();
+							replaceData = new RegenBlockData(Material.getMaterial(id), data);*/
+					}
+				}
+				BlockSettingsData bd = new BlockSettingsData(regenData);
+				bd.setPreventDamage(section.getBoolean("prevent-damage"));
+				bd.setRegen(section.getBoolean("regen"));
+				bd.setSaveItems(section.getBoolean("save-items"));
+				bd.setMaxRegenHeight(section.getInt("max-regen-height"));
+				bd.setReplace(section.getBoolean("replace.do-replace"));
+				bd.setReplaceWith(replaceData);
+				bd.setDropChance(section.getInt("chance"));
+				bd.setDurability(section.getDouble("durability"));
+				bd.setRegenDelay(section.getLong("regen-delay"));
+				settings.add(bd);
+			}
+		}
+		return settings;
 	}
-	
 	public static BlockSettings getSettings(String name) {
 		return MAP.get(name);
 	}
