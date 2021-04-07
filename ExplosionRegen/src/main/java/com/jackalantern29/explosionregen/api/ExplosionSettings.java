@@ -2,19 +2,23 @@ package com.jackalantern29.explosionregen.api;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
+import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.*;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsLoadEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsUnloadEvent;
+import com.jackalantern29.explosionregen.api.inventory.InputMode;
 import com.jackalantern29.explosionregen.api.inventory.ItemBuilder;
 import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
 import com.jackalantern29.explosionregen.api.inventory.SlotElement;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
@@ -51,7 +55,6 @@ public class  ExplosionSettings {
 	private final ExplosionSettingsOverride conditions;
 
 	private final SettingsMenu menu;
-	private final SettingsMenu bsMenu;
 	private ExplosionSettings(String name, BlockSettings blockSettings) {
 		this.name = name;
 		this.blockSettings = blockSettings;
@@ -73,8 +76,10 @@ public class  ExplosionSettings {
 		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
 
 		menu = new SettingsMenu(getDisplayName(), 54);
-		bsMenu = new SettingsMenu(getDisplayName() + " §l[Block Settings]", 54);
+		SettingsMenu bsMenu = new SettingsMenu(getDisplayName() + " §l[Block Settings]", 54);
 		ItemStack closeItem = new ItemBuilder(Material.BARRIER).setDisplayName("§c§lClose Menu").build();
+
+		// Sets the main menu
 		menu.setUpdate("menu", (player) -> {
 
 			ItemStack blockSettingsItem = new ItemBuilder(Material.STONE).setDisplayName("§fBlock Settings").setLine(0, "§7Selected: §n" + getBlockSettings().getName()).build();
@@ -171,7 +176,119 @@ public class  ExplosionSettings {
 		});
 
 		bsMenu.setUpdate("menu", (player) -> {
+			bsMenu.setItem(8, new SlotElement(closeItem, data -> {
+				data.getWhoClicked().openInventory(menu.getInventory(data.getWhoClicked()));
+				return true;
+			}));
+			bsMenu.setItem(17, new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§aSwitch Settings").build(), data -> {
+				//TODO Add inventory to switch block settings
+				return true;
+			}));
 			for(BlockSettingsData blockData : getBlockSettings().getBlockDatas()) {
+				SettingsMenu blockMenu = new SettingsMenu(blockData.getRegenData() == null ? "Default" : blockData.getRegenData().toString(), 18);
+
+				blockMenu.setUpdate("menu", p -> {
+					blockMenu.setItem(8, new SlotElement(closeItem, data -> {
+						data.getWhoClicked().openInventory(bsMenu.getInventory(data.getWhoClicked()));
+						return true;
+					}));
+					blockMenu.setItem(0, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fPrevent Damage: " + (blockData.doPreventDamage() ? "§aTrue" : "§cFalse")).build(), data -> {
+						blockData.setPreventDamage(!blockData.doPreventDamage());
+						blockMenu.update("menu");
+						return true;
+					}));
+					blockMenu.setItem(1, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fRegenerate: " + (blockData.doRegen() ? "§aTrue" : "§cFalse")).build(), data -> {
+						blockData.setRegen(!blockData.doRegen());
+						blockMenu.update("menu");
+						return true;
+					}));
+					blockMenu.setItem(3, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fCan Replace: " + (blockData.doReplace() ? "§aTrue" : "§cFalse")).build(), data -> {
+						blockData.setReplace(!blockData.doReplace());
+						blockMenu.update("menu");
+						return true;
+					}));
+					blockMenu.setItem(4, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fReplace With: §6" + blockData.getReplaceWith().toString()).build(), data -> {
+						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+							try {
+								Material material = Material.valueOf(input.toUpperCase());
+								blockData.setReplaceWith(new RegenBlockData(material));
+								blockMenu.update("menu");
+								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> {
+									blockMenu.sendInventory(data.getWhoClicked());
+								});
+								return true;
+							} catch(Exception e) {
+								data.getWhoClicked().sendMessage("§cInvalid material.");
+								return false;
+							}
+						}));
+						return true;
+					}));
+					blockMenu.setItem(9, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fDrop Chance: §6" + blockData.getDropChance()).build(), data -> {
+						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+							if(NumberUtils.isNumber(input)) {
+								blockData.setDropChance(NumberUtils.toInt(input));
+								blockMenu.update("menu");
+								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> {
+									blockMenu.sendInventory(data.getWhoClicked());
+								});
+								return true;
+							} else
+								data.getWhoClicked().sendMessage("§cInvalid number.");
+								return false;
+						}));
+						return true;
+					}));
+					blockMenu.setItem(10, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fDurability: §6" + blockData.getDurability()).build(), data -> {
+						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+							if(NumberUtils.isDigits(input)) {
+								blockData.setDurability(NumberUtils.toDouble(input));
+								blockMenu.update("menu");
+								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> {
+									blockMenu.sendInventory(data.getWhoClicked());
+								});
+								return true;
+							} else {
+								data.getWhoClicked().sendMessage("§cInvalid number.");
+								return false;
+							}
+						}));
+						return true;
+					}));
+					blockMenu.setItem(11, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fDelay: §6" + blockData.getRegenDelay()).build(), data -> {
+						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+							try {
+								long l = Long.parseLong(input);
+								blockData.setRegenDelay(l);
+								blockMenu.update("menu");
+								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> {
+									blockMenu.sendInventory(data.getWhoClicked());
+								});
+								return true;
+							} catch(NumberFormatException e) {
+								data.getWhoClicked().sendMessage("§cInvalid number.");
+								return false;
+							}
+						}));
+						return true;
+					}));
+					//TODO Add check if block can store items
+					blockMenu.setItem(13, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fSave Items: " + (blockData.doSaveItems() ? "§aTrue" : "§cFalse")).build(), data -> {
+						blockData.setReplace(!blockData.doReplace());
+						blockMenu.update("menu");
+						return true;
+					}));
+				});
+
+
 				List<String> lore = new ArrayList<>();
 				lore.add("§9Prevent Damage: " + (blockData.doPreventDamage() ? "§aTrue" : "§cFalse"));
 				lore.add("§9Regenerate: " + (blockData.doRegen() ? "§aTrue" : "§cFalse"));
@@ -187,12 +304,11 @@ public class  ExplosionSettings {
 					blockItem = new ItemBuilder(Material.PAPER).setDisplayName("§fDefault").setLore(lore).build();
 				else
 					blockItem = new ItemBuilder(blockData.getRegenData().getMaterial()).setDisplayName("§f" + blockData.getRegenData().toString()).setLore(lore).build();
-				bsMenu.addItem(new SlotElement(blockItem, data -> true));
+				bsMenu.addItem(new SlotElement(blockItem, data -> {
+					data.getWhoClicked().openInventory(blockMenu.getInventory(data.getWhoClicked()));
+					return true;
+				}));
 			}
-			bsMenu.setItem(8, new SlotElement(closeItem, data -> {
-				data.getWhoClicked().openInventory(menu.getInventory(data.getWhoClicked()));
-				return true;
-			}));
 		});
 		ExplosionSettingsLoadEvent event = new ExplosionSettingsLoadEvent(this);
 		Bukkit.getPluginManager().callEvent(event);
