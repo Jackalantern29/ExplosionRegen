@@ -23,6 +23,7 @@ import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Door;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -252,7 +253,7 @@ public class Explosion {
 					continue;
 				BlockSettingsData bs = settings.getBlockSettings().get(new RegenBlockData(block));
 				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
-
+				Bukkit.getPlayer("Jack").sendMessage("§a" + block.getType().name() + ", " + bs.getReplaceWith().getMaterial().name());
 				{
 					Block part = null;
 					if(block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST) {
@@ -748,8 +749,12 @@ public class Explosion {
 					block.getState().setType(Material.AIR);
 			}
 		}
-
 		BlockState state = block.getState();
+
+		if(settings.getBlockSettings().get(new RegenBlockData(state.getBlockData())).doReplace()) {
+			state.setBlockData((BlockData) block.getRegenData().getBlockData());
+		}
+
 		BlockState bState = block.getBlock().getState();
 		if(settings.getRegenForceBlock()) {
 			block.getBlock().breakNaturally();
