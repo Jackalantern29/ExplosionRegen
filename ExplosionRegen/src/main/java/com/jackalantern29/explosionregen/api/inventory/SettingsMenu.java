@@ -47,6 +47,11 @@ public class SettingsMenu {
     }
 
     public Inventory getInventory() {
+        if(!map.isEmpty()) {
+            clear();
+            for(DynamicUpdate update : map.values())
+                update.update();
+        }
         return inventory;
     }
 
