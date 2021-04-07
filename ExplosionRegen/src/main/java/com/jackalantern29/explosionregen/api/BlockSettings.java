@@ -1,13 +1,14 @@
 package com.jackalantern29.explosionregen.api;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
+import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 public class BlockSettings {
 	private static final Map<String, BlockSettings> MAP = new HashMap<>();
@@ -55,6 +56,69 @@ public class BlockSettings {
 
 	public Collection<BlockSettingsData> getBlockDatas() {
 		return settings.values();
+	}
+
+	public void saveAsFile() {
+		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "blocks" + File.separator + name + ".yml");
+		if(!file.exists()) {
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+		LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+		for(BlockSettingsData block : getBlockDatas()) {
+			String type;
+			if(block.getRegenData() == null) {
+				type = "default";
+			} else {
+				type = block.getRegenData().toString();
+			}
+			map.put(type + ".prevent-damage", block.doPreventDamage());
+			map.put(type + ".regen", block.doRegen());
+			map.put(type + ".save-items", block.doSaveItems());
+			map.put(type + ".max-regen-height", block.getMaxRegenHeight());
+			map.put(type + ".replace.do-replace", block.doReplace());
+			map.put(type + ".replace.replace-with", block.getReplaceWith().toString());
+			map.put(type + ".chance", block.getDropChance());
+			map.put(type + ".durability", block.getDurability());
+			map.put(type + ".regen-delay", block.getRegenDelay());
+		}
+		boolean doSave = false;
+		for(Map.Entry<String, Object> entry : map.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			Object valueKey = config.get(key);
+
+			if(value instanceof Float)
+				value = ((Float) value).doubleValue();
+			else if(value instanceof Long)
+				value = ((Long) value).intValue();
+
+			if(valueKey instanceof Float)
+				valueKey = ((Float) valueKey).doubleValue();
+			else if(valueKey instanceof Long)
+				valueKey = ((Long) valueKey).intValue();
+			if(!config.contains(key) || !valueKey.equals(value)) {
+				config.set(key, value); doSave = true;
+			}
+		}
+		for(String key : new ArrayList<>(map.keySet())) {
+			Object value = map.get(key);
+			if(!config.contains(key)) {
+				config.set(key, value); doSave = true;
+			}
+			map.remove(key);
+		}
+		if(doSave) {
+			try {
+				config.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	public static BlockSettings registerBlockSettings(String name, BlockSettingsData...settings ) {
 		if(!MAP.containsKey(name)) {
