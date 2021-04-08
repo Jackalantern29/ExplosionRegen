@@ -206,17 +206,17 @@ public class Explosion {
 				state.update(true);
 			}
 		}
-		if (BLOCK_MAP.containsKey(block.getLocation())) {
-			RegenBlock b = BLOCK_MAP.get(block.getLocation());
-			regenBlock.setDurability(b.getDurability() - blockDamage);
-			BLOCK_MAP.remove(block.getLocation());
-		} else {
-			regenBlock.setDurability(regenBlock.getDurability() - blockDamage);
-		}
-		if (regenBlock.getDurability() <= 0.0d) {
-			if (!bs.doPreventDamage()) {
+		if(!bs.doPreventDamage()) {
+			if (BLOCK_MAP.containsKey(block.getLocation())) {
+				RegenBlock b = BLOCK_MAP.get(block.getLocation());
+				regenBlock.setDurability(b.getDurability() - blockDamage);
+				BLOCK_MAP.remove(block.getLocation());
+			} else {
+				regenBlock.setDurability(regenBlock.getDurability() - blockDamage);
+			}
+			if (regenBlock.getDurability() <= 0.0d) {
 				if (bs.doRegen()) {
-					if(regenBlock.getType() != Material.TNT)
+					if (regenBlock.getType() != Material.TNT)
 						addBlock(regenBlock);
 					if (MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) {
 						block.setType(Material.AIR, false);
@@ -235,11 +235,12 @@ public class Explosion {
 				}
 			} else {
 				blockList.remove(block);
-				regenBlock.setBlock();
+				BLOCK_MAP.put(block.getLocation(), regenBlock);
 			}
 		} else {
 			blockList.remove(block);
-			BLOCK_MAP.put(block.getLocation(), regenBlock);
+			if(bs.doReplace())
+				regenBlock.setBlock();
 		}
 	}
 	private void startDelay() {
