@@ -3,7 +3,9 @@ package com.jackalantern29.explosionregen.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jackalantern29.erspecialeffects.InventoryMenu;
 import com.jackalantern29.explosionregen.api.BlockSettings;
+import com.jackalantern29.explosionregen.api.ProfileSettings;
 import com.jackalantern29.explosionregen.api.inventory.ItemBuilder;
 import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
 import com.jackalantern29.explosionregen.api.inventory.SlotElement;
@@ -36,7 +38,7 @@ public class CommandRSettings implements TabExecutor {
 			for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
 				ItemStack item = new ItemBuilder(settings.getDisplayItem()).setDisplayName(settings.getDisplayName()).build();
 				menu.addItem(new SlotElement(item, data -> {
-					data.getWhoClicked().openInventory(settings.getSettingsMenu().getInventory(data.getWhoClicked()));
+					data.getWhoClicked().openInventory(settings.getSettingsMenu().getInventory());
 					return true;
 				}));
 			}
@@ -53,16 +55,14 @@ public class CommandRSettings implements TabExecutor {
 			Player player = (Player)sender;
 			if(Bukkit.getPluginManager().getPlugin("ERSpecialEffects") != null) {
 				if(ExplosionRegen.getSettings().getAllowProfileSettings())
-					player.sendMessage("§cInventory is currently disabled.");
-					//InventorySettings.get(player.getUniqueId()).openSettings(player, false);
+					InventoryMenu.sendMenu(player, ProfileSettings.get(player));
 				else {
 					if(!sender.hasPermission("explosionregen.command.rsettings.server")) {
 						sender.sendMessage(ExplosionRegen.getSettings().getNoPermCmdChat());
 						return true;
 					}
 					if(Bukkit.getPluginManager().getPlugin("ERSpecialEffects") != null) {
-						player.sendMessage("§cInventory is currently disabled.");
-						//InventorySettings.get(player.getUniqueId()).openSettings(player, true);
+						InventoryMenu.sendMenu(player, null);
 					}
 				}
 			}
