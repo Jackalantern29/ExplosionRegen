@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 
@@ -55,15 +56,6 @@ public class SettingsMenu {
         return inventory;
     }
 
-    public Inventory getInventory(HumanEntity player) {
-        if(!map.isEmpty()) {
-            clear();
-            for(DynamicUpdate update : map.values())
-                update.update();
-        }
-        return inventory;
-    }
-
     public void sendInventory(HumanEntity player) {
         player.openInventory(inventory);
         if(!map.isEmpty())
@@ -95,11 +87,23 @@ public class SettingsMenu {
         if(slot != -1)
             setItem(slot, element);
     }
+
+    public void removeItem(ItemStack item) {
+        for (int i = 0; i < inventory.getContents().length; i++) {
+            ItemStack it = inventory.getItem(i);
+            if(it != null && it == item) {
+                elements[i] = null;
+                inventory.remove(it);
+            }
+        }
+    }
+
     public void clear() {
         elements = new SlotElement[slots];
         if(inventory != null)
             inventory.clear();
     }
+
     public String getTitle() {
         return title;
     }
