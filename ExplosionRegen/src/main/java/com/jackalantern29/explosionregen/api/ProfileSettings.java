@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.*;
 
 import com.jackalantern29.explosionregen.api.events.ProfileLoadEvent;
+import com.jackalantern29.explosionregen.api.events.ProfileUnloadEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
