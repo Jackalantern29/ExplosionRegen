@@ -37,6 +37,12 @@
             <version>16.17.1</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.jackalantern29</groupId>
+            <artifactId>erspecialeffects</artifactId>
+            <version>1.0</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
