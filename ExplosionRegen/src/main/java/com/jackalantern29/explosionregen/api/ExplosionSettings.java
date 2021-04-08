@@ -892,15 +892,13 @@ public class  ExplosionSettings {
 		settings.setBlockSettings(blockSettings);
 		return settings;
 	}
+
 	public static void removeSettings(String name) {
 		if(getSettings(name) != null) {
-			BlockSettings.removeSettings(getSettings(name).getBlockSettings().getName());
-//			for(ParticleSettings particles : new ArrayList<>(getSettings(name).particleSettings.values()))
-//				if(particles != null)
-//					ParticleSettings.removeSettings(particles.getName());
-			MAP.remove(name);
-			ExplosionSettingsUnloadEvent event = new ExplosionSettingsUnloadEvent(name);
+			ExplosionSettingsUnloadEvent event = new ExplosionSettingsUnloadEvent(getSettings(name));
 			Bukkit.getPluginManager().callEvent(event);
+			BlockSettings.removeSettings(getSettings(name).getBlockSettings().getName());
+			MAP.remove(name);
 			Bukkit.getConsoleSender().sendMessage("[ExplosionRegen] Removed Explosion Settings '" + name + "'.");
 		}
 	}

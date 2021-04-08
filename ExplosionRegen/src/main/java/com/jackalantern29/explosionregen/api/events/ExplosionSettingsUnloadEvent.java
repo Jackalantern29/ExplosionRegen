@@ -7,12 +7,12 @@ import org.bukkit.event.HandlerList;
 public class ExplosionSettingsUnloadEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
 
-    private final String settings;
-    public ExplosionSettingsUnloadEvent(String settings) {
+    private final ExplosionSettings settings;
+    public ExplosionSettingsUnloadEvent(ExplosionSettings settings) {
         this.settings = settings;
     }
 
-    public String getSettingsName() {
+    public ExplosionSettings getSettings() {
         return settings;
     }
 
