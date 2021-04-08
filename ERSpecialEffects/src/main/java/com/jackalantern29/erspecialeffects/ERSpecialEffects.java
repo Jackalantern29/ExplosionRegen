@@ -98,9 +98,30 @@ public class ERSpecialEffects extends JavaPlugin {
     }
     @Override
     public void onDisable() {
+        for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings())
+            updateOptions(settings);
+        for(ProfileSettings profile : ProfileSettings.getProfiles())
+            updateProfileOptions(profile);
+    }
+
+    public static void updateOptions(ExplosionSettings settings) {
+        ExplosionSettingsPlugin plugin = settings.getPlugin("SpecialEffects");
+        SpecialEffects effects = (SpecialEffects) plugin.toObject();
+        plugin.setOption("particles.type", effects.getParticleType().name().toLowerCase());
+        for(ExplosionPhase phase : ExplosionPhase.values()) {
+            plugin.setOption("particles.vanilla." + phase.toString() + ".particle", effects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase());
+            plugin.setOption("particles.vanilla." + phase.toString() + ".enable", effects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getCanDisplay());
+            plugin.setOption("sounds." + phase.toString() + ".sound", effects.getSoundSettings().getSound(phase).getSound().name().toLowerCase());
+            plugin.setOption("sounds." + phase.toString() + ".volume", effects.getSoundSettings().getSound(phase).getVolume());
+            plugin.setOption("sounds." + phase.toString() + ".pitch", effects.getSoundSettings().getSound(phase).getPitch());
+            plugin.setOption("sounds." + phase.toString() + ".enable", effects.getSoundSettings().getSound(phase).isEnable());
+        }
+    }
+
+    public static void updateProfileOptions(ProfileSettings profile) {
         for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
-            ExplosionSettingsPlugin plugin = settings.getPlugin("SpecialEffects");
-            SpecialEffects effects = (SpecialEffects) plugin.toObject();
+            ProfileSettingsPlugin plugin = profile.getPlugin(settings, "SpecialEffects");
+            SpecialEffects effects = (SpecialEffects)plugin.toObject();
             plugin.setOption("particles.type", effects.getParticleType().name().toLowerCase());
             for(ExplosionPhase phase : ExplosionPhase.values()) {
                 plugin.setOption("particles.vanilla." + phase.toString() + ".particle", effects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString().toLowerCase());
