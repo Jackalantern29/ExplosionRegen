@@ -151,7 +151,7 @@ public class  ExplosionSettings {
 			ItemStack pluginsItem = new ItemBuilder(MaterialUtil.getMaterial("FILLED_MAP")).setDisplayName("§fPlugins §7[§6" + plugins.size() + "§7]").build();
 
 			menu.setItem(0, new SlotElement(blockSettingsItem, data -> {
-				data.getWhoClicked().openInventory(bsMenu.getInventory(data.getWhoClicked()));
+				data.getWhoClicked().openInventory(bsMenu.getInventory());
 				return true;
 			}));
 			menu.setItem(2, new SlotElement(enableItem, data -> {
@@ -294,14 +294,14 @@ public class  ExplosionSettings {
 
 		bsMenu.setUpdate("menu", () -> {
 			bsMenu.setItem(8, new SlotElement(closeItem, data -> {
-				data.getWhoClicked().openInventory(menu.getInventory(data.getWhoClicked()));
+				data.getWhoClicked().openInventory(menu.getInventory());
 				return true;
 			}));
 			SettingsMenu switchMenu = new SettingsMenu("§lSwitch Settings", 9);
 
 			switchMenu.setUpdate("menu", () -> {
 				switchMenu.setItem(8, new SlotElement(closeItem, data -> {
-					data.getWhoClicked().openInventory(bsMenu.getInventory(data.getWhoClicked()));
+					data.getWhoClicked().openInventory(bsMenu.getInventory());
 					return true;
 				}));
 				for(BlockSettings settings : BlockSettings.getBlockSettings()) {
@@ -323,7 +323,7 @@ public class  ExplosionSettings {
 
 				blockMenu.setUpdate("menu", () -> {
 					blockMenu.setItem(8, new SlotElement(closeItem, data -> {
-						data.getWhoClicked().openInventory(bsMenu.getInventory(data.getWhoClicked()));
+						data.getWhoClicked().openInventory(bsMenu.getInventory());
 						return true;
 					}));
 					blockMenu.setItem(0, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fPrevent Damage: " + (blockData.doPreventDamage() ? "§aTrue" : "§cFalse")).build(), data -> {
@@ -439,7 +439,7 @@ public class  ExplosionSettings {
 				else
 					blockItem = new ItemBuilder(blockData.getRegenData().getMaterial()).setDisplayName("§f" + blockData.getRegenData().toString()).setLore(lore).build();
 				bsMenu.addItem(new SlotElement(blockItem, data -> {
-					data.getWhoClicked().openInventory(blockMenu.getInventory(data.getWhoClicked()));
+					data.getWhoClicked().openInventory(blockMenu.getInventory());
 					return true;
 				}));
 			}
