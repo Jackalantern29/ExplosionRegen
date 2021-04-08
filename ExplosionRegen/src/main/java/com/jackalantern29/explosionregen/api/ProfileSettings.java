@@ -44,8 +44,9 @@ public class ProfileSettings {
 
 			@EventHandler
 			public void disable(PluginDisableEvent event) {
-				for(ProfileSettings profile : getProfiles())
-					profile.save();
+				if(event.getPlugin() == ExplosionRegen.getInstance())
+					for(ProfileSettings profile : getProfiles())
+						profile.save();
 			}
 		};
 		Bukkit.getPluginManager().registerEvents(listener, ExplosionRegen.getInstance());
@@ -169,6 +170,7 @@ public class ProfileSettings {
 	}
 	private void save() {
 		boolean save = false;
+
 		for(Map.Entry<ExplosionSettings, HashMap<String, ProfileSettingsPlugin>> pluginEntry : plugins.entrySet()) {
 			ExplosionSettings settings = pluginEntry.getKey();
 			for(ProfileSettingsPlugin plugin : pluginEntry.getValue().values()) {
