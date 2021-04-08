@@ -1,6 +1,8 @@
 package com.jackalantern29.explosionregen.api.inventory;
 
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -16,7 +18,7 @@ public class ItemBuilder {
     public ItemBuilder(ItemStack item) {
         this.item = new ItemStack(item);
         this.meta = item.getItemMeta();
-        this.lore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
+        this.lore = (meta != null && meta.hasLore()) ? meta.getLore() : new ArrayList<>();
     }
 
     public ItemBuilder(Material material) {
@@ -44,6 +46,22 @@ public class ItemBuilder {
         else
             lore.add(index, line);
         meta.setLore(lore);
+        return this;
+    }
+
+    public ItemBuilder setGlow(boolean glow) {
+        if(glow) {
+            if(!meta.hasEnchants())
+                meta.addEnchant(Enchantment.PROTECTION_EXPLOSIONS, 1, false);
+            if(!meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS))
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        } else {
+            if(meta.hasEnchants())
+                for(Enchantment enchant : meta.getEnchants().keySet())
+                    meta.removeEnchant(enchant);
+            if(meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS))
+                meta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
+        }
         return this;
     }
 
