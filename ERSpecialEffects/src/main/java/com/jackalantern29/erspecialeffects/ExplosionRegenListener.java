@@ -53,6 +53,15 @@ public class ExplosionRegenListener implements Listener {
 		}
 	}
 
+	@EventHandler
+	public void onUnload(ProfileUnloadEvent event) {
+		ERSpecialEffects.updateProfileOptions(event.getProfile());
+	}
+
+	@EventHandler
+	public void onUnload(ExplosionSettingsUnloadEvent event) {
+		ERSpecialEffects.updateOptions(event.getSettings());
+	}
     @EventHandler
     public void onRegen(ExplosionRegenEvent event) {
         Explosion explosion = event.getExplosion();
