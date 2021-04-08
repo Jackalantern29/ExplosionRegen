@@ -144,6 +144,9 @@ public class ProfileSettings {
 			return null;
 	}
 	private void remove() {
+		ProfileUnloadEvent e = new ProfileUnloadEvent(this);
+		Bukkit.getPluginManager().callEvent(e);
+		save();
 		profiles.remove(this);
 	}
 	public static ProfileSettings get(Player player) {
