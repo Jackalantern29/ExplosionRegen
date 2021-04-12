@@ -57,10 +57,16 @@ public class SettingsMenu {
     }
 
     public void sendInventory(HumanEntity player) {
+        sendInventory(player, false);
+    }
+
+    public void sendInventory(HumanEntity player, boolean update) {
         player.openInventory(inventory);
-        if(!map.isEmpty())
-            for(DynamicUpdate update : map.values())
-                update.update();
+        if(!map.isEmpty() && update) {
+            inventory.clear();
+            for (DynamicUpdate dyn : map.values())
+                dyn.update();
+        }
     }
 
     public int getSlots() {
