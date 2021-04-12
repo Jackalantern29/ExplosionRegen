@@ -40,27 +40,15 @@ public class BlockSettings {
 
 	}
 	public BlockSettingsData get(RegenBlockData regenData) {
-		if(regenData == null)
-			return this.settings.get("");
-		if(this.settings.containsKey(regenData.toString())) {
-			return this.settings.get(regenData.toString());
+		if(regenData == null || !this.settings.containsKey(regenData.toString())) {
+			BlockSettingsData data = this.settings.get("");
+			if(MaterialUtil.isIndestructible(regenData.getMaterial())) {
+				data = new BlockSettingsData(regenData);
+				data.setPreventDamage(true);
+			}
+			return data;
 		} else {
-			BlockSettingsData to = new BlockSettingsData(regenData);
-			BlockSettingsData from = this.settings.get("");
-			if(MaterialUtil.isIndestructible(regenData.getMaterial()))
-				to.setPreventDamage(true);
-			else
-				to.setPreventDamage(from.doPreventDamage());
-			to.setDropChance(from.getDropChance());
-			to.setDurability(from.getDurability());
-			to.setMaxRegenHeight(from.getMaxRegenHeight());
-			to.setRegen(from.doRegen());
-			to.setRegenDelay(from.getRegenDelay());
-			to.setReplace(from.doReplace());
-			to.setReplaceWith(from.getReplaceWith());
-			to.setSaveItems(from.doSaveItems());
-			this.settings.put(regenData.toString(), to);
-			return to;
+			return this.settings.get(regenData.toString());
 		}
 	}
 
