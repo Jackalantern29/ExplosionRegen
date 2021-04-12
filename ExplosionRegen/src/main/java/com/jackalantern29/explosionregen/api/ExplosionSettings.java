@@ -6,10 +6,7 @@ import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.*;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsLoadEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsUnloadEvent;
-import com.jackalantern29.explosionregen.api.inventory.InputMode;
-import com.jackalantern29.explosionregen.api.inventory.ItemBuilder;
-import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
-import com.jackalantern29.explosionregen.api.inventory.SlotElement;
+import com.jackalantern29.explosionregen.api.inventory.*;
 import com.jackalantern29.explosionregen.commands.CommandRSettings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -80,7 +77,7 @@ public class  ExplosionSettings {
 		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
 
 		menu = new SettingsMenu(getDisplayName(), 54);
-		SettingsMenu bsMenu = new SettingsMenu(getDisplayName() + " §l[Block Settings]", 54);
+		PageMenu bsMenu = new PageMenu(getDisplayName() + " §l[Block Settings]", 54);
 		ItemStack closeItem = new ItemBuilder(Material.BARRIER).setDisplayName("§c§lClose Menu").build();
 
 		// Sets the main menu
@@ -151,7 +148,7 @@ public class  ExplosionSettings {
 			ItemStack pluginsItem = new ItemBuilder(MaterialUtil.getMaterial("FILLED_MAP")).setDisplayName("§fPlugins §7[§6" + plugins.size() + "§7]").build();
 
 			menu.setItem(0, new SlotElement(blockSettingsItem, data -> {
-				data.getWhoClicked().openInventory(bsMenu.getInventory());
+				bsMenu.sendInventory(data.getWhoClicked(), true);
 				return true;
 			}));
 			menu.setItem(2, new SlotElement(enableItem, data -> {
@@ -291,39 +288,56 @@ public class  ExplosionSettings {
 			}));
 			menu.setItem(53, new SlotElement(pluginsItem, data -> true));
 		});
-
-		bsMenu.setUpdate("menu", () -> {
-			bsMenu.setItem(8, new SlotElement(closeItem, data -> {
-				data.getWhoClicked().openInventory(menu.getInventory());
+		SettingsMenu switchMenu = new SettingsMenu("§lSwitch Settings", 9);
+		switchMenu.setUpdate("menu", () -> {
+			switchMenu.setItem(8, new SlotElement(closeItem, data -> {
+				bsMenu.sendInventory(data.getWhoClicked(), true);
 				return true;
 			}));
-			SettingsMenu switchMenu = new SettingsMenu("§lSwitch Settings", 9);
-
-			switchMenu.setUpdate("menu", () -> {
-				switchMenu.setItem(8, new SlotElement(closeItem, data -> {
-					data.getWhoClicked().openInventory(bsMenu.getInventory());
+			for(BlockSettings settings : BlockSettings.getBlockSettings()) {
+				switchMenu.addItem(new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName(settings.getName().equals(getBlockSettings().getName()) ? "§a" + settings.getName() : settings.getName()).build(), data -> {
+					if(data.getItem().hasItemMeta())
+						setBlockSettings(BlockSettings.getSettings(ChatColor.stripColor(data.getItem().getItemMeta().getDisplayName())));
+					switchMenu.clear();
+					switchMenu.update("menu");
 					return true;
 				}));
-				for(BlockSettings settings : BlockSettings.getBlockSettings()) {
-					switchMenu.addItem(new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName(settings.getName().equals(getBlockSettings().getName()) ? "§a" + settings.getName() : settings.getName()).build(), data -> {
-						if(data.getItem().hasItemMeta())
-							setBlockSettings(BlockSettings.getSettings(ChatColor.stripColor(data.getItem().getItemMeta().getDisplayName())));
-						switchMenu.clear();
-						switchMenu.update("menu");
-						return true;
-					}));
+			}
+		});
+		bsMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
+		bsMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
+
+		bsMenu.setUpdate("#layout", () -> {
+			for(SettingsMenu page : bsMenu.getPages()) {
+				page.setItem(8, new SlotElement(closeItem, data -> {
+					data.getWhoClicked().openInventory(menu.getInventory());
+					return true;
+				}));
+
+				page.setItem(17, new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§aSwitch Settings").setLine(0, "§fCurrent: §d" + getBlockSettings().getName()).build(), data -> {
+					switchMenu.sendInventory(data.getWhoClicked());
+					return true;
+				}));
+
+				page.setItem(45, new SlotElement(bsMenu.getPrevPageItem(), data -> true));
+				page.setItem(53, new SlotElement(bsMenu.getNextPageItem(), data -> true));
+
+				for (int i = 46; i < 53; i++) {
+					page.setItem(i, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
 				}
-			});
-			bsMenu.setItem(17, new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§aSwitch Settings").setLine(0, "§fCurrent: §d" + getBlockSettings().getName()).build(), data -> {
-				switchMenu.sendInventory(data.getWhoClicked());
-				return true;
-			}));
+			}
+		});
+
+
+		bsMenu.setUpdate("menu", () -> {
+			bsMenu.clear();
+			bsMenu.update("#layout");
 			for(BlockSettingsData blockData : getBlockSettings().getBlockDatas()) {
 				SettingsMenu blockMenu = new SettingsMenu(blockData.getRegenData() == null ? "Default" : blockData.getRegenData().toString(), 18);
 
 				blockMenu.setUpdate("menu", () -> {
 					blockMenu.setItem(8, new SlotElement(closeItem, data -> {
-						data.getWhoClicked().openInventory(bsMenu.getInventory());
+						bsMenu.sendInventory(data.getWhoClicked(), true);
 						return true;
 					}));
 					blockMenu.setItem(0, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fPrevent Damage: " + (blockData.doPreventDamage() ? "§aTrue" : "§cFalse")).build(), data -> {
