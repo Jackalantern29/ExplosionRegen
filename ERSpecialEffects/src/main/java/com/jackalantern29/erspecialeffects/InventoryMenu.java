@@ -45,19 +45,19 @@ public class InventoryMenu {
                         effects = (SpecialEffects)settings.getPlugin("SpecialEffects").toObject();
                     }
                     menu.addItem(new SlotElement(new ItemBuilder(settings.getDisplayItem()).setDisplayName(settings.getDisplayName()).build(), data -> {
-                        typeMenu.sendInventory(data.getWhoClicked());
+                        typeMenu.sendInventory(data.getWhoClicked(), true);
                         return true;
                     }));
                     typeMenu.setItem(1, new SlotElement(new ItemBuilder(Material.NETHER_STAR).setDisplayName("§a§lParticles").build(), data -> {
-                        particleMenu.sendInventory(data.getWhoClicked());
+                        particleMenu.sendInventory(data.getWhoClicked(), true);
                         return true;
                     }));
                     typeMenu.setItem(2, new SlotElement(new ItemBuilder(Material.NOTE_BLOCK).setDisplayName("§a§lSounds").build(), data -> {
-                        soundMenu.sendInventory(data.getWhoClicked());
+                        soundMenu.sendInventory(data.getWhoClicked(), true);
                         return true;
                     }));
                     typeMenu.setItem(4, new SlotElement(closeItem, data -> {
-                        menu.sendInventory(data.getWhoClicked());
+                        menu.sendInventory(data.getWhoClicked(), true);
                         return true;
                     }));
 
@@ -65,43 +65,43 @@ public class InventoryMenu {
                         pageMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
                         pageMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
 
-                        pageMenu.setUpdate("preset", () -> {
+                        pageMenu.setUpdate("#layout", () -> {
                             for(SettingsMenu setMenu : pageMenu.getPages()) {
                                 setMenu.setItem(0, new SlotElement(new ItemBuilder(Material.LIME_DYE).setDisplayName("§aBlock Regenerating").setGlow(phase == ExplosionPhase.BLOCK_REGENERATING).build(), data -> {
                                     phase = ExplosionPhase.BLOCK_REGENERATING;
-                                    pageMenu.update("preset");
+                                    pageMenu.update("#layout");
                                     return true;
                                 }));
                                 setMenu.setItem(1, new SlotElement(new ItemBuilder(Material.LIGHT_BLUE_DYE).setDisplayName("§bOn Block Regen").setGlow(phase == ExplosionPhase.ON_BLOCK_REGEN).build(), data -> {
                                     phase = ExplosionPhase.ON_BLOCK_REGEN;
-                                    pageMenu.update("preset");
+                                    pageMenu.update("#layout");
                                     return true;
                                 }));
                                 setMenu.setItem(2, new SlotElement(new ItemBuilder(Material.PURPLE_DYE).setDisplayName("§5On Explode").setGlow(phase == ExplosionPhase.ON_EXPLODE).build(), data -> {
                                     phase = ExplosionPhase.ON_EXPLODE;
-                                    pageMenu.update("preset");
+                                    pageMenu.update("#layout");
                                     return true;
                                 }));
                                 setMenu.setItem(3, new SlotElement(new ItemBuilder(Material.PINK_DYE).setDisplayName("§dExplosion Finished Regen").setGlow(phase == ExplosionPhase.EXPLOSION_FINISHED_REGEN).build(), data -> {
                                     phase = ExplosionPhase.EXPLOSION_FINISHED_REGEN;
-                                    pageMenu.update("preset");
+                                    pageMenu.update("#layout");
                                     return true;
                                 }));
                                 if(particleMenu.hasPage(setMenu)) {
                                     setMenu.setItem(4, new SlotElement(new ItemBuilder(Material.COMPASS).setDisplayName("§aToggle Particle").build(), data -> {
                                         effects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).setCanDisplay(!effects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getCanDisplay());
-                                        pageMenu.update("preset");
+                                        pageMenu.update("#layout");
                                         return true;
                                     }));
                                     setMenu.setItem(5, new SlotElement(new ItemBuilder(Material.CLOCK).setDisplayName("§aSwitch Particle Type").setLine(0, "§7Current Type: §6Vanilla").build(), data -> {
                                         effects.setParticleType(ParticleType.PRESET);
-                                        presetMenu.sendInventory(data.getWhoClicked());
+                                        presetMenu.sendInventory(data.getWhoClicked(), true);
                                         return true;
                                     }));
                                 } else if(soundMenu.hasPage(setMenu)) {
                                     setMenu.setItem(4, new SlotElement(new ItemBuilder(Material.COMPASS).setDisplayName("§aToggle Sound").build(), data -> {
                                         effects.setAllowSound(phase, !effects.getAllowSound(phase));
-                                        pageMenu.update("preset");
+                                        pageMenu.update("#layout");
                                         return true;
                                     }));
                                     setMenu.setItem(5, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
@@ -109,7 +109,7 @@ public class InventoryMenu {
                                 setMenu.setItem(6, new SlotElement(pageMenu.getPrevPageItem(), data -> true));
                                 setMenu.setItem(7, new SlotElement(pageMenu.getNextPageItem(), data -> true));
                                 setMenu.setItem(8, new SlotElement(closeItem, data -> {
-                                    typeMenu.sendInventory(data.getWhoClicked());
+                                    typeMenu.sendInventory(data.getWhoClicked(), true);
                                     return true;
                                 }));
                             }
@@ -118,7 +118,7 @@ public class InventoryMenu {
 
                     particleMenu.setUpdate("particles", () -> {
                         particleMenu.clear();
-                        particleMenu.update("preset");
+                        particleMenu.update("#layout");
                         List<ExplosionParticle> particleList = Arrays.asList(ExplosionParticle.getParticles());
                         particleList.sort(Comparator.comparing(ExplosionParticle::toString));
                         for(ExplosionParticle particle : particleList) {
@@ -219,9 +219,9 @@ public class InventoryMenu {
 
     public static void sendMenu(Player player, ProfileSettings profile) {
         if(MAP.containsKey(profile))
-            MAP.get(profile).menu.sendInventory(player);
+            MAP.get(profile).menu.sendInventory(player, true);
         else
-            new InventoryMenu(profile).menu.sendInventory(player);
+            new InventoryMenu(profile).menu.sendInventory(player, true);
 
     }
 }
