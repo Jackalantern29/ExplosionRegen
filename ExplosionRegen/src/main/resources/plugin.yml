@@ -1,5 +1,5 @@
 name: ExplosionRegen
-version: 3.0-EB.51
+version: 3.0-EB.52
 description: Regenerate blocks destroyed from Entities
 main: com.jackalantern29.explosionregen.ExplosionRegen
 author: Jackalantern29
