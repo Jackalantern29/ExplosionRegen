@@ -110,6 +110,11 @@ public class BlockSettings {
 			}
 			map.remove(key);
 		}
+		for(String key : config.getKeys(false)) {
+			if(!key.equals("default") && !settings.containsKey(key)) {
+				config.set(key, null); doSave = true;
+			}
+		}
 		if(doSave) {
 			try {
 				config.save(file);
