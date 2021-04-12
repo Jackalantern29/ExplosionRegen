@@ -187,6 +187,24 @@ public class Explosion {
 		return SUPPORT_NEED;
 	}
 
+	private boolean hasGravityBlockNearby(BlockState block) {
+		if(block.getType().hasGravity())
+			return true;
+		else if(block.getBlock().getRelative(1, 0, 0).getState().getType().hasGravity())
+			return true;
+		else if(block.getBlock().getRelative(-1, 0, 0).getState().getType().hasGravity())
+			return true;
+		else if(block.getBlock().getRelative(0, 1, 0).getState().getType().hasGravity())
+			return true;
+		else if(block.getBlock().getRelative(0, -1, 0).getState().getType().hasGravity())
+			return true;
+		else if(block.getBlock().getRelative(0, 0, 1).getState().getType().hasGravity())
+			return true;
+		else if(block.getBlock().getRelative(0, 0, -1).getState().getType().hasGravity())
+			return true;
+		else
+			return false;
+	}
 	private void damageBlock(RegenBlock regenBlock, BlockSettingsData bs, Block block) {
 		BlockState state = block.getState();
 		if(state instanceof Container) {
@@ -217,6 +235,9 @@ public class Explosion {
 					if (MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) {
 						block.setType(Material.AIR, false);
 					}
+					if(hasGravityBlockNearby(block.getState()))
+						block.setType(Material.AIR, false);
+
 					if (ExplosionRegen.getInstance().getCoreProtect() != null) {
 						if (UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
 							ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), BukkitMethods.getBlockData(block.getState()));
@@ -593,7 +614,10 @@ public class Explosion {
 		if(settings.getRegenForceBlock()) {
 			block.getBlock().breakNaturally();
 		}
-		state.update(true);
+		if(state.getType().hasGravity())
+			state.update(true, false);
+		else
+			state.update(true);
 		if(bState.getType() != Material.AIR) {
 			block.getBlock().breakNaturally();
 			bState.update(true);
