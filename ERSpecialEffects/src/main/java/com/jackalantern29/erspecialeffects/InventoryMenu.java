@@ -37,14 +37,6 @@ public class InventoryMenu {
                     pageSet.add(particleMenu);
                     pageSet.add(presetMenu);
                     pageSet.add(soundMenu);
-/*                    private final String[] setupRows = {
-                            "qwertiyu0",
-                            "ppppppppd",
-                            "ppppppppz",
-                            "ppppppppn",
-                            "ppppppppm",
-                            "ppppppppv",
-                    };*/
 
                     SpecialEffects effects;
                     if(profile != null) {
