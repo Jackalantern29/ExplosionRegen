@@ -614,7 +614,7 @@ public class Explosion {
 		if(settings.getRegenForceBlock()) {
 			block.getBlock().breakNaturally();
 		}
-		if(state.getType().hasGravity())
+		if(hasGravityBlockNearby(state))
 			state.update(true, false);
 		else
 			state.update(true);
