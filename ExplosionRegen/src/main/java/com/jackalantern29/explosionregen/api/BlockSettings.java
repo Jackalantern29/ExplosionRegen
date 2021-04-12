@@ -32,6 +32,13 @@ public class BlockSettings {
 		String string = settings.getRegenData() != null ? settings.getRegenData().toString() : "";
 		this.settings.put(string, settings);
 	}
+
+	public void remove(String blockData) {
+		if(!blockData.equals("") && this.settings.containsKey(blockData)) {
+			this.settings.remove(blockData);
+		}
+
+	}
 	public BlockSettingsData get(RegenBlockData regenData) {
 		if(regenData == null)
 			return this.settings.get("");
