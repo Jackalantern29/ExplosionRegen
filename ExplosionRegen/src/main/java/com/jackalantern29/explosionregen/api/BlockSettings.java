@@ -7,7 +7,6 @@ import java.util.*;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
-import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
