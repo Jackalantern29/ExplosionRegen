@@ -423,7 +423,7 @@ public class  ExplosionSettings {
 					if(blockData.getRegenData() != null) {
 						blockMenu.setItem(17, new SlotElement(new ItemBuilder(Material.LAVA_BUCKET).setDisplayName("§4§lDelete Block").build(), data -> {
 							getBlockSettings().remove(blockData.getRegenData().toString());
-							bsMenu.sendInventory(data.getWhoClicked());
+							bsMenu.sendInventory(data.getWhoClicked(), true);
 							return true;
 						}));
 					}
