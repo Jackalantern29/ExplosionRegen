@@ -420,6 +420,13 @@ public class  ExplosionSettings {
 						blockMenu.update("menu");
 						return true;
 					}));
+					if(blockData.getRegenData() != null) {
+						blockMenu.setItem(17, new SlotElement(new ItemBuilder(Material.LAVA_BUCKET).setDisplayName("§4§lDelete Block").build(), data -> {
+							getBlockSettings().remove(blockData.getRegenData().toString());
+							bsMenu.sendInventory(data.getWhoClicked());
+							return true;
+						}));
+					}
 				});
 
 
