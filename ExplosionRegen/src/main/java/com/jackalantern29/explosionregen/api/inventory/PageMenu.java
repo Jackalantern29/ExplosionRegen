@@ -85,7 +85,7 @@ public class PageMenu {
             count++;
         }
         addPage();
-        update("preset");
+        update("#layout");
     }
 
     public void sendInventory(HumanEntity player) {
