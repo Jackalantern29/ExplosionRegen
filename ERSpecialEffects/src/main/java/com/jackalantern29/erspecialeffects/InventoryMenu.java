@@ -31,11 +31,9 @@ public class InventoryMenu {
                 if(profile == null || profile.hasPermission(settings)) {
                     SettingsMenu typeMenu = new SettingsMenu("§2Select Option", 5);
                     PageMenu particleMenu = new PageMenu("§2Select Particle", 54);
-                    PageMenu presetMenu = new PageMenu("§2Select Preset", 54);
                     PageMenu soundMenu = new PageMenu("§2Select Sound", 54);
                     List<PageMenu> pageSet = new ArrayList<>();
                     pageSet.add(particleMenu);
-                    pageSet.add(presetMenu);
                     pageSet.add(soundMenu);
 
                     SpecialEffects effects;
@@ -87,17 +85,26 @@ public class InventoryMenu {
                                     pageMenu.update("#layout");
                                     return true;
                                 }));
+                                String[] toggleLore = new String[ExplosionPhase.values().length + 1];
                                 if(particleMenu.hasPage(setMenu)) {
-                                    setMenu.setItem(4, new SlotElement(new ItemBuilder(Material.COMPASS).setDisplayName("§aToggle Particle").build(), data -> {
-                                        effects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).setCanDisplay(!effects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getCanDisplay());
+                                    for (int ii = 1; ii < toggleLore.length; ii++) {
+                                        ExplosionPhase phase = ExplosionPhase.values()[ii - 1];
+                                        String line = "";
+                                        if (this.phase == phase)
+                                            line = line + "§b";
+                                        else
+                                            line = line + "§7";
+                                        line = line + WordUtils.capitalize(phase.toString().replace("-", " ")) + ": ";
+                                        line = line + (effects.getParticleSettings(phase).canDisplay(phase) ? "§aTrue" : "§cFalse");
+                                        toggleLore[ii] = line;
+                                    }
+                                    setMenu.setItem(4, new SlotElement(new ItemBuilder(Material.COMPASS).setDisplayName("§aToggle Particle").setLore(toggleLore).build(), data -> {
+                                        effects.getParticleSettings(phase).setCanDisplay(phase, !effects.getParticleSettings(phase).canDisplay(phase));
                                         pageMenu.update("#layout");
                                         return true;
                                     }));
-                                    setMenu.setItem(5, new SlotElement(new ItemBuilder(Material.CLOCK).setDisplayName("§aSwitch Particle Type").setLine(0, "§7Current Type: §6Vanilla").build(), data -> {
-                                        effects.setParticleType(ParticleType.PRESET);
-                                        presetMenu.sendInventory(data.getWhoClicked(), true);
-                                        return true;
-                                    }));
+                                    setMenu.setItem(5, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
+
                                 } else if(soundMenu.hasPage(setMenu)) {
                                     setMenu.setItem(4, new SlotElement(new ItemBuilder(Material.COMPASS).setDisplayName("§aToggle Sound").build(), data -> {
                                         effects.setAllowSound(phase, !effects.getAllowSound(phase));
@@ -115,19 +122,22 @@ public class InventoryMenu {
                             }
                         });
                     }
-
                     particleMenu.setUpdate("particles", () -> {
                         particleMenu.clear();
                         particleMenu.update("#layout");
-                        List<ExplosionParticle> particleList = Arrays.asList(ExplosionParticle.getParticles());
-                        particleList.sort(Comparator.comparing(ExplosionParticle::toString));
-                        for(ExplosionParticle particle : particleList) {
-                            if(profile != null && !profile.getPlayer().hasPermission("explosionregen.command.rsettings.particles." + particle.toString().toLowerCase()))
+                        List<ParticleSettings> particleList = new ArrayList<>(ParticleSettings.getVanillaSettingss());
+                        List<ParticleSettings> presetList = new ArrayList<>(ParticleSettings.getPresetSettings());
+                        particleList.sort(Comparator.comparing(ParticleSettings::getName));
+                        presetList.sort(Comparator.comparing(ParticleSettings::getName));
+
+                        for(ParticleSettings particle : particleList) {
+                            if(profile != null && !profile.getPlayer().hasPermission("explosionregen.command.rsettings.particles." + particle.getName().toLowerCase()))
                                 continue;
-                            String displayName = WordUtils.capitalize(particle.toString().toLowerCase().replace("_", " "));
+                            String displayName = WordUtils.capitalize(particle.getName().toLowerCase().replace("_", " "));
                             ItemStack item = new ItemBuilder(Material.GRAY_DYE).setDisplayName("§7" + displayName).build();
                             for(ExplosionPhase phaseI : ExplosionPhase.values()) {
-                                ExplosionParticle phaseParticle = effects.getParticleSettings(ParticleType.VANILLA).getParticles(phaseI).get(0).getParticle();
+                                ParticleSettings phaseParticle = effects.getParticleSettings(phaseI);
+
                                 if(particle == phaseParticle) {
                                     switch(phaseI) {
                                         case BLOCK_REGENERATING:
@@ -147,7 +157,30 @@ public class InventoryMenu {
                                 }
                             }
                             particleMenu.addItem(new SlotElement(item, data -> {
-                                effects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).setParticle(particle);
+                                effects.setParticleSettings(phase, particle);
+                                particleMenu.update("particles");
+                                return true;
+                            }));
+                        }
+                        for(ParticleSettings particle : presetList) {
+                            if(profile != null && !profile.getPlayer().hasPermission("explosionregen.command.rsettings.particles." + particle.toString().toLowerCase()))
+                                continue;
+                            String displayName = WordUtils.capitalize(particle.getName().toLowerCase().replace("_", " "));
+                            ItemStack item = new ItemBuilder(Material.BOOK).setDisplayName("§7" + displayName).setLine(0, "§7by " + particle.getAuthor()).build();
+                            boolean check = true;
+                            for(ExplosionPhase phaseI : ExplosionPhase.values()) {
+                                ParticleSettings phaseParticle = effects.getParticleSettings(phaseI);
+                                if(particle != phaseParticle) {
+                                    check = false;
+                                    break;
+                                }
+
+                            }
+                            if(check)
+                                item = new ItemBuilder(Material.WRITTEN_BOOK).setDisplayName("§6" + displayName).setLine(0, "§7by " + particle.getAuthor()).build();
+                            particleMenu.addItem(new SlotElement(item, data -> {
+                                for(ExplosionPhase phaseI : ExplosionPhase.values())
+                                    effects.setParticleSettings(phaseI, particle);
                                 particleMenu.update("particles");
                                 return true;
                             }));

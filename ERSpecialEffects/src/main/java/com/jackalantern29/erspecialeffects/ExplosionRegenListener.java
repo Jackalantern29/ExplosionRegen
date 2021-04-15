@@ -26,18 +26,16 @@ public class ExplosionRegenListener implements Listener {
 			plugin = new ExplosionSettingsPlugin(effects, "SpecialEffects");
 			settings.addPlugin(plugin);
 		} else {
-			effects.setParticleType(ParticleType.valueOf(plugin.getString("particles.type", effects.getParticleType().name()).toUpperCase()));
 			for(ExplosionPhase phase : ExplosionPhase.values()) {
-				ExplosionParticle particle = ExplosionParticle.getParticle(plugin.getString("particles.vanilla." + phase.toString() + ".particle", effects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getParticle().toString()).toUpperCase());
-				boolean canDisplay = plugin.getBoolean("particles.vanilla." + phase.toString() + ".enable", effects.getParticleSettings(ParticleType.VANILLA).getParticles(phase).get(0).getCanDisplay());
-				effects.getParticleSettings(ParticleType.VANILLA).setParticle(0, new ParticleData(ParticleData.getVanillaSettings(particle), phase, canDisplay));
+				ParticleSettings particle = ParticleSettings.getSettings(plugin.getString("particles." + phase.toString() + ".particle", effects.getParticleSettings(phase).getName()).toLowerCase());
+				boolean canDisplay = plugin.getBoolean("particles." + phase.toString() + ".enable", effects.getParticleSettings(phase).canDisplay(phase));
+				effects.setParticleSettings(phase, particle);
 				Sound sound = Sound.valueOf(plugin.getString("sounds." + phase.toString() + ".sound", effects.getSoundSettings().getSound(phase).getSound().name()).toUpperCase());
 				float volume = (float)plugin.getDouble("sounds." + phase.toString() + ".volume", effects.getSoundSettings().getSound(phase).getVolume());
 				float pitch = (float)plugin.getDouble("sounds." + phase.toString() + ".pitch", effects.getSoundSettings().getSound(phase).getPitch());
 				boolean enable = plugin.getBoolean("sounds." + phase.toString() + ".enable", effects.getSoundSettings().getSound(phase).isEnable());
 				effects.getSoundSettings().setSound(phase, new SoundData(sound, volume, pitch, enable));
 			}
-			effects.setParticleSettings(ParticleType.PRESET, ParticleSettings.getSettings(plugin.getString("particles.preset", Objects.nonNull(effects.getParticleSettings(ParticleType.PRESET)) ? effects.getParticleSettings(ParticleType.PRESET).getName() : null)));
 		}
 		if(ExplosionRegen.getSettings().getAllowProfileSettings())
 			for(ProfileSettings profile : ProfileSettings.getProfiles()) {
@@ -79,10 +77,10 @@ public class ExplosionRegenListener implements Listener {
 					effects = (SpecialEffects) settings.getPlugin("SpecialEffects").toObject();
 
 				List<ParticleData> particles;
-				if(effects.getParticleSettings(effects.getParticleType()) == null)
-					particles = ParticleSettings.getSettings(settings.getName() + "_vanilla").getParticles();
+				if(effects.getParticleSettings(phase) == null)
+					particles = ParticleSettings.getSettings(settings.getName()).getParticles();
 				else
-					particles = effects.getParticleSettings(effects.getParticleType()).getParticles(phase);
+					particles = effects.getParticleSettings(phase).getParticles(phase);
 				if(!explosion.getBlocks().isEmpty()) {
 					int random = new Random().nextInt(explosion.getBlocks().size());
 					for (ParticleData particle : particles) {

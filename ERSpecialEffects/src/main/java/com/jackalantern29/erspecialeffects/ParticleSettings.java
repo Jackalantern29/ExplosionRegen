@@ -1,6 +1,7 @@
 package com.jackalantern29.erspecialeffects;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
+import com.jackalantern29.explosionregen.api.Explosion;
 import com.jackalantern29.explosionregen.api.ExplosionParticle;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
 import com.jackalantern29.explosionregen.api.particledata.DustColor;
@@ -18,65 +19,90 @@ import java.util.*;
 public class ParticleSettings {
 	private static final Map<String, ParticleSettings> MAP = new HashMap<>();
 	private File file;
-	private final Map<ExplosionPhase, List<ParticleData>> particles = new HashMap<>();
+	private final HashMap<ExplosionPhase, List<ParticleData>> particles = new HashMap<>();
+	private final HashMap<ExplosionPhase, Boolean> displayParticles = new HashMap<>();
+
 	private final String name;
 	private final String author;
-	public ParticleSettings(String name, String author, ParticleData... particles) {
+	public ParticleSettings(String name, String author) {
+		for(ExplosionPhase phase : ExplosionPhase.values()) {
+			this.displayParticles.put(phase, true);
+		}
 		name = name.replace(" ", "_").toLowerCase();
 		this.name = name;
 		if(author == null)
 			author = "Server";
 		this.author = author;
-		addParticles(particles);
 		this.file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "particles" + File.separator + "preset", name + ".yml");
 		MAP.put(name, this);
 	}
-	public ParticleSettings(String name, ParticleData... particles) {
-		this(name, null, particles);
+	public ParticleSettings(String name) {
+		this(name, null);
 	}
-	public void addParticles(ParticleData... particles) {
+
+	public void addParticles(ExplosionPhase phase, ParticleData... particles) {
 		for(ParticleData particle : particles) {
-			List<ParticleData> list = this.particles.getOrDefault(particle.getPhase(), new ArrayList<>());
+			List<ParticleData> list = this.particles.getOrDefault(phase, new ArrayList<>());
 			list.add(particle);
-			this.particles.put(particle.getPhase(), list);
+			this.particles.put(phase, list);
 		}
 	}
-	public void setParticle(int index, ParticleData particle) {
-		List<ParticleData> list = this.particles.getOrDefault(particle.getPhase(), new ArrayList<>());
+
+	public void setParticle(int index, ExplosionPhase phase, ParticleData particle) {
+		List<ParticleData> list = this.particles.getOrDefault(phase, new ArrayList<>());
 		list.remove(index);
 		list.add(index, particle);
-		this.particles.put(particle.getPhase(), list);
+		this.particles.put(phase, list);
 	}
+
+	public void setParticles(ExplosionPhase phase, List<ParticleData> particleData) {
+		this.particles.put(phase, particleData);
+	}
+
 	public List<ParticleData> getParticles() {
 		List<ParticleData> list = new ArrayList<>();
 		particles.values().forEach(list::addAll);
 		return list;
 	}
+
 	public List<ParticleData> getParticles(ExplosionPhase phase) {
 		List<ParticleData> list = new ArrayList<>();
 		if(particles.containsKey(phase))
 			list.addAll(particles.get(phase));
 		return list;
 	}
+
 	public void clearParticles() {
 		particles.clear();
 	}
+
 	public void clearParticles(ExplosionPhase phase) {
 		particles.remove(phase);
 	}
+
+	public void setCanDisplay(ExplosionPhase phase, boolean display) {
+		displayParticles.put(phase, display);
+	}
+
+	public boolean canDisplay(ExplosionPhase phase) {
+		return displayParticles.get(phase);
+	}
+
 	public String getName() {
 		return name;
 	}
+
 	public String getAuthor() {
 		return this.author;
 	}
+
 	public void playParticles(ExplosionPhase phase, Location location) {
 		if(particles.containsKey(phase))
-			particles.get(phase).forEach(particle -> {if(particle.getPhase().equals(phase) && particle.getCanDisplay()) particle.playParticle(location);});
+			particles.get(phase).forEach(particle -> {particle.playParticle(location);});
 	}
 	public void playParticles(ExplosionPhase phase, Location location, Player player) {
 		if(particles.containsKey(phase))
-			particles.get(phase).forEach(particle -> {if(particle.getPhase().equals(phase) && particle.getCanDisplay()) particle.playParticle(location, player);});
+			particles.get(phase).forEach(particle -> {particle.playParticle(location, player);});
 	}
 	public void saveToFile() {
 		saveToFile(file);
@@ -94,15 +120,17 @@ public class ParticleSettings {
 		}
 		LinkedHashMap<String, Object> map = new LinkedHashMap<>();
 		map.put("author", getAuthor());
-		for(ParticleData particle : getParticles()) {
-			String section = particle.getPhase() + "." + particle.getParticle().toString().toLowerCase();
-			map.put(section + ".amount", particle.getAmount());
-			map.put(section + ".display-amount", particle.getDisplayAmount());
-			map.put(section + ".offset.x", particle.getOffsetX());
-			map.put(section + ".offset.y", particle.getOffsetY());
-			map.put(section + ".offset.z", particle.getOffsetZ());
-			map.put(section + ".speed", particle.getSpeed());
-			map.put(section + ".play-at", particle.getPlayAt().toString());
+		for(ExplosionPhase phase : ExplosionPhase.values()) {
+			for(ParticleData particle : getParticles(phase)) {
+				String section = phase + "." + particle.getParticle().toString().toLowerCase();
+				map.put(section + ".amount", particle.getAmount());
+				map.put(section + ".display-amount", particle.getDisplayAmount());
+				map.put(section + ".offset.x", particle.getOffsetX());
+				map.put(section + ".offset.y", particle.getOffsetY());
+				map.put(section + ".offset.z", particle.getOffsetZ());
+				map.put(section + ".speed", particle.getSpeed());
+				map.put(section + ".play-at", particle.getPlayAt().toString());
+			}
 		}
 		boolean doSave = false;
 		for(String key : new ArrayList<>(map.keySet())) {
@@ -136,6 +164,7 @@ public class ParticleSettings {
 		if(getSettings(name) != null)
 			return getSettings(name);
 		List<ParticleData> particles = new ArrayList<>();
+		ParticleSettings particleSettings = new ParticleSettings(name, config.getString("author"));
 		for(String key : config.getKeys(false)) {
 
 			ExplosionPhase phase;
@@ -148,7 +177,7 @@ public class ParticleSettings {
 				for(String keyy : config.getConfigurationSection(key).getKeys(false)) {
 					ExplosionParticle particle = ExplosionParticle.getParticle(keyy);
 					ConfigurationSection section = config.getConfigurationSection(key + "." + keyy);
-					ParticleData data = new ParticleData(particle, phase, true, section.getInt("amount"), (float)section.getDouble("offset.x"), (float)section.getDouble("offset.y"), (float)section.getDouble("offset.z"), (float)section.getDouble("speed"));
+					ParticleData data = new ParticleData(particle, section.getInt("amount"), (float)section.getDouble("offset.x"), (float)section.getDouble("offset.y"), (float)section.getDouble("offset.z"), (float)section.getDouble("speed"));
 					if(section.contains("play-at"))
 						data.setPlayAt(ParticlePlayAt.valueOf(section.getString("play-at").toUpperCase().replace("-", "_")));
 					if(section.contains("display-amount"))
@@ -165,16 +194,22 @@ public class ParticleSettings {
 					particles.add(data);
 				}
 			}
+			particles.forEach(particle -> particleSettings.addParticles(phase, particle));
 		}
-		ParticleSettings particleSettings = new ParticleSettings(name, config.getString("author"), particles.toArray(new ParticleData[0]));
 		particleSettings.file = file;
 		return particleSettings;
 	}
 	public static void removeSettings(String name) {
 		MAP.remove(name);
 	}
-	public static Collection<ParticleSettings> getParticleSettings() {
-		return MAP.values();
+
+	public static Set<ParticleSettings> getServerSettings() {
+		Set<ParticleSettings> particles = new HashSet<>();
+		for(Map.Entry<String, ParticleSettings> entry : new HashMap<>(MAP).entrySet()) {
+			if(entry.getValue().getAuthor().equals("Server"))
+				particles.add(entry.getValue());
+		}
+		return particles;
 	}
 
 	public static Set<ParticleSettings> getPresetSettings() {
