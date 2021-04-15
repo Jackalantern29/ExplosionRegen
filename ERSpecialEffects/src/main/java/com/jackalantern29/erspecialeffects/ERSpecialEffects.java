@@ -99,6 +99,7 @@ public class ERSpecialEffects extends JavaPlugin {
                 }
             }
         }
+        new InventoryMenu(null).menu.update("menu");
     }
 
     protected static void addPluginToProfile(ProfileSettings profile, ExplosionSettings settings) {

@@ -1,5 +1,7 @@
 package com.jackalantern29.explosionregen.api;
 
+import com.jackalantern29.explosionregen.api.inventory.Menu;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +11,7 @@ public class ExplosionSettingsPlugin {
     private final String name;
     private final Object plugin;
     private final Map<String, Object> map = new HashMap<>();
+    private Menu mainMenu;
 
     public ExplosionSettingsPlugin(Object plugin) {
         this(plugin, plugin.getClass().getSimpleName());
@@ -81,5 +84,13 @@ public class ExplosionSettingsPlugin {
 
     public String getName() {
         return name;
+    }
+
+    public Menu getMainMenu() {
+        return mainMenu;
+    }
+
+    public void setMainMenu(Menu mainMenu) {
+        this.mainMenu = mainMenu;
     }
 }

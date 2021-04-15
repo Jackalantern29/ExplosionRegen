@@ -1,13 +1,9 @@
 package com.jackalantern29.erspecialeffects;
 
-import com.jackalantern29.explosionregen.api.ExplosionParticle;
 import com.jackalantern29.explosionregen.api.ExplosionSettings;
 import com.jackalantern29.explosionregen.api.ProfileSettings;
 import com.jackalantern29.explosionregen.api.enums.ExplosionPhase;
-import com.jackalantern29.explosionregen.api.inventory.ItemBuilder;
-import com.jackalantern29.explosionregen.api.inventory.PageMenu;
-import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
-import com.jackalantern29.explosionregen.api.inventory.SlotElement;
+import com.jackalantern29.explosionregen.api.inventory.*;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -17,21 +13,25 @@ import org.bukkit.inventory.ItemStack;
 import java.util.*;
 
 public class InventoryMenu {
-    private static final HashMap<ProfileSettings, InventoryMenu> MAP = new HashMap<>();
-    private final SettingsMenu menu;
+    static final HashMap<ProfileSettings, InventoryMenu> MAP = new HashMap<>();
+    final SettingsMenu menu;
     private ExplosionPhase phase = ExplosionPhase.BLOCK_REGENERATING;
 
-    private InventoryMenu(ProfileSettings profile) {
-
+    InventoryMenu(ProfileSettings profile) {
+        String serverSuffix = profile == null ? " §l[Server]" : "";
         ItemStack closeItem = new ItemBuilder(Material.BARRIER).setDisplayName("§c§lClose Menu").build();
-        this.menu = new SettingsMenu("§2Select Explosion", 5);
+        this.menu = new SettingsMenu("§8Select Explosion" + serverSuffix, 5);
         menu.setUpdate("menu", () -> {
             menu.clear();
             for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
                 if(profile == null || profile.hasPermission(settings)) {
-                    SettingsMenu typeMenu = new SettingsMenu("§2Select Option", 5);
-                    PageMenu particleMenu = new PageMenu("§2Select Particle", 54);
-                    PageMenu soundMenu = new PageMenu("§2Select Sound", 54);
+                    SettingsMenu typeMenu = new SettingsMenu("§8Select Option" + serverSuffix, 5);
+                    if(profile == null) {
+                        settings.getPlugin("SpecialEffects").setMainMenu(typeMenu);
+                    } else
+                        profile.getPlugin(settings, "SpecialEffects").setMainMenu(typeMenu);
+                    PageMenu particleMenu = new PageMenu("§8Select Particle" + serverSuffix, 54);
+                    PageMenu soundMenu = new PageMenu("§8Select Sound" + serverSuffix, 54);
                     List<PageMenu> pageSet = new ArrayList<>();
                     pageSet.add(particleMenu);
                     pageSet.add(soundMenu);
@@ -255,6 +255,5 @@ public class InventoryMenu {
             MAP.get(profile).menu.sendInventory(player, true);
         else
             new InventoryMenu(profile).menu.sendInventory(player, true);
-
     }
 }

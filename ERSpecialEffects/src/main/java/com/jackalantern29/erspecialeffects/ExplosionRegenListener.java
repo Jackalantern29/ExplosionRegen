@@ -12,7 +12,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 public class ExplosionRegenListener implements Listener {
@@ -41,6 +40,7 @@ public class ExplosionRegenListener implements Listener {
 			for(ProfileSettings profile : ProfileSettings.getProfiles()) {
 				ERSpecialEffects.addPluginToProfile(profile, settings);
 			}
+		InventoryMenu.MAP.get(null).menu.update("menu");
 	}
 
 	@EventHandler

@@ -78,6 +78,7 @@ public class  ExplosionSettings {
 
 		menu = new SettingsMenu(getDisplayName(), 54);
 		PageMenu bsMenu = new PageMenu(getDisplayName() + " §l[Block Settings]", 54);
+		PageMenu pluginMenu = new PageMenu(getDisplayName() + " §l[Plugins]", 18);
 		ItemStack closeItem = new ItemBuilder(Material.BARRIER).setDisplayName("§c§lClose Menu").build();
 
 		// Sets the main menu
@@ -105,7 +106,6 @@ public class  ExplosionSettings {
 			ItemStack regenMaxBlockItem = new ItemBuilder(Material.CHEST).setDisplayName("§fMax Block Queue: §6" + getMaxBlockRegenQueue()).build();
 			ItemStack regenForceItem;
 			if(getRegenForceBlock())
-				//regenForceItem = new ItemBuilder(Material.EYE_OF_ENDER).setDisplayName("§fForce Block Regen: §aTrue").build();
 				regenForceItem = new ItemBuilder(Material.ENDER_EYE).setDisplayName("§fForce Block Regen: §aTrue").build();
 			else
 				regenForceItem = new ItemBuilder(Material.ENDER_PEARL).setDisplayName("§fForce Block Regen: §cFalse").build();
@@ -286,7 +286,10 @@ public class  ExplosionSettings {
 				}));
 				return true;
 			}));
-			menu.setItem(53, new SlotElement(pluginsItem, data -> true));
+			menu.setItem(53, new SlotElement(pluginsItem, data -> {
+				pluginMenu.sendInventory(data.getWhoClicked(), true);
+				return true;
+			}));
 		});
 		SettingsMenu switchMenu = new SettingsMenu("§lSwitch Settings", 9);
 		switchMenu.setUpdate("menu", () -> {
@@ -461,6 +464,29 @@ public class  ExplosionSettings {
 					blockItem = new ItemBuilder(blockData.getRegenData().getMaterial()).setDisplayName("§f" + blockData.getRegenData().toString()).setLore(lore).build();
 				bsMenu.addItem(new SlotElement(blockItem, data -> {
 					data.getWhoClicked().openInventory(blockMenu.getInventory());
+					return true;
+				}));
+			}
+		});
+		pluginMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
+		pluginMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
+		pluginMenu.setUpdate("#layout", () -> {
+			for(SettingsMenu page : pluginMenu.getPages()) {
+				page.setItem(7, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
+				page.setItem(8, new SlotElement(closeItem, data -> {
+					menu.sendInventory(data.getWhoClicked(), true);
+					return true;
+				}));
+				page.setItem(16, new SlotElement(pluginMenu.getPrevPageItem(), data -> true));
+				page.setItem(17, new SlotElement(pluginMenu.getNextPageItem(), data -> true));
+			}
+		});
+		pluginMenu.setUpdate("plugins", () -> {
+			pluginMenu.clear();
+			pluginMenu.update("#layout");
+			for(ExplosionSettingsPlugin plugin : plugins.values()) {
+				pluginMenu.addItem(new SlotElement(new ItemBuilder(Material.FILLED_MAP).setDisplayName("§a" + plugin.getName()).build(), data -> {
+					plugin.getMainMenu().sendInventory(data.getWhoClicked(), true);
 					return true;
 				}));
 			}
