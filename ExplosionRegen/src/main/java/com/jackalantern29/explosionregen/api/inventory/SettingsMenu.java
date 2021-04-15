@@ -133,11 +133,13 @@ public class SettingsMenu extends Menu {
     private class ClickListen implements Listener {
         @EventHandler
         public void onClick(InventoryClickEvent event) {
-            if(event.getClickedInventory() != null && event.getClickedInventory().equals(inventory) && getItem(event.getSlot()) != null) {
-                SlotElement.SlotFunction function = getItem(event.getSlot()).getFunction();
-                event.setCancelled(function.function(new ClickData(event)));
-            } else
-                event.setCancelled(true);
+            if(event.getInventory().equals(inventory)) {
+                if(event.getClickedInventory() != null && event.getClickedInventory().equals(inventory) && getItem(event.getSlot()) != null) {
+                    SlotElement.SlotFunction function = getItem(event.getSlot()).getFunction();
+                    event.setCancelled(function.function(new ClickData(event)));
+                } else
+                    event.setCancelled(true);
+            }
         }
     }
 }

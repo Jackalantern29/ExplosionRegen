@@ -123,24 +123,26 @@ public class PageMenu extends Menu {
             for (int i = 0; i < getPages().size(); i++) {
                 SettingsMenu menu = getPage(i);
                 Inventory inventory = menu.getInventory();
-                if(event.getClickedInventory() != null && event.getClickedInventory().equals(inventory)) {
-                    if(getNextPageItem() != null && event.getCurrentItem().equals(getNextPageItem())) {
-                        if (i != getPages().size() - 1)
-                            getPage(i+1).sendInventory(event.getWhoClicked());
-                        else
-                            getPage(0).sendInventory(event.getWhoClicked());
+                if(event.getInventory().equals(inventory)) {
+                    if(event.getClickedInventory() != null && event.getClickedInventory().equals(inventory)) {
+                        if(getNextPageItem() != null && event.getCurrentItem().equals(getNextPageItem())) {
+                            if (i != getPages().size() - 1)
+                                getPage(i+1).sendInventory(event.getWhoClicked());
+                            else
+                                getPage(0).sendInventory(event.getWhoClicked());
+                            event.setCancelled(true);
+                            return;
+                        } else if(getPrevPageItem() != null && event.getCurrentItem().equals(getPrevPageItem())) {
+                            if(i != 0)
+                                getPage(i-1).sendInventory(event.getWhoClicked());
+                            else
+                                getPage(getPages().size()-1).sendInventory(event.getWhoClicked());
+                            event.setCancelled(true);
+                            return;
+                        }
+                    } else
                         event.setCancelled(true);
-                        return;
-                    } else if(getPrevPageItem() != null && event.getCurrentItem().equals(getPrevPageItem())) {
-                        if(i != 0)
-                            getPage(i-1).sendInventory(event.getWhoClicked());
-                        else
-                            getPage(getPages().size()-1).sendInventory(event.getWhoClicked());
-                        event.setCancelled(true);
-                        return;
-                    }
-                } else
-                    event.setCancelled(true);
+                }
             }
         }
     }
