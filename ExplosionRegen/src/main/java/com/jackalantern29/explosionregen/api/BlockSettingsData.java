@@ -18,7 +18,8 @@ public class BlockSettingsData {
 	private boolean regen = true;
 	private boolean saveItems = false;
 	private boolean replace = false;
-	
+	private boolean blockUpdate = true;
+
 	public BlockSettingsData(RegenBlockData regenData) {
 		this.regenData = regenData;
 	}
@@ -77,6 +78,15 @@ public class BlockSettingsData {
 		else
 			return getRegenData();
 	}
+
+	public boolean isBlockUpdate() {
+		return blockUpdate;
+	}
+
+	public void setBlockUpdate(boolean blockUpdate) {
+		this.blockUpdate = blockUpdate;
+	}
+
 	public void setReplaceWith(RegenBlockData material) {
 		replaceWith = material;
 	}

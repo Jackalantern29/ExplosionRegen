@@ -89,6 +89,7 @@ public class BlockSettings {
 			map.put(type + ".chance", block.getDropChance());
 			map.put(type + ".durability", block.getDurability());
 			map.put(type + ".regen-delay", block.getRegenDelay());
+			map.put(type + ".block-update", block.isBlockUpdate());
 		}
 		boolean doSave = false;
 		for(Map.Entry<String, Object> entry : new HashSet<>(map.entrySet())) {
@@ -163,6 +164,7 @@ public class BlockSettings {
 				saveMap.put(key + ".chance", 30);
 				saveMap.put(key + ".durability", 1.0d);
 				saveMap.put(key + ".regen-delay", 0);
+				saveMap.put(key + ".block-update", true);
 				boolean saveBC = false;
 				for(String k : new ArrayList<>(saveMap.keySet())) {
 					if(!bc.contains(k)) {
@@ -199,6 +201,7 @@ public class BlockSettings {
 				bd.setDropChance(section.getInt("chance"));
 				bd.setDurability(section.getDouble("durability"));
 				bd.setRegenDelay(section.getLong("regen-delay"));
+				bd.setBlockUpdate(section.getBoolean("block-update"));
 				settings.add(bd);
 			}
 		}

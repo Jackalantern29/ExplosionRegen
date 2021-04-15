@@ -235,7 +235,8 @@ public class Explosion {
 					if (MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) {
 						block.setType(Material.AIR, false);
 					}
-					if(hasGravityBlockNearby(block.getState()))
+
+					if(hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate())
 						block.setType(Material.AIR, false);
 
 					if (ExplosionRegen.getInstance().getCoreProtect() != null) {
@@ -614,7 +615,7 @@ public class Explosion {
 		if(settings.getRegenForceBlock()) {
 			block.getBlock().breakNaturally();
 		}
-		if(hasGravityBlockNearby(state))
+		if(hasGravityBlockNearby(state) || !settings.getBlockSettings().get(block.getRegenData()).isBlockUpdate())
 			state.update(true, false);
 		else
 			state.update(true);
