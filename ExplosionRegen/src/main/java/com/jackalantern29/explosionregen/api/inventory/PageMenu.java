@@ -94,11 +94,12 @@ public class PageMenu {
 
     public void sendInventory(HumanEntity player, boolean update) {
         getPage(0).sendInventory(player);
-        if(!map.isEmpty() && update)
-            for(SettingsMenu page : getPages())
+        if(!map.isEmpty() && update) {
+            for (SettingsMenu page : getPages())
                 page.clear();
-            for(DynamicUpdate dyn : map.values())
+            for (DynamicUpdate dyn : map.values())
                 dyn.update();
+        }
     }
 
     public void update(String id) {
