@@ -24,7 +24,42 @@ public class ERSpecialEffects extends JavaPlugin {
             particlePresetFolder.mkdirs();
         }
         for(ExplosionParticle particle : ExplosionParticle.getParticles()) {
-            ParticleData.getVanillaSettings(particle, true);
+            ParticleData data = new ParticleData(particle);
+            File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "particles" + File.separator + "vanilla", particle.toString().toLowerCase() + ".yml");
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+            if(!file.exists()) {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+            map.put("amount", 5);
+            map.put("offset.x", 0.1f);
+            map.put("offset.y", 0.1f);
+            map.put("offset.z", 0.1f);
+            map.put("speed", 0f);
+            boolean doSave = false;
+            for(String key : new ArrayList<>(map.keySet())) {
+                if(!config.contains(key)) { config.set(key, map.get(key));doSave = true;}
+                map.remove(key);
+            }
+            if(doSave) {
+                try {
+                    config.save(file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            data.setAmount(config.getInt("amount", 5));
+            data.setOffsetX((float)config.getDouble("offset.x", 0.1f));
+            data.setOffsetY((float)config.getDouble("offset.y", 0.1f));
+            data.setOffsetZ((float)config.getDouble("offset.z", 0.1f));
+            data.setSpeed((float)config.getDouble("speed", 0.0f));
+            ParticleSettings particleSettings = new ParticleSettings(particle.toString().toLowerCase(), "Vanilla");
+            for (ExplosionPhase phase : ExplosionPhase.values())
+                particleSettings.addParticles(phase, data);
         }
         if(particlePresetFolder.listFiles() != null)
             for(File f : particlePresetFolder.listFiles()) ParticleSettings.load(f);
