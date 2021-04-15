@@ -136,7 +136,8 @@ public class SettingsMenu extends Menu {
             if(event.getClickedInventory() != null && event.getClickedInventory().equals(inventory) && getItem(event.getSlot()) != null) {
                 SlotElement.SlotFunction function = getItem(event.getSlot()).getFunction();
                 event.setCancelled(function.function(new ClickData(event)));
-            }
+            } else
+                event.setCancelled(true);
         }
     }
 }

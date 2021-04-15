@@ -139,8 +139,8 @@ public class PageMenu extends Menu {
                         event.setCancelled(true);
                         return;
                     }
-                }
-
+                } else
+                    event.setCancelled(true);
             }
         }
     }
