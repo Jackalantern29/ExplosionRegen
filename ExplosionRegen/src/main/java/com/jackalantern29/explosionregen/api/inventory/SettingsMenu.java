@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 
-public class SettingsMenu {
+public class SettingsMenu extends Menu {
     private String title;
     private int slots;
     private SlotElement[] elements;

@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Collection;
 import java.util.HashMap;
 
-public class PageMenu {
+public class PageMenu extends Menu {
     private String title;
     private int slots;
     private HashMap<Integer, SettingsMenu> pages = new HashMap<>();
