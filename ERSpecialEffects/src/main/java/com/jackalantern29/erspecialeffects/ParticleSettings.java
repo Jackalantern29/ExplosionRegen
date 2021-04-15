@@ -176,4 +176,26 @@ public class ParticleSettings {
 	public static Collection<ParticleSettings> getParticleSettings() {
 		return MAP.values();
 	}
+
+	public static Set<ParticleSettings> getPresetSettings() {
+		Set<ParticleSettings> particles = new HashSet<>();
+		for(Map.Entry<String, ParticleSettings> entry : new HashMap<>(MAP).entrySet()) {
+			if(!entry.getValue().getAuthor().equals("Server") && !entry.getValue().getAuthor().equals("Vanilla"))
+				particles.add(entry.getValue());
+		}
+		return particles;
+	}
+
+	public static Collection<ParticleSettings> getParticleSettings() {
+		return MAP.values();
+	}
+
+	public static Set<ParticleSettings> getVanillaSettingss() {
+		Set<ParticleSettings> particles = new HashSet<>();
+		for(Map.Entry<String, ParticleSettings> entry : new HashMap<>(MAP).entrySet()) {
+			if(entry.getValue().getAuthor().equals("Vanilla"))
+				particles.add(entry.getValue());
+		}
+		return particles;
+	}
 }
