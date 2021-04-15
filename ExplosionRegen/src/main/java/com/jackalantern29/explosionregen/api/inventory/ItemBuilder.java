@@ -65,6 +65,17 @@ public class ItemBuilder {
         return this;
     }
 
+    public ItemBuilder hideEffects(boolean hide) {
+        if(hide) {
+            if(!meta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS))
+                meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        } else {
+            if(meta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS))
+                meta.removeItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        }
+        return this;
+    }
+
     public ItemStack build() {
         item.setItemMeta(meta);
         return item;
