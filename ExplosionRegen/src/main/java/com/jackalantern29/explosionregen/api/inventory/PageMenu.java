@@ -124,14 +124,14 @@ public class PageMenu extends Menu {
                 SettingsMenu menu = getPage(i);
                 Inventory inventory = menu.getInventory();
                 if(event.getClickedInventory() != null && event.getClickedInventory().equals(inventory)) {
-                    if(event.getCurrentItem().equals(getNextPageItem())) {
+                    if(getNextPageItem() != null && event.getCurrentItem().equals(getNextPageItem())) {
                         if (i != getPages().size() - 1)
                             getPage(i+1).sendInventory(event.getWhoClicked());
                         else
                             getPage(0).sendInventory(event.getWhoClicked());
                         event.setCancelled(true);
                         return;
-                    } else if(event.getCurrentItem().equals(getPrevPageItem())) {
+                    } else if(getPrevPageItem() != null && event.getCurrentItem().equals(getPrevPageItem())) {
                         if(i != 0)
                             getPage(i-1).sendInventory(event.getWhoClicked());
                         else
