@@ -52,7 +52,7 @@ public class Explosion {
 						explosion.setRegenTick(explosion.getRegenTick() - 1);
 					} else {
 						if (explosion.getSettings().isInstantRegen()) {
-							for (RegenBlock block : explosion.getBlocks()) {
+							for (RegenBlock block : new ArrayList<>(explosion.getBlocks())) {
 								explosion.regenerate(block);
 							}
 						} else {
@@ -61,7 +61,13 @@ public class Explosion {
 								if (block.getRegenDelay() > 0)
 									block.setRegenDelay(block.getRegenDelay() - 1);
 								else {
-									explosion.regenerate(block);
+									if(block.getType() == Material.SUGAR_CANE || block.getType() == Material.CACTUS || block.getType() == Material.SCAFFOLDING) {
+										for(RegenBlock b : new ArrayList<>(explosion.getBlocks())) {
+											if(b.getType() == block.getType())
+												explosion.regenerate(b);
+										}
+									} else
+										explosion.regenerate(block);
 								}
 							}
 						}
@@ -115,6 +121,9 @@ public class Explosion {
 		SUPPORT_NEED.add(Material.DEAD_TUBE_CORAL_WALL_FAN);
 		SUPPORT_NEED.addAll(Tag.SIGNS.getValues());
 		SUPPORT_NEED.addAll(Tag.BANNERS.getValues());
+		SUPPORT_NEED.add(Material.SUGAR_CANE);
+		SUPPORT_NEED.add(Material.CACTUS);
+		SUPPORT_NEED.add(Material.SCAFFOLDING);
 	}
 
 	/**
