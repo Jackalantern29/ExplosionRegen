@@ -602,7 +602,7 @@ public class  ExplosionSettings {
 					for(SettingsMenu page : oMenu.getPages()) {
 						page.setItem(7, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
 						page.setItem(8, new SlotElement(closeItem, data -> {
-							oMenu.sendInventory(data.getWhoClicked(), true);
+							overrideMenu.sendInventory(data.getWhoClicked(), true);
 							return true;
 						}));
 						page.setItem(16, new SlotElement(pluginMenu.getPrevPageItem(), data -> true));
@@ -610,6 +610,8 @@ public class  ExplosionSettings {
 					}
 				});
 				oMenu.setUpdate("override", () -> {
+					oMenu.clear();
+					oMenu.update("#layout");
 					for(ExplosionCondition condition : override.getConditions()) {
 						oMenu.addItem(new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§f" + WordUtils.capitalize(condition.name().toLowerCase().replace("_", " "))).setLine(0, "§9" + WordUtils.capitalize(override.getSimpleConditionValue(condition).toString().replace("_", " "))).build(), data -> {
 							if(override.getConditionValue(condition) instanceof Enum) {
