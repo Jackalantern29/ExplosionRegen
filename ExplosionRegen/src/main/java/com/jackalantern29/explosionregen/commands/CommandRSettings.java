@@ -4,14 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.jackalantern29.erspecialeffects.InventoryMenu;
-import com.jackalantern29.explosionregen.api.BlockSettings;
-import com.jackalantern29.explosionregen.api.ProfileSettings;
+import com.jackalantern29.explosionregen.api.*;
+import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.inventory.ItemBuilder;
 import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
 import com.jackalantern29.explosionregen.api.inventory.SlotElement;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -22,8 +23,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.StringUtil;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.ExplosionSettingsOverride;
-import com.jackalantern29.explosionregen.api.ExplosionSettings;
 import com.jackalantern29.explosionregen.api.enums.WeatherType;
 import com.jackalantern29.explosionregen.api.enums.ExplosionCondition;
 
@@ -232,6 +231,36 @@ public class CommandRSettings implements TabExecutor {
 							settings.removeOverride(overrideName);
 							return true;
 						}
+					} else if(option.equalsIgnoreCase("block")) {
+						BlockData blockData;
+						if(args.length < 5) {
+							sender.sendMessage("§c/rsettings edit " + settings.getName().toLowerCase() + " " + option.toLowerCase() + " " + action.toLowerCase());
+							return true;
+						}
+						try {
+							blockData = Bukkit.createBlockData(args[4].toLowerCase());
+						} catch(IllegalArgumentException e) {
+							sender.sendMessage("§cInvalid block.");
+							return true;
+						}
+						RegenBlockData regenData = new RegenBlockData(blockData);
+						BlockSettingsData data = new BlockSettingsData(regenData);
+						if(action.equalsIgnoreCase("add")) {
+							if(settings.getBlockSettings().contains(blockData.getAsString())) {
+								settings.getBlockSettings().add(data);
+								sender.sendMessage("§aAdded '" + blockData.getAsString() + "'.");
+							} else {
+								sender.sendMessage("§a'" + blockData.getAsString() + "' already exists.");
+							}
+							return true;
+						} else if(action.equalsIgnoreCase("remove")) {
+							if(settings.getBlockSettings().contains(blockData.getAsString())) {
+								settings.getBlockSettings().remove(blockData.getAsString());
+								sender.sendMessage("§aRemoved '" + blockData.getAsString() + "'.");
+							} else {
+								sender.sendMessage("§a'" + blockData.getAsString() + "' does not exist.");
+							}
+						}
 					}
 				}
 			} else if(args[0].equalsIgnoreCase("reload")) {
@@ -282,10 +311,16 @@ public class CommandRSettings implements TabExecutor {
 						} else if(args.length == 3) {
 							list.add("override");
 							list.add("condition");
+							list.add("block");
 							return StringUtil.copyPartialMatches(args[2], list, new ArrayList<>(list.size()));
 						} else if(args.length == 4) {
-							list.add("set");
-							list.add("remove");
+							if(args[2].equalsIgnoreCase("condition") || args[2].equalsIgnoreCase("override")) {
+								list.add("set");
+								list.add("remove");
+							} else if(args[2].equalsIgnoreCase("block")) {
+								list.add("add");
+								list.add("remove");
+							}
 							return StringUtil.copyPartialMatches(args[3], list, new ArrayList<>(list.size()));
 						} else if(args.length == 5) {
 							if(args[2].equalsIgnoreCase("override")) {
@@ -296,6 +331,18 @@ public class CommandRSettings implements TabExecutor {
 							} else if(args[2].equalsIgnoreCase("condition")) {
 								for(ExplosionCondition condition : ExplosionCondition.values())
 									list.add(condition.name().toLowerCase());
+							} else if(args[2].equalsIgnoreCase("block")) {
+								if(args[3].equalsIgnoreCase("add")) {
+									if(sender instanceof Player) {
+										list.add((((Player)sender).getTargetBlock(null, 10).getBlockData().getAsString()));
+									}
+								} else if(args[3].equalsIgnoreCase("remove")) {
+									ExplosionSettings settings = ExplosionSettings.getSettings(args[1]);
+									for(BlockSettingsData data : settings.getBlockSettings().getBlockDatas()) {
+										if(data.getRegenData() != null)
+											list.add(((BlockData)data.getRegenData().getBlockData()).getAsString());
+									}
+								}
 							}
 							return list;
 						} else if(args.length == 6) {
