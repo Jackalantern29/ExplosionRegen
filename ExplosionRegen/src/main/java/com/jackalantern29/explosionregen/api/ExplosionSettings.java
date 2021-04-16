@@ -390,6 +390,11 @@ public class  ExplosionSettings {
 						}));
 						return true;
 					}));
+					blockMenu.setItem(6, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fBlock Update: " + (blockData.isBlockUpdate() ? "§aTrue" : "§cFalse")).build(), data -> {
+						blockData.setBlockUpdate(!blockData.isBlockUpdate());
+						blockMenu.update("menu");
+						return true;
+					}));
 					blockMenu.setItem(9, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fDrop Chance: §6" + blockData.getDropChance()).build(), data -> {
 						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
@@ -467,6 +472,7 @@ public class  ExplosionSettings {
 				lore.add("§9Replace: ");
 				lore.add("§9  Can Replace: " + (blockData.doReplace() ? "§aTrue" : "§cFalse"));
 				lore.add("§9  Replace With: §6" + blockData.getReplaceWith().toString());
+				lore.add("§9Block Update: " + (blockData.isBlockUpdate() ? "§aTrue" : "§cFalse"));
 				lore.add("§9Drop Chance: §6" + blockData.getDropChance());
 				lore.add("§9Durability: §6" + blockData.getDurability());
 				lore.add("§9Delay: §6" + blockData.getRegenDelay());
