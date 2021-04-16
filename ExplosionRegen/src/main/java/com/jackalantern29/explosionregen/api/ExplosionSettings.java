@@ -9,6 +9,7 @@ import com.jackalantern29.explosionregen.api.events.ExplosionSettingsUnloadEvent
 import com.jackalantern29.explosionregen.api.inventory.*;
 import com.jackalantern29.explosionregen.commands.CommandRSettings;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -79,6 +80,8 @@ public class  ExplosionSettings {
 		menu = new SettingsMenu(getDisplayName(), 54);
 		PageMenu bsMenu = new PageMenu(getDisplayName() + " §l[Block Settings]", 54);
 		PageMenu pluginMenu = new PageMenu(getDisplayName() + " §l[Plugins]", 18);
+		PageMenu conditionMenu = new PageMenu(getDisplayName() + " §l[Conditions]", 18);
+		PageMenu overrideMenu = new PageMenu(getDisplayName() + " §l[Overrides]", 18);
 		ItemStack closeItem = new ItemBuilder(Material.BARRIER).setDisplayName("§c§lClose Menu").build();
 
 		// Sets the main menu
@@ -167,6 +170,14 @@ public class  ExplosionSettings {
 			}));
 			menu.setItem(8, new SlotElement(closeItem, data -> {
 				data.getWhoClicked().openInventory(CommandRSettings.inventoryMenu);
+				return true;
+			}));
+			menu.setItem(12, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fConditions").build(), data -> {
+				conditionMenu.sendInventory(data.getWhoClicked(), true);
+				return true;
+			}));
+			menu.setItem(14, new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§fOverrides").build(), data -> {
+				overrideMenu.sendInventory(data.getWhoClicked(), true);
 				return true;
 			}));
 			menu.setItem(18, new SlotElement(allowRegenItem, data -> {
@@ -470,8 +481,34 @@ public class  ExplosionSettings {
 		});
 		pluginMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
 		pluginMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
+		conditionMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
+		conditionMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
+		overrideMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
+		overrideMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
 		pluginMenu.setUpdate("#layout", () -> {
 			for(SettingsMenu page : pluginMenu.getPages()) {
+				page.setItem(7, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
+				page.setItem(8, new SlotElement(closeItem, data -> {
+					menu.sendInventory(data.getWhoClicked(), true);
+					return true;
+				}));
+				page.setItem(16, new SlotElement(pluginMenu.getPrevPageItem(), data -> true));
+				page.setItem(17, new SlotElement(pluginMenu.getNextPageItem(), data -> true));
+			}
+		});
+		conditionMenu.setUpdate("#layout", () -> {
+			for(SettingsMenu page : conditionMenu.getPages()) {
+				page.setItem(7, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
+				page.setItem(8, new SlotElement(closeItem, data -> {
+					menu.sendInventory(data.getWhoClicked(), true);
+					return true;
+				}));
+				page.setItem(16, new SlotElement(pluginMenu.getPrevPageItem(), data -> true));
+				page.setItem(17, new SlotElement(pluginMenu.getNextPageItem(), data -> true));
+			}
+		});
+		overrideMenu.setUpdate("#layout", () -> {
+			for(SettingsMenu page : overrideMenu.getPages()) {
 				page.setItem(7, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
 				page.setItem(8, new SlotElement(closeItem, data -> {
 					menu.sendInventory(data.getWhoClicked(), true);
@@ -489,6 +526,128 @@ public class  ExplosionSettings {
 					plugin.getMainMenu().sendInventory(data.getWhoClicked(), true);
 					return true;
 				}));
+			}
+		});
+		conditionMenu.setUpdate("conditions", () -> {
+			conditionMenu.clear();
+			conditionMenu.update("#layout");
+			for(ExplosionCondition condition : getConditions().getConditions()) {
+				conditionMenu.addItem(new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§f" + WordUtils.capitalize(condition.name().toLowerCase().replace("_", " "))).setLine(0, "§9" + WordUtils.capitalize(getConditions().getSimpleConditionValue(condition).toString().replace("_", " "))).build(), data -> {
+					if(getConditions().getConditionValue(condition) instanceof Enum) {
+						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+							try {
+								getConditions().setCondition(condition, Enum.valueOf(((Enum<?>) getConditions().getConditionValue(condition)).getDeclaringClass(), input.toUpperCase()));
+							} catch(IllegalArgumentException e) {
+								data.getWhoClicked().sendMessage("§cInvalid option.");
+								return false;
+							}
+							data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+							Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> conditionMenu.sendInventory(data.getWhoClicked(), true));
+							return true;
+						}));
+					} else if(getConditions().getConditionValue(condition) instanceof Boolean) {
+						getConditions().setCondition(condition, !(boolean)getConditions().getConditionValue(condition));
+						conditionMenu.update("conditions");
+					} else if(getConditions().getConditionValue(condition) instanceof Integer || getConditions().getConditionValue(condition) instanceof Double) {
+						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+							try {
+								if(getConditions().getConditionValue(condition) instanceof Integer)
+									getConditions().setCondition(condition, Integer.parseInt(input));
+								else
+									getConditions().setCondition(condition, Double.parseDouble(input));
+							} catch(NumberFormatException e) {
+								data.getWhoClicked().sendMessage("§cInvalid number.");
+								return false;
+							}
+							data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+							Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> conditionMenu.sendInventory(data.getWhoClicked(), true));
+							return true;
+						}));
+					} else {
+						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+							data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+							getConditions().setCondition(condition, input);
+							Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> conditionMenu.sendInventory(data.getWhoClicked(), true));
+							return true;
+						}));
+					}
+					return true;
+				}));
+			}
+		});
+		overrideMenu.setUpdate("override", () -> {
+			overrideMenu.clear();
+			overrideMenu.update("#layout");
+			for(ExplosionSettingsOverride override : getOverrides()) {
+				PageMenu oMenu = new PageMenu(override.getName(), 18);
+				oMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
+				oMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
+
+				overrideMenu.addItem(new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§f" + override.getName()).build(), data -> {
+					oMenu.sendInventory(data.getWhoClicked(), true);
+					return true;
+				}));
+				oMenu.setUpdate("#layout", () -> {
+					for(SettingsMenu page : oMenu.getPages()) {
+						page.setItem(7, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
+						page.setItem(8, new SlotElement(closeItem, data -> {
+							oMenu.sendInventory(data.getWhoClicked(), true);
+							return true;
+						}));
+						page.setItem(16, new SlotElement(pluginMenu.getPrevPageItem(), data -> true));
+						page.setItem(17, new SlotElement(pluginMenu.getNextPageItem(), data -> true));
+					}
+				});
+				oMenu.setUpdate("override", () -> {
+					for(ExplosionCondition condition : override.getConditions()) {
+						oMenu.addItem(new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§f" + WordUtils.capitalize(condition.name().toLowerCase().replace("_", " "))).setLine(0, "§9" + WordUtils.capitalize(override.getSimpleConditionValue(condition).toString().replace("_", " "))).build(), data -> {
+							if(override.getConditionValue(condition) instanceof Enum) {
+								data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+								InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+									try {
+										override.setCondition(condition, Enum.valueOf(((Enum<?>) override.getConditionValue(condition)).getClass(), input.toUpperCase()));								} catch(IllegalArgumentException e) {
+										data.getWhoClicked().sendMessage("§cInvalid option.");
+										return false;
+									}
+									data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+									Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> oMenu.sendInventory(data.getWhoClicked(), true));
+									return true;
+								}));
+							} else if(override.getConditionValue(condition) instanceof Boolean) {
+								override.setCondition(condition, !(boolean)override.getConditionValue(condition));
+								oMenu.update("override");
+							} else if(override.getConditionValue(condition) instanceof Integer || override.getConditionValue(condition) instanceof Double) {
+								data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+								InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+									try {
+										if(override.getConditionValue(condition) instanceof Integer)
+											override.setCondition(condition, Integer.parseInt(input));
+										else
+											override.setCondition(condition, Double.parseDouble(input));
+									} catch(NumberFormatException e) {
+										data.getWhoClicked().sendMessage("§cInvalid number.");
+										return false;
+									}
+									data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+									Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> oMenu.sendInventory(data.getWhoClicked(), true));
+									return true;
+								}));
+							} else {
+								data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
+								InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
+									override.setCondition(condition, input);
+									data.getWhoClicked().sendMessage("§cExiting Input Mode.");
+									Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> oMenu.sendInventory(data.getWhoClicked(), true));
+									return true;
+								}));
+							}
+							return true;
+						}));
+					}
+				});
 			}
 		});
 		ExplosionSettingsLoadEvent event = new ExplosionSettingsLoadEvent(this);
@@ -521,14 +680,8 @@ public class  ExplosionSettings {
 			map.put("damage." + category.name().toLowerCase() + ".modifier", getDamageModifier(category).name().toLowerCase());
 			map.put("damage." + category.name().toLowerCase() + ".amount", getDamageAmount(category));
 		}
-		for(ExplosionCondition condition : getConditions().getConditions()) {
-			map.put("conditions." + condition.name().toLowerCase(), getConditions().getSimpleConditionValue(condition));
-		}
 		for(ExplosionSettingsOverride override : getOverrides()) {
 			map.put("override." + override.getName() + ".settings", override.getExplosionSettings().getName());
-			for(ExplosionCondition condition : override.getConditions()) {
-				map.put("override." + override.getName() + ".conditions." + condition.name().toLowerCase(), override.getSimpleConditionValue(condition));
-			}
 		}
 		boolean doSave = false;
 		for(Map.Entry<String, Object> entry : new HashSet<>(map.entrySet())) {
@@ -567,6 +720,54 @@ public class  ExplosionSettings {
 					valueKey = ((Long) valueKey).intValue();
 				if(!config.contains(key) || !valueKey.equals(value)) {
 					config.set(key, value); doSave = true;
+				}
+			}
+		}
+		for(ExplosionCondition condition : getConditions().getConditions()) {
+			String key = "conditions." + condition.name().toLowerCase();
+			Object value = getConditions().getSimpleConditionValue(condition);
+			Object valueKey = config.get(key);
+
+			if(value instanceof Float)
+				value = ((Float) value).doubleValue();
+			else if(value instanceof Long)
+				value = ((Long) value).intValue();
+
+			if(valueKey instanceof Float)
+				valueKey = ((Float) valueKey).doubleValue();
+			else if(valueKey instanceof Long)
+				valueKey = ((Long) valueKey).intValue();
+			if(!config.contains(key) || !valueKey.equals(value)) {
+				config.set(key, value); doSave = true;
+			}
+			for(String keyy : config.getConfigurationSection("conditions").getKeys(false)) {
+				if(!getConditions().hasCondition(ExplosionCondition.valueOf(keyy.toUpperCase()))) {
+					config.set(key, null); doSave = true;
+				}
+			}
+		}
+		for(ExplosionSettingsOverride override : getOverrides()) {
+			for(ExplosionCondition condition : override.getConditions()) {
+				String key = "override." + override.getName() + ".conditions." + condition.name().toLowerCase();
+				Object value = override.getSimpleConditionValue(condition);
+				Object valueKey = config.get(key);
+
+				if(value instanceof Float)
+					value = ((Float) value).doubleValue();
+				else if(value instanceof Long)
+					value = ((Long) value).intValue();
+
+				if(valueKey instanceof Float)
+					valueKey = ((Float) valueKey).doubleValue();
+				else if(valueKey instanceof Long)
+					valueKey = ((Long) valueKey).intValue();
+				if(!config.contains(key) || !valueKey.equals(value)) {
+					config.set(key, value); doSave = true;
+				}
+				for(String keyy : config.getConfigurationSection("override." + override.getName() + ".conditions").getKeys(false)) {
+					if(!override.hasCondition(ExplosionCondition.valueOf(keyy.toUpperCase()))) {
+						config.set(key, null); doSave = true;
+					}
 				}
 			}
 		}
