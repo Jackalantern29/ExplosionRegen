@@ -39,6 +39,13 @@ public class BlockSettings {
 		}
 
 	}
+
+	public boolean contains(String blockData) {
+		if(!blockData.equals(""))
+			return this.settings.containsKey(blockData);
+		return true;
+	}
+
 	public BlockSettingsData get(RegenBlockData regenData) {
 		if(regenData == null || !this.settings.containsKey(regenData.toString())) {
 			BlockSettingsData data = this.settings.get("");
