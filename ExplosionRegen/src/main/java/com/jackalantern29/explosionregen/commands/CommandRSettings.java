@@ -170,7 +170,7 @@ public class CommandRSettings implements TabExecutor {
 						}
 					} else if(option.equalsIgnoreCase("override")) {
 						String overrideName = args.length >= 5 ? args[4] : null;
-						if(action.equalsIgnoreCase("add") || action.equalsIgnoreCase("set")) {
+						if(action.equalsIgnoreCase("set")) {
 							ExplosionSettings overrideWith = args.length >= 6 ? ExplosionSettings.getSettings(args[5]) : null;
 							ExplosionCondition condition = args.length >= 7 ? ExplosionCondition.valueOf(args[6].toUpperCase()) : null;
 							String valueArg = args.length >= 8 ? args[7] : null;
@@ -190,11 +190,13 @@ public class CommandRSettings implements TabExecutor {
 								sender.sendMessage("§cValue not valid.");
 								return true;
 							}
-							int amount = 1;
-							for(ExplosionSettingsOverride override : settings.getOverrides())
-								if(override.getName().equalsIgnoreCase(overrideName))
-									amount++;
-							ExplosionSettingsOverride override = new ExplosionSettingsOverride(overrideName + (amount > 1 ? amount : ""), overrideWith);
+							ExplosionSettingsOverride override = null;
+							for(ExplosionSettingsOverride ovr : settings.getOverrides()) {
+								if(ovr.getName().equalsIgnoreCase(overrideName))
+									override = ovr;
+							}
+							if(override == null)
+								override = new ExplosionSettingsOverride(overrideName, overrideWith);
 							Object value = null;
 							switch(condition) {
 							case CUSTOM_NAME:
@@ -226,7 +228,7 @@ public class CommandRSettings implements TabExecutor {
 							}
 							override.setCondition(condition, value);
 							settings.addOrSetOverride(override);
-							sender.sendMessage("Added New Override Condition.");
+							sender.sendMessage("Override Condition Set.");
 						} else if(action.equalsIgnoreCase("remove")) {
 							settings.removeOverride(overrideName);
 							return true;
