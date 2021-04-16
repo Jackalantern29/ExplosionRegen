@@ -161,8 +161,10 @@ public class  ExplosionSettings {
 			}));
 			menu.setItem(4, new SlotElement(getDisplayItem(), data -> true));
 			menu.setItem(6, new SlotElement(displayNameItem, data -> {
+				data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 				InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
 					setDisplayName(input);
+					data.getWhoClicked().sendMessage("§cExiting Input Mode.");
 					Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
 					return true;
 				}));
