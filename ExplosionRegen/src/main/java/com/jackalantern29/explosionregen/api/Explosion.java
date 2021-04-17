@@ -177,7 +177,7 @@ public class Explosion {
 		startDelay();
 	}
 
-	private List<Block> shiftBlocks(List<Block> list) {
+	private void shiftBlocks(List<Block> list) {
 		List<Block> shift = new ArrayList<>();
 		for(Block block : new ArrayList<>(list)) {
 			for(Material material : getSupportNeededMaterials()) {
@@ -188,7 +188,6 @@ public class Explosion {
 			}
 		}
 		list.addAll(0, shift);
-		return list;
 	}
 
 	public static List<Material> getSupportNeededMaterials() {
