@@ -146,13 +146,6 @@ public class Explosion {
 	 * @param blockDamage The amount of damage this explosion does to blocks.
 	 */
 	public Explosion(ExplosionSettings settings, Object source, Location location, List<Block> blockList, double blockDamage) {
-		this.settings = settings;
-		this.source = source;
-		this.location = location;
-		this.regenTick = settings.getRegenDelay();
-		this.blockList = blockList;
-		this.blockDamage = blockDamage;
-
 		shiftBlocks(blockList);
 		//Trigger the event, and update the explosion settings
 		ExplosionTriggerEvent e = new ExplosionTriggerEvent(this);
@@ -161,6 +154,12 @@ public class Explosion {
 		Bukkit.getPluginManager().callEvent(e);
 		settings = e.getExplosion().getSettings();
 		blockDamage = e.getExplosion().getSettings().getDamageAmount(DamageCategory.ENTITY);
+		this.settings = settings;
+		this.source = source;
+		this.location = location;
+		this.regenTick = settings.getRegenDelay();
+		this.blockList = blockList;
+		this.blockDamage = blockDamage;
 		if(e.isCancelled())
 			return;
 		int powerRadius = 5;
