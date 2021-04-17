@@ -195,9 +195,7 @@ public class Explosion {
 	}
 
 	private boolean hasGravityBlockNearby(BlockState block) {
-		if(block.getType().hasGravity())
-			return true;
-		else if(block.getBlock().getRelative(1, 0, 0).getState().getType().hasGravity())
+		if(block.getBlock().getRelative(1, 0, 0).getState().getType().hasGravity())
 			return true;
 		else if(block.getBlock().getRelative(-1, 0, 0).getState().getType().hasGravity())
 			return true;
@@ -207,10 +205,7 @@ public class Explosion {
 			return true;
 		else if(block.getBlock().getRelative(0, 0, 1).getState().getType().hasGravity())
 			return true;
-		else if(block.getBlock().getRelative(0, 0, -1).getState().getType().hasGravity())
-			return true;
-		else
-			return false;
+		else return block.getBlock().getRelative(0, 0, -1).getState().getType().hasGravity();
 	}
 	private void damageBlock(RegenBlock regenBlock, BlockSettingsData bs, Block block) {
 		BlockState state = block.getState();
@@ -622,7 +617,7 @@ public class Explosion {
 		if(settings.getRegenForceBlock()) {
 			block.getBlock().breakNaturally();
 		}
-		if(hasGravityBlockNearby(state) || !settings.getBlockSettings().get(block.getRegenData()).isBlockUpdate())
+		if(hasGravityBlockNearby(state) || (state.getType().hasGravity() && !state.getBlock().getRelative(0, -1, 0).getType().isSolid()) || !settings.getBlockSettings().get(block.getRegenData()).isBlockUpdate())
 			state.update(true, false);
 		else
 			state.update(true);
