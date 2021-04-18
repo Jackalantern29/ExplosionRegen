@@ -28,7 +28,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.Comparator;
 import java.util.stream.Collectors;
+
+import static com.jackalantern29.explosionregen.api.enums.GenerateDirection.*;
 
 public class Explosion {
 	private static final Map<Location, RegenBlock> BLOCK_MAP = new HashMap<>();
@@ -268,147 +271,55 @@ public class Explosion {
 			return;
 
 		List<Block> list = new ArrayList<>(blockList);
-		GenerateDirection direction = settings.getRegenerateDirection();
-		list.sort((o1, o2) -> {
-			CompareToBuilder builder = new CompareToBuilder();
-			switch(direction) {
-				case UP:
-					builder.append(o1.getLocation().getBlockY(), o2.getLocation().getBlockY());
-					break;
-				case DOWN:
-					builder.append(o2.getLocation().getBlockY(), o1.getLocation().getBlockY());
-					break;
-				case EAST:
-					builder.append(o1.getLocation().getBlockX(), o2.getLocation().getBlockX());
-					break;
-				case WEST:
-					builder.append(o2.getLocation().getBlockX(), o1.getLocation().getBlockX());
-					break;
-				case NORTH:
-					builder.append(o2.getLocation().getBlockZ(), o1.getLocation().getBlockZ());
-					break;
-				case SOUTH:
-					builder.append(o1.getLocation().getBlockZ(), o2.getLocation().getBlockZ());
-					break;
-				default:
-					break;
-			}
-			return builder.toComparison();
-		});
 		HashMap<Integer, List<Block>> map = new HashMap<>();
+		GenerateDirection direction = settings.getRegenerateDirection();
 		switch(direction) {
-			case RANDOM_UP: {
-				for (Block block : list) {
-					List<Block> l;
-					if (!map.containsKey(block.getLocation().getBlockY()))
-						l = new ArrayList<>();
-					else
-						l = map.get(block.getLocation().getBlockY());
-					l.add(block);
-					map.put(block.getLocation().getBlockY(), l);
-				}
-				list = new ArrayList<>();
-				List<Integer> ls = new ArrayList<>(map.keySet());
-				ls.sort((o1, o2) -> new CompareToBuilder().append(o1, o2).toComparison());
-				for (int i : ls) {
-					Collections.shuffle(map.get(i));
-					list.addAll(map.get(i));
-				}
+			case UP:
+				list.sort(Comparator.comparingInt((Block o) -> o.getLocation().getBlockY()));
 				break;
-			}
-			case RANDOM_DOWN: {
-				for (Block block : list) {
-					List<Block> l;
-					if (!map.containsKey(block.getLocation().getBlockY()))
-						l = new ArrayList<>();
-					else
-						l = map.get(block.getLocation().getBlockY());
-					l.add(block);
-					map.put(block.getLocation().getBlockY(), l);
-				}
-				list = new ArrayList<>();
-				List<Integer> ls = new ArrayList<>(map.keySet());
-				ls.sort((o1, o2) -> new CompareToBuilder().append(o2, o1).toComparison());
-				for (int i : ls) {
-					Collections.shuffle(map.get(i));
-					list.addAll(map.get(i));
-				}
+			case DOWN:
+				list.sort(Comparator.comparingInt((Block o) -> o.getLocation().getBlockY()).reversed());
 				break;
-			}
-			case RANDOM_EAST: {
-				for (Block block : list) {
-					List<Block> l;
-					if (!map.containsKey(block.getLocation().getBlockX()))
-						l = new ArrayList<>();
-					else
-						l = map.get(block.getLocation().getBlockX());
-					l.add(block);
-					map.put(block.getLocation().getBlockX(), l);
-				}
-				list = new ArrayList<>();
-				List<Integer> ls = new ArrayList<>(map.keySet());
-				ls.sort((o1, o2) -> new CompareToBuilder().append(o1, o2).toComparison());
-				for (int i : ls) {
-					Collections.shuffle(map.get(i));
-					list.addAll(map.get(i));
-				}
+			case EAST:
+				list.sort(Comparator.comparingInt((Block o) -> o.getLocation().getBlockX()));
 				break;
-			}
-			case RANDOM_WEST: {
-				for (Block block : list) {
-					List<Block> l;
-					if (!map.containsKey(block.getLocation().getBlockX()))
-						l = new ArrayList<>();
-					else
-						l = map.get(block.getLocation().getBlockX());
-					l.add(block);
-					map.put(block.getLocation().getBlockX(), l);
-				}
-				list = new ArrayList<>();
-				List<Integer> ls = new ArrayList<>(map.keySet());
-				ls.sort((o1, o2) -> new CompareToBuilder().append(o2, o1).toComparison());
-				for (int i : ls) {
-					Collections.shuffle(map.get(i));
-					list.addAll(map.get(i));
-				}
+			case WEST:
+				list.sort(Comparator.comparingInt((Block o) -> o.getLocation().getBlockX()).reversed());
 				break;
-			}
-			case RANDOM_SOUTH: {
-				for (Block block : list) {
-					List<Block> l;
-					if (!map.containsKey(block.getLocation().getBlockZ()))
-						l = new ArrayList<>();
-					else
-						l = map.get(block.getLocation().getBlockZ());
-					l.add(block);
-					map.put(block.getLocation().getBlockZ(), l);
-				}
-				list = new ArrayList<>();
-				List<Integer> ls = new ArrayList<>(map.keySet());
-				ls.sort((o1, o2) -> new CompareToBuilder().append(o1, o2).toComparison());
-				for (int i : ls) {
-					Collections.shuffle(map.get(i));
-					list.addAll(map.get(i));
-				}
+			case SOUTH:
+				list.sort(Comparator.comparingInt((Block o) -> o.getLocation().getBlockZ()));
 				break;
-			}
+			case NORTH:
+				list.sort(Comparator.comparingInt((Block o) -> o.getLocation().getBlockZ()).reversed());
+				break;
+			case RANDOM_UP:
+			case RANDOM_DOWN:
+			case RANDOM_EAST:
+			case RANDOM_WEST:
+			case RANDOM_SOUTH:
 			case RANDOM_NORTH: {
-				for (Block block : list) {
+				list.forEach(block -> {
 					List<Block> l;
-					if (!map.containsKey(block.getLocation().getBlockZ()))
-						l = new ArrayList<>();
+					int bi;
+					if(direction == RANDOM_UP || direction == RANDOM_DOWN) {
+						bi = block.getLocation().getBlockY();
+					} else if(direction == RANDOM_EAST || direction == RANDOM_WEST)
+						bi = block.getLocation().getBlockX();
 					else
-						l = map.get(block.getLocation().getBlockZ());
+						bi = block.getLocation().getBlockZ();
+					map.putIfAbsent(bi, new ArrayList<>());
+					l = map.get(bi);
 					l.add(block);
-					map.put(block.getLocation().getBlockZ(), l);
-				}
-				list = new ArrayList<>();
+				});
+				list.clear();
 				List<Integer> ls = new ArrayList<>(map.keySet());
-				ls.sort((o1, o2) -> new CompareToBuilder().append(o2, o1).toComparison());
-				for (int i : ls) {
-					Collections.shuffle(map.get(i));
+				if(direction == RANDOM_UP)
+					ls.sort(Comparator.comparingInt((Integer value) -> value));
+				else
+					ls.sort(Comparator.comparingInt((Integer value) -> value).reversed());
+				for(int i : ls)
+					/*Collections.shuffle(map.get(i));*/
 					list.addAll(map.get(i));
-				}
 				break;
 			}
 		}
