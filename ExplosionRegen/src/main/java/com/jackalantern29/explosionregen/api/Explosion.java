@@ -137,34 +137,13 @@ public class Explosion {
 	 * @param blockList List of blocks that was damaged in this explosion.
 	 */
 	public Explosion(ExplosionSettings settings, Object source, Location location, List<Block> blockList) {
-		this(settings, source, location, blockList, settings.getDamageAmount(DamageCategory.BLOCK));
-	}
-
-	/**
-	 *
-	 * @param settings The settings this explosion will use.
-	 * @param source The source of this explosion.
-	 * @param location The location of this explosion.
-	 * @param blockList List of blocks that was damaged in this explosion.
-	 * @param blockDamage The amount of damage this explosion does to blocks.
-	 */
-	public Explosion(ExplosionSettings settings, Object source, Location location, List<Block> blockList, double blockDamage) {
-		shiftBlocks(blockList);
-		//Trigger the event, and update the explosion settings
-		ExplosionTriggerEvent e = new ExplosionTriggerEvent(this);
-		if(!settings.getAllowDamage(DamageCategory.BLOCK))
-			e.setCancelled(true);
-		Bukkit.getPluginManager().callEvent(e);
-		settings = e.getExplosion().getSettings();
-		blockDamage = e.getExplosion().getSettings().getDamageAmount(DamageCategory.ENTITY);
 		this.settings = settings;
+		this.blockDamage = settings.getDamageAmount(DamageCategory.BLOCK);
 		this.source = source;
 		this.location = location;
 		this.regenTick = settings.getRegenDelay();
 		this.blockList = blockList;
-		this.blockDamage = blockDamage;
-		if(e.isCancelled())
-			return;
+		shiftBlocks(blockList);
 		int powerRadius = 5;
 
 		//Scan the nearby radius to add blocks that can be destroyed.
@@ -173,10 +152,17 @@ public class Explosion {
 			for (int y = powerRadius * -1; y <= powerRadius; y++)
 				for (int z = powerRadius * -1; z <= powerRadius; z++) {
 					Block block = location.getBlock().getRelative(x, y, z);
-					if(MaterialUtil.isIndestructible(block.getType()) && !settings.getBlockSettings().get(new RegenBlockData(block.getType())).doPreventDamage())
+					if(MaterialUtil.isIndestructible(block.getType()) && !settings.getBlockSettings().get(new RegenBlockData(block.getType())).doPreventDamage()) {
 						blockList.add(block);
+					}
 				}
-
+		ExplosionTriggerEvent e = new ExplosionTriggerEvent(this);
+		if(!settings.getAllowDamage(DamageCategory.BLOCK)) {
+			e.setCancelled(true);
+		}
+		Bukkit.getPluginManager().callEvent(e);
+		if(e.isCancelled())
+			return;
 		startDelay();
 	}
 
