@@ -122,6 +122,7 @@ public class Explosion {
 		SUPPORT_NEED.add(Material.DEAD_FIRE_CORAL_WALL_FAN);
 		SUPPORT_NEED.add(Material.DEAD_HORN_CORAL_WALL_FAN);
 		SUPPORT_NEED.add(Material.DEAD_TUBE_CORAL_WALL_FAN);
+		SUPPORT_NEED.add(Material.DEAD_BUSH);
 		SUPPORT_NEED.addAll(Tag.SIGNS.getValues());
 		SUPPORT_NEED.addAll(Tag.BANNERS.getValues());
 		SUPPORT_NEED.add(Material.SUGAR_CANE);
