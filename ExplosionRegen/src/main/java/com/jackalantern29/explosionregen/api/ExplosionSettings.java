@@ -99,7 +99,7 @@ public class  ExplosionSettings {
 				allowRegenItem = new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §aTrue").build();
 			else
 				allowRegenItem = new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §cFalse").build();
-			ItemStack regenDirectionItem = new ItemBuilder(Material.COMPASS).setDisplayName("§fDirection: §6" + StringUtils.capitaliseAllWords(getRegenerateDirection().name().toLowerCase().replace("_", " "))).build();
+			ItemStack regenDirectionItem = new ItemBuilder(Material.COMPASS).setDisplayName("§fDirection: §6" + WordUtils.capitalize(getRegenerateDirection().name().toLowerCase().replace("_", " "))).build();
 			ItemStack regenInstantItem;
 			if(isInstantRegen())
 				regenInstantItem = new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §aTrue").build();
@@ -115,23 +115,23 @@ public class  ExplosionSettings {
 			ItemStack damageInfoItem = new ItemBuilder(MaterialUtil.getMaterial("GUNPOWDER")).setDisplayName("§f- Damage -")
 					.setLine(0, "§fBlock:")
 					.setLine(1, "  §fAllow:    " + (getAllowDamage(DamageCategory.BLOCK) ? "§aTrue" : "§cFalse"))
-					.setLine(2, "  §fModifier: §6" + StringUtils.capitaliseAllWords(getDamageModifier(DamageCategory.BLOCK).name().toLowerCase()))
+					.setLine(2, "  §fModifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.BLOCK).name().toLowerCase()))
 					.setLine(3, "  §fAmount:   §6" + getDamageAmount(DamageCategory.BLOCK))
 					.setLine(4, "§fEntity:")
 					.setLine(5, "  §fAllow:    " + (getAllowDamage(DamageCategory.ENTITY) ? "§aTrue" : "§cFalse"))
-					.setLine(6, "  §fModifier: §6" + StringUtils.capitaliseAllWords(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase()))
+					.setLine(6, "  §fModifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase()))
 					.setLine(7, "  §fAmount:   §6" + getDamageAmount(DamageCategory.ENTITY))
 					.build();
 			ItemStack damageBlockInfoItem = new ItemBuilder(MaterialUtil.getMaterial("GRASS_BLOCK")).setDisplayName("§f - Damage [Block] -")
 					.setLine(0, "§fBlock:")
 					.setLine(1, "  §fAllow:    " + (getAllowDamage(DamageCategory.BLOCK) ? "§aTrue" : "§cFalse"))
-					.setLine(2, "  §fModifier: §6" + StringUtils.capitaliseAllWords(getDamageModifier(DamageCategory.BLOCK).name().toLowerCase()))
+					.setLine(2, "  §fModifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.BLOCK).name().toLowerCase()))
 					.setLine(3, "  §fAmount:   §6" + getDamageAmount(DamageCategory.BLOCK))
 					.build();
 			ItemStack damageEntityInfoItem = new ItemBuilder(Material.ARMOR_STAND).setDisplayName("§f - Damage [Entity] -")
 					.setLine(0, "§fEntity:")
 					.setLine(1, "  §fAllow:    " + (getAllowDamage(DamageCategory.ENTITY) ? "§aTrue" : "§cFalse"))
-					.setLine(2, "  §fModifier: §6" + StringUtils.capitaliseAllWords(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase()))
+					.setLine(2, "  §fModifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase()))
 					.setLine(3, "  §fAmount:   §6" + getDamageAmount(DamageCategory.ENTITY))
 					.build();
 			ItemStack damageBlockAllowItem;
@@ -144,8 +144,8 @@ public class  ExplosionSettings {
 				damageEntityAllowItem = new ItemBuilder(MaterialUtil.getMaterial("WOODEN_SWORD")).setDisplayName("§fAllow Entity Damage: §aTrue").build();
 			else
 				damageEntityAllowItem = new ItemBuilder(Material.STICK).setDisplayName("§fAllow Entity Damage: §cFalse").build();
-			ItemStack damageBlockModifierItem = new ItemBuilder(Material.ENCHANTED_BOOK).setDisplayName("§fBlock Damage Modifier: §6" + StringUtils.capitaliseAllWords(getDamageModifier(DamageCategory.BLOCK).name().toLowerCase())).build();
-			ItemStack damageEntityModifierItem = new ItemBuilder(Material.ENCHANTED_BOOK).setDisplayName("§fEntity Damage Modifier: §6" + StringUtils.capitaliseAllWords(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase())).build();
+			ItemStack damageBlockModifierItem = new ItemBuilder(Material.ENCHANTED_BOOK).setDisplayName("§fBlock Damage Modifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.BLOCK).name().toLowerCase())).build();
+			ItemStack damageEntityModifierItem = new ItemBuilder(Material.ENCHANTED_BOOK).setDisplayName("§fEntity Damage Modifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase())).build();
 			ItemStack damageBlockAmountItem = new ItemBuilder(Material.FEATHER).setDisplayName("§fBlock Damage Amount: §6" + getDamageAmount(DamageCategory.BLOCK)).build();
 			ItemStack damageEntityAmountItem = new ItemBuilder(Material.FEATHER).setDisplayName("§fEntity Damage Amount: §6" + getDamageAmount(DamageCategory.ENTITY)).build();
 			ItemStack pluginsItem = new ItemBuilder(MaterialUtil.getMaterial("FILLED_MAP")).setDisplayName("§fPlugins §7[§6" + plugins.size() + "§7]").build();
