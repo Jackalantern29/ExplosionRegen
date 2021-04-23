@@ -13,7 +13,6 @@ import com.jackalantern29.explosionregen.api.events.ExplosionBlockRegeneratingEv
 import com.jackalantern29.explosionregen.api.events.ExplosionRegenFinishEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
 import net.coreprotect.CoreProtectAPI;
-import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

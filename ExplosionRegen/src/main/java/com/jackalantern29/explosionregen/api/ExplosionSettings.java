@@ -8,7 +8,6 @@ import com.jackalantern29.explosionregen.api.events.ExplosionSettingsLoadEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsUnloadEvent;
 import com.jackalantern29.explosionregen.api.inventory.*;
 import com.jackalantern29.explosionregen.commands.CommandRSettings;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
