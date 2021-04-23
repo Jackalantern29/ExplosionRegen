@@ -607,6 +607,19 @@ public class Explosion {
 		ACTIVE_EXPLOSIONS.remove(this);
 	}
 
+	public Object getSource() {
+		return source;
+	}
+
+	public double getBlockDamage() {
+		return blockDamage;
+	}
+
+	public void setBlockDamage(double blockDamage) {
+		this.blockDamage = blockDamage;
+	}
+
+
 	/**
 	 * Gets a list of currently active explosions
 	 *
