@@ -20,6 +20,7 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 	private static ExplosionRegen instance;
 	private static ExplosionRegenSettings settings;
 	public static UUID author = UUID.fromString("76763b6e-4804-4b7e-bfbd-5d87c72e7843");
+
 	public void onEnable() {
 		instance = this;
 		settings = new ExplosionRegenSettings();
@@ -57,18 +58,23 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 			explosions.regenerateAll();
 		}
 	}
+
 	public static ExplosionRegen getInstance() {
 		return instance;
 	}
+
 	public static ExplosionRegenSettings getSettings() {
 		return settings;
 	}
+
 	public static UUID getAuthor() {
 		return author;
 	}
+
 	public static Collection<Explosion> getActiveExplosions() {
 		return Explosion.getActiveExplosions();
 	}
+
 	public CoreProtectAPI getCoreProtect() {
 		Plugin p = getServer().getPluginManager().getPlugin("CoreProtect");
 		if(p == null)
@@ -94,5 +100,4 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 			return null;
 		return grief;
 	}
-
 }
