@@ -379,9 +379,7 @@ public class  ExplosionSettings {
 								blockData.setReplaceWith(new RegenBlockData(material));
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> {
-									blockMenu.sendInventory(data.getWhoClicked());
-								});
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked()));
 								return true;
 							} catch(Exception e) {
 								data.getWhoClicked().sendMessage("§cInvalid material.");
@@ -402,9 +400,7 @@ public class  ExplosionSettings {
 								blockData.setDropChance(NumberUtils.toInt(input));
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> {
-									blockMenu.sendInventory(data.getWhoClicked());
-								});
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked()));
 								return true;
 							} else
 								data.getWhoClicked().sendMessage("§cInvalid number.");
@@ -419,9 +415,7 @@ public class  ExplosionSettings {
 								blockData.setDurability(NumberUtils.toDouble(input));
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> {
-									blockMenu.sendInventory(data.getWhoClicked());
-								});
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked()));
 								return true;
 							} else {
 								data.getWhoClicked().sendMessage("§cInvalid number.");
@@ -438,9 +432,7 @@ public class  ExplosionSettings {
 								blockData.setRegenDelay(l);
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> {
-									blockMenu.sendInventory(data.getWhoClicked());
-								});
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked()));
 								return true;
 							} catch(NumberFormatException e) {
 								data.getWhoClicked().sendMessage("§cInvalid number.");
