@@ -30,20 +30,20 @@ public class  ExplosionSettings {
 	private final String name;
 
 	private BlockSettings blockSettings;
-	private boolean enable;
-	private boolean regenAllow;
-	private GenerateDirection regenDirection;
-	private boolean regenInstant;
-	private long regenDelay;
-	private int regenMaxBlockQueue;
-	private boolean regenForceBlock;
+	private boolean enable = true;
+	private boolean regenAllow = true;
+	private GenerateDirection regenDirection = GenerateDirection.RANDOM_UP;
+	private boolean regenInstant = false;
+	private long regenDelay = 200;
+	private int regenMaxBlockQueue = 1;
+	private boolean regenForceBlock = false;
 	
-	private boolean damageBlockAllow;
-	private DamageModifier damageBlockModifier;
-	private double damageBlockAmount;
-	private boolean damageEntityAllow;
-	private DamageModifier damageEntityModifier;
-	private double damageEntityAmount;
+	private boolean damageBlockAllow = true;
+	private DamageModifier damageBlockModifier = DamageModifier.MULTIPLY;
+	private double damageBlockAmount = 1.0d;
+	private boolean damageEntityAllow = true;
+	private DamageModifier damageEntityModifier = DamageModifier.MULTIPLY;
+	private double damageEntityAmount = 1.0d;
 
 	private final HashMap<String, ExplosionSettingsPlugin> plugins = new HashMap<>();
 
@@ -59,19 +59,6 @@ public class  ExplosionSettings {
 	private ExplosionSettings(String name, BlockSettings blockSettings) {
 		this.name = name;
 		this.blockSettings = blockSettings;
-		this.enable = true;
-		this.regenAllow = true;
-		this.regenDirection = GenerateDirection.RANDOM_UP;
-		this.regenInstant = false;
-		this.regenDelay = 200;
-		this.regenMaxBlockQueue = 1;
-		this.regenForceBlock = false;
-		this.damageBlockAllow = true;
-		this.damageBlockModifier = DamageModifier.MULTIPLY;
-		this.damageBlockAmount = 1.0d;
-		this.damageEntityAllow = true;
-		this.damageEntityModifier = DamageModifier.MULTIPLY;
-		this.damageEntityAmount = 1.0d;
 		this.displayName = name;
 		this.displayItem = new ItemBuilder(Material.TNT).setDisplayName(name).build();
 		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
