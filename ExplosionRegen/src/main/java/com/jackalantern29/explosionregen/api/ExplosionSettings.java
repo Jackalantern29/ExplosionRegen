@@ -53,17 +53,23 @@ public class  ExplosionSettings {
 	private final Map<String, ExplosionSettingsOverride> overrides = new HashMap<>();
 	private final ExplosionSettingsOverride conditions;
 
-	private final SettingsMenu menu;
+	private SettingsMenu menu;
 
 	private boolean saveChanges = false;
+
 	private ExplosionSettings(String name, BlockSettings blockSettings) {
 		this.name = name;
 		this.blockSettings = blockSettings;
 		this.displayName = name;
 		this.displayItem = new ItemBuilder(Material.TNT).setDisplayName(name).build();
 		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
+		setupInventory();
+		Bukkit.getPluginManager().callEvent(new ExplosionSettingsLoadEvent(this));
+		MAP.put(name, this);
+	}
 
-		menu = new SettingsMenu(getDisplayName(), 54);
+	private void setupInventory() {
+		this.menu = new SettingsMenu(getDisplayName(), 54);
 		PageMenu bsMenu = new PageMenu(getDisplayName() + " §l[Block Settings]", 54);
 		PageMenu pluginMenu = new PageMenu(getDisplayName() + " §l[Plugins]", 18);
 		PageMenu conditionMenu = new PageMenu(getDisplayName() + " §l[Conditions]", 18);
@@ -74,30 +80,26 @@ public class  ExplosionSettings {
 		menu.setUpdate("menu", () -> {
 
 			ItemStack blockSettingsItem = new ItemBuilder(Material.STONE).setDisplayName("§fBlock Settings").setLine(0, "§7Selected: §n" + getBlockSettings().getName()).build();
-			ItemStack enableItem;
-			if(getAllowExplosion())
-				enableItem = new ItemBuilder(Material.GOLDEN_APPLE).setDisplayName("§fAllow Explosion: §aTrue").build();
-			else
-				enableItem = new ItemBuilder(Material.APPLE).setDisplayName("§fAllow Explosion: §cFalse").build();
+			ItemStack enableItem = new ItemCondition(
+					new ItemBuilder(Material.APPLE).setDisplayName("§fAllow Explosion: §cFalse"),
+					new ItemBuilder(Material.GOLDEN_APPLE).setDisplayName("§fAllow Explosion: §aTrue")
+					).build(getAllowExplosion());
 			ItemStack displayNameItem = new ItemBuilder(Material.PAPER).setDisplayName("§fDisplay Name: '" + getDisplayName() + "'").build();
-			ItemStack allowRegenItem;
-			if(getAllowRegen())
-				allowRegenItem = new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §aTrue").build();
-			else
-				allowRegenItem = new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §cFalse").build();
+			ItemStack allowRegenItem = new ItemCondition(
+					new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §cFalse"),
+					new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §aTrue")
+			).build(getAllowRegen());
 			ItemStack regenDirectionItem = new ItemBuilder(Material.COMPASS).setDisplayName("§fDirection: §6" + WordUtils.capitalize(getRegenerateDirection().name().toLowerCase().replace("_", " "))).build();
-			ItemStack regenInstantItem;
-			if(isInstantRegen())
-				regenInstantItem = new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §aTrue").build();
-			else
-				regenInstantItem = new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §cFalse").build();
+			ItemStack regenInstantItem = new ItemCondition(
+					new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §cFalse"),
+					new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §aTrue")
+			).build(isInstantRegen());
 			ItemStack regenDelayItem = new ItemBuilder(Material.REDSTONE).setDisplayName("§fRegen Delay: §6" + getRegenDelay()).build();
 			ItemStack regenMaxBlockItem = new ItemBuilder(Material.CHEST).setDisplayName("§fMax Block Queue: §6" + getMaxBlockRegenQueue()).build();
-			ItemStack regenForceItem;
-			if(getRegenForceBlock())
-				regenForceItem = new ItemBuilder(Material.ENDER_EYE).setDisplayName("§fForce Block Regen: §aTrue").build();
-			else
-				regenForceItem = new ItemBuilder(Material.ENDER_PEARL).setDisplayName("§fForce Block Regen: §cFalse").build();
+			ItemStack regenForceItem = new ItemCondition(
+					new ItemBuilder(Material.ENDER_PEARL).setDisplayName("§fForce Block Regen: §cFalse"),
+					new ItemBuilder(Material.ENDER_EYE).setDisplayName("§fForce Block Regen: §aTrue")
+			).build(getRegenForceBlock());
 			ItemStack damageInfoItem = new ItemBuilder(MaterialUtil.getMaterial("GUNPOWDER")).setDisplayName("§f- Damage -")
 					.setLine(0, "§fBlock:")
 					.setLine(1, "  §fAllow:    " + (getAllowDamage(DamageCategory.BLOCK) ? "§aTrue" : "§cFalse"))
@@ -120,16 +122,14 @@ public class  ExplosionSettings {
 					.setLine(2, "  §fModifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase()))
 					.setLine(3, "  §fAmount:   §6" + getDamageAmount(DamageCategory.ENTITY))
 					.build();
-			ItemStack damageBlockAllowItem;
-			ItemStack damageEntityAllowItem;
-			if(getAllowDamage(DamageCategory.BLOCK))
-				damageBlockAllowItem = new ItemBuilder(MaterialUtil.getMaterial("WOODEN_SHOVEL")).setDisplayName("§fAllow Block Damage: §aTrue").build();
-			else
-				damageBlockAllowItem = new ItemBuilder(Material.STICK).setDisplayName("§fAllow Block Damage: §cFalse").build();
-			if(getAllowDamage(DamageCategory.ENTITY))
-				damageEntityAllowItem = new ItemBuilder(MaterialUtil.getMaterial("WOODEN_SWORD")).setDisplayName("§fAllow Entity Damage: §aTrue").build();
-			else
-				damageEntityAllowItem = new ItemBuilder(Material.STICK).setDisplayName("§fAllow Entity Damage: §cFalse").build();
+			ItemStack damageBlockAllowItem = new ItemCondition(
+					new ItemBuilder(Material.STICK).setDisplayName("§fAllow Block Damage: §cFalse"),
+					new ItemBuilder(MaterialUtil.getMaterial("WOODEN_SHOVEL")).setDisplayName("§fAllow Block Damage: §aTrue")
+			).build(getAllowDamage(DamageCategory.BLOCK));
+			ItemStack damageEntityAllowItem = new ItemCondition(
+					new ItemBuilder(Material.STICK).setDisplayName("§fAllow Block Damage: §cFalse"),
+					new ItemBuilder(MaterialUtil.getMaterial("WOODEN_SWORD")).setDisplayName("§fAllow Entity Damage: §aTrue")
+			).build(getAllowDamage(DamageCategory.ENTITY));
 			ItemStack damageBlockModifierItem = new ItemBuilder(Material.ENCHANTED_BOOK).setDisplayName("§fBlock Damage Modifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.BLOCK).name().toLowerCase())).build();
 			ItemStack damageEntityModifierItem = new ItemBuilder(Material.ENCHANTED_BOOK).setDisplayName("§fEntity Damage Modifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase())).build();
 			ItemStack damageBlockAmountItem = new ItemBuilder(Material.FEATHER).setDisplayName("§fBlock Damage Amount: §6" + getDamageAmount(DamageCategory.BLOCK)).build();
@@ -390,7 +390,7 @@ public class  ExplosionSettings {
 								return true;
 							} else
 								data.getWhoClicked().sendMessage("§cInvalid number.");
-								return false;
+							return false;
 						}));
 						return true;
 					}));
@@ -638,10 +638,8 @@ public class  ExplosionSettings {
 				});
 			}
 		});
-		ExplosionSettingsLoadEvent event = new ExplosionSettingsLoadEvent(this);
-		Bukkit.getPluginManager().callEvent(event);
-		MAP.put(name, this);
 	}
+
 	public void saveAsFile() {
 		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + name + ".yml");
 		if(!file.exists()) {
