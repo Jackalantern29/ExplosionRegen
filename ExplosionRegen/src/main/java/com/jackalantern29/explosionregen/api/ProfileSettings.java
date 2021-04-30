@@ -32,9 +32,6 @@ public class ProfileSettings {
 			@EventHandler
 			public void join(PlayerJoinEvent event) {
 				Player player = event.getPlayer();
-				if(player.isOp()) {
-					player.sendMessage("§7[§cExplosionRegen§7] §9This is an early build, so use this with caution. Report any bugs & issues you come across & share any ideas you would like to see.");
-				}
 				new ProfileSettings(player);
 			}
 			@EventHandler
