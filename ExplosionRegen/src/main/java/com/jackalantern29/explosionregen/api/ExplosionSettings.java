@@ -151,7 +151,7 @@ public class  ExplosionSettings {
 				InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
 					setDisplayName(input);
 					data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-					Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
+					Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked(), true));
 					return true;
 				}));
 				return true;
@@ -194,7 +194,7 @@ public class  ExplosionSettings {
 						long l = Long.parseLong(input);
 						setRegenDelay(l);
 						data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
+						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked(), true));
 						return true;
 					} catch(NumberFormatException e) {
 						data.getWhoClicked().sendMessage("§cInvalid number.");
@@ -210,7 +210,7 @@ public class  ExplosionSettings {
 						int value = Integer.parseInt(input);
 						setMaxBlockRegenQueue(value);
 						data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
+						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked(), true));
 						return true;
 					} catch(NumberFormatException e) {
 						data.getWhoClicked().sendMessage("§cInvalid number.");
@@ -247,7 +247,7 @@ public class  ExplosionSettings {
 						int value = Integer.parseInt(input);
 						setDamageAmount(DamageCategory.BLOCK, value);
 						data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
+						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked(), true));
 						return true;
 					} catch(NumberFormatException e) {
 						data.getWhoClicked().sendMessage("§cInvalid number.");
@@ -276,7 +276,7 @@ public class  ExplosionSettings {
 						int value = Integer.parseInt(input);
 						setDamageAmount(DamageCategory.ENTITY, value);
 						data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked()));
+						Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> menu.sendInventory(data.getWhoClicked(), true));
 						return true;
 					} catch(NumberFormatException e) {
 						data.getWhoClicked().sendMessage("§cInvalid number.");
@@ -365,7 +365,7 @@ public class  ExplosionSettings {
 								blockData.setReplaceWith(new RegenBlockData(material));
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked()));
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked(), true));
 								return true;
 							} catch(Exception e) {
 								data.getWhoClicked().sendMessage("§cInvalid material.");
@@ -386,7 +386,7 @@ public class  ExplosionSettings {
 								blockData.setDropChance(NumberUtils.toInt(input));
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked()));
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked(), true));
 								return true;
 							} else
 								data.getWhoClicked().sendMessage("§cInvalid number.");
@@ -401,7 +401,7 @@ public class  ExplosionSettings {
 								blockData.setDurability(NumberUtils.toDouble(input));
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked()));
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked(), true));
 								return true;
 							} else {
 								data.getWhoClicked().sendMessage("§cInvalid number.");
@@ -418,7 +418,7 @@ public class  ExplosionSettings {
 								blockData.setRegenDelay(l);
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
-								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked()));
+								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked(), true));
 								return true;
 							} catch(NumberFormatException e) {
 								data.getWhoClicked().sendMessage("§cInvalid number.");
