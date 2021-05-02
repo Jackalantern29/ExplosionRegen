@@ -248,7 +248,7 @@ public class CommandRSettings implements TabExecutor {
 						RegenBlockData regenData = new RegenBlockData(blockData);
 						BlockSettingsData data = new BlockSettingsData(regenData);
 						if(action.equalsIgnoreCase("add")) {
-							if(settings.getBlockSettings().contains(blockData.getAsString())) {
+							if(!settings.getBlockSettings().contains(blockData.getAsString())) {
 								settings.getBlockSettings().add(data);
 								sender.sendMessage("§aAdded '" + blockData.getAsString() + "'.");
 							} else {
