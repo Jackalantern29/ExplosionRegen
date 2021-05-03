@@ -21,6 +21,7 @@ import org.bukkit.block.*;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Door;
+import org.bukkit.block.data.type.Piston;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
@@ -313,6 +314,15 @@ public class Explosion {
 			for (Block block : new ArrayList<>(blockList)) {
 				if(hasBlock(block.getLocation()))
 					continue;
+				if(block.getType() == Material.PISTON_HEAD) {
+					blockList.remove(block);
+					continue;
+				}
+				if(block.getBlockData() instanceof Piston) {
+					Piston piston = (Piston) block.getBlockData();
+					piston.setExtended(false);
+					block.setBlockData(piston);
+				}
 				BlockSettingsData bs = settings.getBlockSettings().get(new RegenBlockData(block));
 				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
 				{
