@@ -223,7 +223,7 @@ public class Explosion {
 				if (bs.doRegen()) {
 					if (regenBlock.getType() != Material.TNT)
 						addBlock(regenBlock);
-					if ((MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) || (hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate()) || (block.getState().getType().name().contains("SHULKER_BOX") || block.getState().getType() == Material.BEACON)) {
+					if ((MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) || (hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate()) || (block.getState().getType().name().contains("SHULKER_BOX") || block.getState().getType() == Material.BEACON || block.getState().getType().name().contains("_HEAD") || block.getState().getType().name().contains("_SKULL"))) {
 						block.setType(Material.AIR, false);
 					}
 
