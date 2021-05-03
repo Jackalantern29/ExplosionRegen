@@ -223,12 +223,9 @@ public class Explosion {
 				if (bs.doRegen()) {
 					if (regenBlock.getType() != Material.TNT)
 						addBlock(regenBlock);
-					if (MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) {
+					if ((MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) || (hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate()) || (block.getState().getType().name().contains("SHULKER_BOX") || block.getState().getType() == Material.BEACON)) {
 						block.setType(Material.AIR, false);
 					}
-
-					if(hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate())
-						block.setType(Material.AIR, false);
 
 					if (ExplosionRegen.getInstance().getCoreProtect() != null) {
 						if (UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
