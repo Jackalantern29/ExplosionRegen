@@ -224,7 +224,7 @@ public class Explosion {
 				if (bs.doRegen()) {
 					if (regenBlock.getType() != Material.TNT)
 						addBlock(regenBlock);
-					if ((MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) || (hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate()) || (block.getState().getType().name().contains("SHULKER_BOX") || block.getState().getType() == Material.BEACON || block.getState().getType().name().contains("_HEAD") || block.getState().getType().name().contains("_SKULL"))) {
+					if ((MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) || (hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate()) || (block.getState().getType().name().contains("SHULKER_BOX") || block.getState().getType() == Material.BEACON || (block.getState().getType().name().contains("_HEAD") && block.getState().getType() != Material.PISTON_HEAD) || block.getState().getType().name().contains("_SKULL"))) {
 						block.setType(Material.AIR, false);
 					}
 
@@ -321,7 +321,7 @@ public class Explosion {
 				if(block.getBlockData() instanceof Piston) {
 					Piston piston = (Piston) block.getBlockData();
 					piston.setExtended(false);
-					block.setBlockData(piston);
+					block.setBlockData(piston, false);
 				}
 				BlockSettingsData bs = settings.getBlockSettings().get(new RegenBlockData(block));
 				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
