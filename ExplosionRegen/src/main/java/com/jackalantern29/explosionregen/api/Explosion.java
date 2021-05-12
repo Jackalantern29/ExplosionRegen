@@ -20,7 +20,6 @@ import org.bukkit.Tag;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.type.Door;
 import org.bukkit.block.data.type.Piston;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -144,6 +143,23 @@ public class Explosion {
 		this.location = location;
 		this.regenTick = settings.getRegenDelay();
 		this.blockList = blockList;
+
+		//If the block damaged was supporting a block, add the block that needed support
+/*		for(Block block : new ArrayList<>(blockList)) {
+			if(!blockList.contains(block.getRelative(1, 0, 0)) && SUPPORT_NEED.contains(block.getRelative(1, 0, 0).getType()))
+				blockList.add(block.getRelative(1, 0, 0));
+			else if(!blockList.contains(block.getRelative(-1, 0, 0)) && SUPPORT_NEED.contains(block.getRelative(-1, 0, 0).getType()))
+				blockList.add(block.getRelative(-1, 0, 0));
+			else if(!blockList.contains(block.getRelative(0, 1, 0)) && SUPPORT_NEED.contains(block.getRelative(0, 1, 0).getType()))
+				blockList.add(block.getRelative(0, 1, 0));
+			else if(!blockList.contains(block.getRelative(0, -1, 0)) && SUPPORT_NEED.contains(block.getRelative(0, -1, 0).getType()))
+				blockList.add(block.getRelative(0, -1, 0));
+			else if(!blockList.contains(block.getRelative(0, 0, 1)) && SUPPORT_NEED.contains(block.getRelative(0, 0, 1).getType()))
+				blockList.add(block.getRelative(0, 0, 1));
+			else if(!blockList.contains(block.getRelative(0, 0, -1)) && SUPPORT_NEED.contains(block.getRelative(0, 0, -1).getType()))
+				blockList.add(block.getRelative(0, 0, -1));
+		}*/
+
 		shiftBlocks(blockList);
 		int powerRadius = 5;
 
@@ -197,6 +213,7 @@ public class Explosion {
 			return true;
 		else return block.getBlock().getRelative(0, 0, -1).getState().getType().hasGravity();
 	}
+
 	private void damageBlock(RegenBlock regenBlock, BlockSettingsData bs, Block block) {
 		BlockState state = block.getState();
 		if(state instanceof Container) {
@@ -224,7 +241,7 @@ public class Explosion {
 				if (bs.doRegen()) {
 					if (regenBlock.getType() != Material.TNT)
 						addBlock(regenBlock);
-					if ((MaterialUtil.isBedBlock(block.getState().getType()) || block.getState().getType().name().contains("_DOOR")) || (hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate()) || (block.getState().getType().name().contains("SHULKER_BOX") || block.getState().getType() == Material.BEACON || (block.getState().getType().name().contains("_HEAD") && block.getState().getType() != Material.PISTON_HEAD) || block.getState().getType().name().contains("_SKULL"))) {
+					if ((MaterialUtil.isBedBlock(block.getState().getType()) || getSupportNeededMaterials().contains(block.getState().getType()) || block.getState().getBlockData() instanceof Bisected) || (hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate()) || (block.getState().getType().name().contains("SHULKER_BOX") || block.getState().getType() == Material.BEACON || (block.getState().getType().name().contains("_HEAD") && block.getState().getType() != Material.PISTON_HEAD) || block.getState().getType().name().contains("_SKULL"))) {
 						block.setType(Material.AIR, false);
 					}
 
@@ -353,9 +370,9 @@ public class Explosion {
 						} else {
 							part = block.getRelative(1, 0, 0);
 						}
-					} else if(block.getType().name().contains("_DOOR")) {
-						Door door = (Door)block.getBlockData();
-						Bisected.Half type = door.getHalf();
+					} else if(block.getBlockData() instanceof Bisected) {
+						Bisected bi = (Bisected)block.getBlockData();
+						Bisected.Half type = bi.getHalf();
 						if(type == Bisected.Half.BOTTOM)
 							part = block.getRelative(0, 1, 0);
 						else
