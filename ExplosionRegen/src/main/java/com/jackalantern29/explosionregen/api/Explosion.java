@@ -534,7 +534,7 @@ public class Explosion {
 			state.update(true, false);
 		else
 			state.update(true);
-		if(bState.getType() != Material.AIR && bState.getType() != Material.WATER & bState.getType() != Material.LAVA) {
+		if(bState.getType() != Material.AIR && bState.getType() != Material.WATER & bState.getType() != Material.LAVA && bState.getType() != Material.FIRE) {
 			block.getBlock().breakNaturally();
 			bState.update(true);
 		}
