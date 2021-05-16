@@ -153,7 +153,7 @@ public class ERSpecialEffects extends JavaPlugin {
     public static void updateProfileOptions(ProfileSettings profile) {
         for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings()) {
             ProfileSettingsPlugin plugin = profile.getPlugin(settings, "SpecialEffects");
-            if(plugin.toObject() != null) {
+            if(plugin != null && plugin.toObject() != null) {
                 SpecialEffects effects = (SpecialEffects)plugin.toObject();
                 for(ExplosionPhase phase : ExplosionPhase.values()) {
                     plugin.setOption("particles." + phase.toString() + ".particle", effects.getParticleSettings(phase).getName());
