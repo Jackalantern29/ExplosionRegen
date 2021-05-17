@@ -2,13 +2,11 @@ package com.jackalantern29.explosionregen.commands;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.jackalantern29.explosionregen.api.Explosion;
 import org.apache.commons.lang.BooleanUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -176,8 +174,7 @@ public class CommandRExplode implements TabExecutor {
 			} else if(args[0].equalsIgnoreCase("atlook")) {
 				if(sender instanceof Player) {
 					Player player = (Player)sender;
-					Set<Material> mapSet = null;
-					location = player.getTargetBlock(mapSet, 100).getLocation();
+					location = player.getTargetBlock(null, 100).getLocation();
 				} else {
 					sender.sendMessage("[ExplosionRegen] This command is only available for player use.");
 					return true;
