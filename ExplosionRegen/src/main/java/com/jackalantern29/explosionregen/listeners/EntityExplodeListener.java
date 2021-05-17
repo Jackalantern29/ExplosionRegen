@@ -6,10 +6,11 @@ import java.util.List;
 import com.jackalantern29.explosionregen.api.Explosion;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.events.ExplosionDamageEntityEvent;
+import com.jackalantern29.flatx.api.enums.FlatMaterial;
+import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import me.ryanhamshire.GriefPrevention.Claim;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
@@ -212,13 +213,13 @@ public class EntityExplodeListener implements Listener {
 				Location location = event.getEntity().getLocation().clone();
 				item = frame.getItem();
 				event.getEntity().remove();
-				location.getWorld().dropItemNaturally(location, new ItemStack(Material.ITEM_FRAME));
-				if(item != null && item.getType() != Material.AIR)
+				location.getWorld().dropItemNaturally(location, new ItemStack(BukkitAdapter.asBukkitMaterial(FlatMaterial.ITEM_FRAME)));
+				if(item != null && item.getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR))
 					location.getWorld().dropItemNaturally(location, item);
 			} else if(event.getEntity() instanceof Painting) {
 				Location location = event.getEntity().getLocation().clone();
 				event.getEntity().remove();
-				location.getWorld().dropItemNaturally(location, new ItemStack(Material.PAINTING));
+				location.getWorld().dropItemNaturally(location, new ItemStack(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAINTING)));
 			}
 		}
 	}

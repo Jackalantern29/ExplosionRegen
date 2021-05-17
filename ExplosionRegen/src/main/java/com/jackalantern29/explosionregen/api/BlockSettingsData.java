@@ -1,13 +1,13 @@
 package com.jackalantern29.explosionregen.api;
 
-import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
-import org.bukkit.Material;
-import org.bukkit.material.MaterialData;
 
-public class BlockSettingsData {	
+import com.jackalantern29.flatx.api.enums.FlatMaterial;
+import com.jackalantern29.flatx.bukkit.BukkitAdapter;
+
+public class BlockSettingsData {
 	private final RegenBlockData regenData;
 	
-	private RegenBlockData replaceWith = new RegenBlockData(Material.AIR);
+	private RegenBlockData replaceWith = new RegenBlockData(BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR));
 	
 	private int chance = 30;
 	private int maxRegenHeight = 3;

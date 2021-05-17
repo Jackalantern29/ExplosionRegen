@@ -6,10 +6,10 @@ import java.util.*;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
-import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
+import com.jackalantern29.flatx.api.enums.FlatMaterial;
+import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -167,7 +167,7 @@ public class BlockSettings {
 				saveMap.put(key + ".regen", true);
 				saveMap.put(key + ".save-items", true);
 				saveMap.put(key + ".replace.do-replace", false);
-				saveMap.put(key + ".replace.replace-with", Material.AIR.name().toLowerCase());
+				saveMap.put(key + ".replace.replace-with", BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR).name().toLowerCase());
 				saveMap.put(key + ".chance", 30);
 				saveMap.put(key + ".durability", 1.0d);
 				saveMap.put(key + ".regen-delay", 0);

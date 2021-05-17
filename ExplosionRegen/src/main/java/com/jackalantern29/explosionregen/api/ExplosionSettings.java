@@ -8,6 +8,8 @@ import com.jackalantern29.explosionregen.api.events.ExplosionSettingsLoadEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsUnloadEvent;
 import com.jackalantern29.explosionregen.api.inventory.*;
 import com.jackalantern29.explosionregen.commands.CommandRSettings;
+import com.jackalantern29.flatx.api.enums.FlatMaterial;
+import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
@@ -61,7 +63,7 @@ public class  ExplosionSettings {
 		this.name = name;
 		this.blockSettings = blockSettings;
 		this.displayName = name;
-		this.displayItem = new ItemBuilder(Material.TNT).setDisplayName(name).build();
+		this.displayItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.TNT)).setDisplayName(name).build();
 		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
 		setupInventory();
 		Bukkit.getPluginManager().callEvent(new ExplosionSettingsLoadEvent(this));
@@ -74,31 +76,31 @@ public class  ExplosionSettings {
 		PageMenu pluginMenu = new PageMenu(getDisplayName() + " §l[Plugins]", 18);
 		PageMenu conditionMenu = new PageMenu(getDisplayName() + " §l[Conditions]", 18);
 		PageMenu overrideMenu = new PageMenu(getDisplayName() + " §l[Overrides]", 18);
-		ItemStack closeItem = new ItemBuilder(Material.BARRIER).setDisplayName("§c§lClose Menu").build();
+		ItemStack closeItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BARRIER)).setDisplayName("§c§lClose Menu").build();
 
 		// Sets the main menu
 		menu.setUpdate("menu", () -> {
 
-			ItemStack blockSettingsItem = new ItemBuilder(Material.STONE).setDisplayName("§fBlock Settings").setLine(0, "§7Selected: §n" + getBlockSettings().getName()).build();
+			ItemStack blockSettingsItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.STONE)).setDisplayName("§fBlock Settings").setLine(0, "§7Selected: §n" + getBlockSettings().getName()).build();
 			ItemStack enableItem = new ItemCondition(
-					new ItemBuilder(Material.APPLE).setDisplayName("§fAllow Explosion: §cFalse"),
-					new ItemBuilder(Material.GOLDEN_APPLE).setDisplayName("§fAllow Explosion: §aTrue")
+					new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.APPLE)).setDisplayName("§fAllow Explosion: §cFalse"),
+					new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.GOLDEN_APPLE)).setDisplayName("§fAllow Explosion: §aTrue")
 					).build(getAllowExplosion());
-			ItemStack displayNameItem = new ItemBuilder(Material.PAPER).setDisplayName("§fDisplay Name: '" + getDisplayName() + "'").build();
+			ItemStack displayNameItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fDisplay Name: '" + getDisplayName() + "'").build();
 			ItemStack allowRegenItem = new ItemCondition(
-					new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §cFalse"),
-					new ItemBuilder(Material.POTION).setDisplayName("§fAllow Regen: §aTrue")
+					new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.POTION)).setDisplayName("§fAllow Regen: §cFalse"),
+					new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.POTION)).setDisplayName("§fAllow Regen: §aTrue")
 			).build(getAllowRegen());
-			ItemStack regenDirectionItem = new ItemBuilder(Material.COMPASS).setDisplayName("§fDirection: §6" + WordUtils.capitalize(getRegenerateDirection().name().toLowerCase().replace("_", " "))).build();
+			ItemStack regenDirectionItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.COMPASS)).setDisplayName("§fDirection: §6" + WordUtils.capitalize(getRegenerateDirection().name().toLowerCase().replace("_", " "))).build();
 			ItemStack regenInstantItem = new ItemCondition(
-					new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §cFalse"),
-					new ItemBuilder(Material.GHAST_TEAR).setDisplayName("§fInstant Regen: §aTrue")
+					new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.GHAST_TEAR)).setDisplayName("§fInstant Regen: §cFalse"),
+					new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.GHAST_TEAR)).setDisplayName("§fInstant Regen: §aTrue")
 			).build(isInstantRegen());
-			ItemStack regenDelayItem = new ItemBuilder(Material.REDSTONE).setDisplayName("§fRegen Delay: §6" + getRegenDelay()).build();
-			ItemStack regenMaxBlockItem = new ItemBuilder(Material.CHEST).setDisplayName("§fMax Block Queue: §6" + getMaxBlockRegenQueue()).build();
+			ItemStack regenDelayItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.REDSTONE)).setDisplayName("§fRegen Delay: §6" + getRegenDelay()).build();
+			ItemStack regenMaxBlockItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.CHEST)).setDisplayName("§fMax Block Queue: §6" + getMaxBlockRegenQueue()).build();
 			ItemStack regenForceItem = new ItemCondition(
-					new ItemBuilder(Material.ENDER_PEARL).setDisplayName("§fForce Block Regen: §cFalse"),
-					new ItemBuilder(Material.ENDER_EYE).setDisplayName("§fForce Block Regen: §aTrue")
+					new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.ENDER_PEARL)).setDisplayName("§fForce Block Regen: §cFalse"),
+					new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.ENDER_EYE)).setDisplayName("§fForce Block Regen: §aTrue")
 			).build(getRegenForceBlock());
 			ItemStack damageInfoItem = new ItemBuilder(MaterialUtil.getMaterial("GUNPOWDER")).setDisplayName("§f- Damage -")
 					.setLine(0, "§fBlock:")
@@ -116,24 +118,24 @@ public class  ExplosionSettings {
 					.setLine(2, "  §fModifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.BLOCK).name().toLowerCase()))
 					.setLine(3, "  §fAmount:   §6" + getDamageAmount(DamageCategory.BLOCK))
 					.build();
-			ItemStack damageEntityInfoItem = new ItemBuilder(Material.ARMOR_STAND).setDisplayName("§f - Damage [Entity] -")
+			ItemStack damageEntityInfoItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.ARMOR_STAND)).setDisplayName("§f - Damage [Entity] -")
 					.setLine(0, "§fEntity:")
 					.setLine(1, "  §fAllow:    " + (getAllowDamage(DamageCategory.ENTITY) ? "§aTrue" : "§cFalse"))
 					.setLine(2, "  §fModifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase()))
 					.setLine(3, "  §fAmount:   §6" + getDamageAmount(DamageCategory.ENTITY))
 					.build();
 			ItemStack damageBlockAllowItem = new ItemCondition(
-					new ItemBuilder(Material.STICK).setDisplayName("§fAllow Block Damage: §cFalse"),
+					new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.STICK)).setDisplayName("§fAllow Block Damage: §cFalse"),
 					new ItemBuilder(MaterialUtil.getMaterial("WOODEN_SHOVEL")).setDisplayName("§fAllow Block Damage: §aTrue")
 			).build(getAllowDamage(DamageCategory.BLOCK));
 			ItemStack damageEntityAllowItem = new ItemCondition(
-					new ItemBuilder(Material.STICK).setDisplayName("§fAllow Block Damage: §cFalse"),
+					new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.STICK)).setDisplayName("§fAllow Block Damage: §cFalse"),
 					new ItemBuilder(MaterialUtil.getMaterial("WOODEN_SWORD")).setDisplayName("§fAllow Entity Damage: §aTrue")
 			).build(getAllowDamage(DamageCategory.ENTITY));
-			ItemStack damageBlockModifierItem = new ItemBuilder(Material.ENCHANTED_BOOK).setDisplayName("§fBlock Damage Modifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.BLOCK).name().toLowerCase())).build();
-			ItemStack damageEntityModifierItem = new ItemBuilder(Material.ENCHANTED_BOOK).setDisplayName("§fEntity Damage Modifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase())).build();
-			ItemStack damageBlockAmountItem = new ItemBuilder(Material.FEATHER).setDisplayName("§fBlock Damage Amount: §6" + getDamageAmount(DamageCategory.BLOCK)).build();
-			ItemStack damageEntityAmountItem = new ItemBuilder(Material.FEATHER).setDisplayName("§fEntity Damage Amount: §6" + getDamageAmount(DamageCategory.ENTITY)).build();
+			ItemStack damageBlockModifierItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.ENCHANTED_BOOK)).setDisplayName("§fBlock Damage Modifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.BLOCK).name().toLowerCase())).build();
+			ItemStack damageEntityModifierItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.ENCHANTED_BOOK)).setDisplayName("§fEntity Damage Modifier: §6" + WordUtils.capitalize(getDamageModifier(DamageCategory.ENTITY).name().toLowerCase())).build();
+			ItemStack damageBlockAmountItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.FEATHER)).setDisplayName("§fBlock Damage Amount: §6" + getDamageAmount(DamageCategory.BLOCK)).build();
+			ItemStack damageEntityAmountItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.FEATHER)).setDisplayName("§fEntity Damage Amount: §6" + getDamageAmount(DamageCategory.ENTITY)).build();
 			ItemStack pluginsItem = new ItemBuilder(MaterialUtil.getMaterial("FILLED_MAP")).setDisplayName("§fPlugins §7[§6" + plugins.size() + "§7]").build();
 
 			menu.setItem(0, new SlotElement(blockSettingsItem, data -> {
@@ -160,11 +162,11 @@ public class  ExplosionSettings {
 				data.getWhoClicked().openInventory(CommandRSettings.inventoryMenu);
 				return true;
 			}));
-			menu.setItem(12, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fConditions").build(), data -> {
+			menu.setItem(12, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fConditions").build(), data -> {
 				conditionMenu.sendInventory(data.getWhoClicked(), true);
 				return true;
 			}));
-			menu.setItem(14, new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§fOverrides").build(), data -> {
+			menu.setItem(14, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BOOK)).setDisplayName("§fOverrides").build(), data -> {
 				overrideMenu.sendInventory(data.getWhoClicked(), true);
 				return true;
 			}));
@@ -297,7 +299,7 @@ public class  ExplosionSettings {
 				return true;
 			}));
 			for(BlockSettings settings : BlockSettings.getBlockSettings()) {
-				switchMenu.addItem(new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName(settings.getName().equals(getBlockSettings().getName()) ? "§a" + settings.getName() : settings.getName()).build(), data -> {
+				switchMenu.addItem(new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName(settings.getName().equals(getBlockSettings().getName()) ? "§a" + settings.getName() : settings.getName()).build(), data -> {
 					if(data.getItem().hasItemMeta())
 						setBlockSettings(BlockSettings.getSettings(ChatColor.stripColor(data.getItem().getItemMeta().getDisplayName())));
 					switchMenu.clear();
@@ -306,8 +308,8 @@ public class  ExplosionSettings {
 				}));
 			}
 		});
-		bsMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
-		bsMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
+		bsMenu.setNextPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aNext Page").build());
+		bsMenu.setPrevPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aBack Page").build());
 
 		bsMenu.setUpdate("#layout", () -> {
 			for(SettingsMenu page : bsMenu.getPages()) {
@@ -316,7 +318,7 @@ public class  ExplosionSettings {
 					return true;
 				}));
 
-				page.setItem(17, new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§aSwitch Settings").setLine(0, "§fCurrent: §d" + getBlockSettings().getName()).build(), data -> {
+				page.setItem(17, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BOOK)).setDisplayName("§aSwitch Settings").setLine(0, "§fCurrent: §d" + getBlockSettings().getName()).build(), data -> {
 					switchMenu.sendInventory(data.getWhoClicked());
 					return true;
 				}));
@@ -325,7 +327,7 @@ public class  ExplosionSettings {
 				page.setItem(53, new SlotElement(bsMenu.getNextPageItem(), data -> true));
 
 				for (int i = 46; i < 53; i++) {
-					page.setItem(i, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
+					page.setItem(i, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BLACK_STAINED_GLASS_PANE)).setDisplayName(" ").build(), data -> true));
 				}
 			}
 		});
@@ -342,22 +344,22 @@ public class  ExplosionSettings {
 						bsMenu.sendInventory(data.getWhoClicked(), true);
 						return true;
 					}));
-					blockMenu.setItem(0, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fPrevent Damage: " + (blockData.doPreventDamage() ? "§aTrue" : "§cFalse")).build(), data -> {
+					blockMenu.setItem(0, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fPrevent Damage: " + (blockData.doPreventDamage() ? "§aTrue" : "§cFalse")).build(), data -> {
 						blockData.setPreventDamage(!blockData.doPreventDamage());
 						blockMenu.update("menu");
 						return true;
 					}));
-					blockMenu.setItem(1, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fRegenerate: " + (blockData.doRegen() ? "§aTrue" : "§cFalse")).build(), data -> {
+					blockMenu.setItem(1, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fRegenerate: " + (blockData.doRegen() ? "§aTrue" : "§cFalse")).build(), data -> {
 						blockData.setRegen(!blockData.doRegen());
 						blockMenu.update("menu");
 						return true;
 					}));
-					blockMenu.setItem(3, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fCan Replace: " + (blockData.doReplace() ? "§aTrue" : "§cFalse")).build(), data -> {
+					blockMenu.setItem(3, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fCan Replace: " + (blockData.doReplace() ? "§aTrue" : "§cFalse")).build(), data -> {
 						blockData.setReplace(!blockData.doReplace());
 						blockMenu.update("menu");
 						return true;
 					}));
-					blockMenu.setItem(4, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fReplace With: §6" + blockData.getReplaceWith().toString()).build(), data -> {
+					blockMenu.setItem(4, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fReplace With: §6" + blockData.getReplaceWith().toString()).build(), data -> {
 						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
 							try {
@@ -374,12 +376,12 @@ public class  ExplosionSettings {
 						}));
 						return true;
 					}));
-					blockMenu.setItem(6, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fBlock Update: " + (blockData.isBlockUpdate() ? "§aTrue" : "§cFalse")).build(), data -> {
+					blockMenu.setItem(6, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fBlock Update: " + (blockData.isBlockUpdate() ? "§aTrue" : "§cFalse")).build(), data -> {
 						blockData.setBlockUpdate(!blockData.isBlockUpdate());
 						blockMenu.update("menu");
 						return true;
 					}));
-					blockMenu.setItem(9, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fDrop Chance: §6" + blockData.getDropChance()).build(), data -> {
+					blockMenu.setItem(9, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fDrop Chance: §6" + blockData.getDropChance()).build(), data -> {
 						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
 							if(NumberUtils.isNumber(input)) {
@@ -394,7 +396,7 @@ public class  ExplosionSettings {
 						}));
 						return true;
 					}));
-					blockMenu.setItem(10, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fDurability: §6" + blockData.getDurability()).build(), data -> {
+					blockMenu.setItem(10, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fDurability: §6" + blockData.getDurability()).build(), data -> {
 						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
 							if(NumberUtils.isDigits(input)) {
@@ -410,7 +412,7 @@ public class  ExplosionSettings {
 						}));
 						return true;
 					}));
-					blockMenu.setItem(11, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fDelay: §6" + blockData.getRegenDelay()).build(), data -> {
+					blockMenu.setItem(11, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fDelay: §6" + blockData.getRegenDelay()).build(), data -> {
 						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
 							try {
@@ -428,13 +430,13 @@ public class  ExplosionSettings {
 						return true;
 					}));
 					//TODO Add check if block can store items
-					blockMenu.setItem(13, new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§fSave Items: " + (blockData.doSaveItems() ? "§aTrue" : "§cFalse")).build(), data -> {
+					blockMenu.setItem(13, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fSave Items: " + (blockData.doSaveItems() ? "§aTrue" : "§cFalse")).build(), data -> {
 						blockData.setReplace(!blockData.doReplace());
 						blockMenu.update("menu");
 						return true;
 					}));
 					if(blockData.getRegenData() != null) {
-						blockMenu.setItem(17, new SlotElement(new ItemBuilder(Material.LAVA_BUCKET).setDisplayName("§4§lDelete Block").build(), data -> {
+						blockMenu.setItem(17, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LAVA_BUCKET)).setDisplayName("§4§lDelete Block").build(), data -> {
 							getBlockSettings().remove(blockData.getRegenData().toString());
 							bsMenu.sendInventory(data.getWhoClicked(), true);
 							return true;
@@ -456,7 +458,7 @@ public class  ExplosionSettings {
 				lore.add("§9Delay: §6" + blockData.getRegenDelay());
 				ItemStack blockItem;
 				if(blockData.getRegenData() == null)
-					blockItem = new ItemBuilder(Material.PAPER).setDisplayName("§fDefault").setLore(lore).build();
+					blockItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fDefault").setLore(lore).build();
 				else
 					blockItem = new ItemBuilder(blockData.getRegenData().getMaterial()).setDisplayName("§f" + blockData.getRegenData().toString()).setLore(lore).build();
 				bsMenu.addItem(new SlotElement(blockItem, data -> {
@@ -465,15 +467,15 @@ public class  ExplosionSettings {
 				}));
 			}
 		});
-		pluginMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
-		pluginMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
-		conditionMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
-		conditionMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
-		overrideMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
-		overrideMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
+		pluginMenu.setNextPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aNext Page").build());
+		pluginMenu.setPrevPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aBack Page").build());
+		conditionMenu.setNextPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aNext Page").build());
+		conditionMenu.setPrevPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aBack Page").build());
+		overrideMenu.setNextPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aNext Page").build());
+		overrideMenu.setPrevPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aBack Page").build());
 		pluginMenu.setUpdate("#layout", () -> {
 			for(SettingsMenu page : pluginMenu.getPages()) {
-				page.setItem(7, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
+				page.setItem(7, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BLACK_STAINED_GLASS_PANE)).setDisplayName(" ").build(), data -> true));
 				page.setItem(8, new SlotElement(closeItem, data -> {
 					menu.sendInventory(data.getWhoClicked(), true);
 					return true;
@@ -484,7 +486,7 @@ public class  ExplosionSettings {
 		});
 		conditionMenu.setUpdate("#layout", () -> {
 			for(SettingsMenu page : conditionMenu.getPages()) {
-				page.setItem(7, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
+				page.setItem(7, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BLACK_STAINED_GLASS_PANE)).setDisplayName(" ").build(), data -> true));
 				page.setItem(8, new SlotElement(closeItem, data -> {
 					menu.sendInventory(data.getWhoClicked(), true);
 					return true;
@@ -495,7 +497,7 @@ public class  ExplosionSettings {
 		});
 		overrideMenu.setUpdate("#layout", () -> {
 			for(SettingsMenu page : overrideMenu.getPages()) {
-				page.setItem(7, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
+				page.setItem(7, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BLACK_STAINED_GLASS_PANE)).setDisplayName(" ").build(), data -> true));
 				page.setItem(8, new SlotElement(closeItem, data -> {
 					menu.sendInventory(data.getWhoClicked(), true);
 					return true;
@@ -508,7 +510,7 @@ public class  ExplosionSettings {
 			pluginMenu.clear();
 			pluginMenu.update("#layout");
 			for(ExplosionSettingsPlugin plugin : plugins.values()) {
-				pluginMenu.addItem(new SlotElement(new ItemBuilder(Material.FILLED_MAP).setDisplayName("§a" + plugin.getName()).build(), data -> {
+				pluginMenu.addItem(new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.FILLED_MAP)).setDisplayName("§a" + plugin.getName()).build(), data -> {
 					plugin.getMainMenu().sendInventory(data.getWhoClicked(), true);
 					return true;
 				}));
@@ -518,7 +520,7 @@ public class  ExplosionSettings {
 			conditionMenu.clear();
 			conditionMenu.update("#layout");
 			for(ExplosionCondition condition : getConditions().getConditions()) {
-				conditionMenu.addItem(new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§f" + WordUtils.capitalize(condition.name().toLowerCase().replace("_", " "))).setLine(0, "§9" + WordUtils.capitalize(getConditions().getSimpleConditionValue(condition).toString().replace("_", " "))).build(), data -> {
+				conditionMenu.addItem(new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§f" + WordUtils.capitalize(condition.name().toLowerCase().replace("_", " "))).setLine(0, "§9" + WordUtils.capitalize(getConditions().getSimpleConditionValue(condition).toString().replace("_", " "))).build(), data -> {
 					if(getConditions().getConditionValue(condition) instanceof Enum) {
 						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
@@ -569,16 +571,16 @@ public class  ExplosionSettings {
 			overrideMenu.update("#layout");
 			for(ExplosionSettingsOverride override : getOverrides()) {
 				PageMenu oMenu = new PageMenu(override.getName(), 18);
-				oMenu.setNextPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aNext Page").build());
-				oMenu.setPrevPageItem(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setDisplayName("§aBack Page").build());
+				oMenu.setNextPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aNext Page").build());
+				oMenu.setPrevPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aBack Page").build());
 
-				overrideMenu.addItem(new SlotElement(new ItemBuilder(Material.BOOK).setDisplayName("§f" + override.getName()).build(), data -> {
+				overrideMenu.addItem(new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BOOK)).setDisplayName("§f" + override.getName()).build(), data -> {
 					oMenu.sendInventory(data.getWhoClicked(), true);
 					return true;
 				}));
 				oMenu.setUpdate("#layout", () -> {
 					for(SettingsMenu page : oMenu.getPages()) {
-						page.setItem(7, new SlotElement(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName(" ").build(), data -> true));
+						page.setItem(7, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BLACK_STAINED_GLASS_PANE)).setDisplayName(" ").build(), data -> true));
 						page.setItem(8, new SlotElement(closeItem, data -> {
 							overrideMenu.sendInventory(data.getWhoClicked(), true);
 							return true;
@@ -591,7 +593,7 @@ public class  ExplosionSettings {
 					oMenu.clear();
 					oMenu.update("#layout");
 					for(ExplosionCondition condition : override.getConditions()) {
-						oMenu.addItem(new SlotElement(new ItemBuilder(Material.PAPER).setDisplayName("§f" + WordUtils.capitalize(condition.name().toLowerCase().replace("_", " "))).setLine(0, "§9" + WordUtils.capitalize(override.getSimpleConditionValue(condition).toString().replace("_", " "))).build(), data -> {
+						oMenu.addItem(new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§f" + WordUtils.capitalize(condition.name().toLowerCase().replace("_", " "))).setLine(0, "§9" + WordUtils.capitalize(override.getSimpleConditionValue(condition).toString().replace("_", " "))).build(), data -> {
 							if(override.getConditionValue(condition) instanceof Enum) {
 								data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 								InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
@@ -961,7 +963,7 @@ public class  ExplosionSettings {
 	}
 
 	public void setDisplayItem(ItemStack item) {
-		if(item != null && item.getType() != Material.AIR) {
+		if(item != null && item.getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR)) {
 			displayItem = new ItemBuilder(item).setDisplayName(getDisplayName()).build();
 		}
 		saveChanges = true;

@@ -12,6 +12,8 @@ import com.jackalantern29.explosionregen.api.events.ExplosionBlockRegenEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionBlockRegeneratingEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionRegenFinishEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
+import com.jackalantern29.flatx.api.enums.FlatMaterial;
+import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import net.coreprotect.CoreProtectAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -63,7 +65,7 @@ public class Explosion {
 								if (block.getRegenDelay() > 0)
 									block.setRegenDelay(block.getRegenDelay() - 1);
 								else {
-									if(block.getType() == Material.SUGAR_CANE || block.getType() == Material.CACTUS || block.getType() == Material.SCAFFOLDING) {
+									if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.SUGAR_CANE) || block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.CACTUS) || block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.SCAFFOLDING)) {
 										for(RegenBlock b : new ArrayList<>(explosion.getBlocks())) {
 											if(b.getType() == block.getType())
 												explosion.regenerate(b);
@@ -86,47 +88,47 @@ public class Explosion {
 		}, 0, 1);
 
 		SUPPORT_NEED.addAll(Tag.FLOWERS.getValues());
-		SUPPORT_NEED.add(Material.GRASS);
-		SUPPORT_NEED.add(Material.TORCH);
-		SUPPORT_NEED.add(Material.REDSTONE_TORCH);
-		SUPPORT_NEED.add(Material.REDSTONE_WIRE);
-		SUPPORT_NEED.add(Material.REPEATER);
-		SUPPORT_NEED.add(Material.COMPARATOR);
-		SUPPORT_NEED.add(Material.TRIPWIRE);
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.GRASS));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.TORCH));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.REDSTONE_TORCH));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.REDSTONE_WIRE));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.REPEATER));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.COMPARATOR));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.TRIPWIRE));
 		SUPPORT_NEED.addAll(Tag.SAPLINGS.getValues());
-		SUPPORT_NEED.add(Material.BROWN_MUSHROOM);
-		SUPPORT_NEED.add(Material.RED_MUSHROOM);
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.BROWN_MUSHROOM));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.RED_MUSHROOM));
 		SUPPORT_NEED.addAll(Tag.RAILS.getValues());
-		SUPPORT_NEED.add(Material.SEA_PICKLE);
-		SUPPORT_NEED.add(Material.CRIMSON_FUNGUS);
-		SUPPORT_NEED.add(Material.WARPED_FUNGUS);
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.SEA_PICKLE));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.CRIMSON_FUNGUS));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.WARPED_FUNGUS));
 		SUPPORT_NEED.addAll(Tag.BUTTONS.getValues());
 		SUPPORT_NEED.addAll(Tag.PRESSURE_PLATES.getValues());
-		SUPPORT_NEED.add(Material.LEVER);
-		SUPPORT_NEED.add(Material.LADDER);
-		SUPPORT_NEED.add(Material.TRIPWIRE_HOOK);
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.LEVER));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.LADDER));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.TRIPWIRE_HOOK));
 		SUPPORT_NEED.addAll(Tag.CARPETS.getValues());
-		SUPPORT_NEED.add(Material.DEAD_BRAIN_CORAL);
-		SUPPORT_NEED.add(Material.DEAD_BUBBLE_CORAL);
-		SUPPORT_NEED.add(Material.DEAD_FIRE_CORAL);
-		SUPPORT_NEED.add(Material.DEAD_HORN_CORAL);
-		SUPPORT_NEED.add(Material.DEAD_TUBE_CORAL);
-		SUPPORT_NEED.add(Material.DEAD_BRAIN_CORAL_FAN);
-		SUPPORT_NEED.add(Material.DEAD_BUBBLE_CORAL_FAN);
-		SUPPORT_NEED.add(Material.DEAD_FIRE_CORAL_FAN);
-		SUPPORT_NEED.add(Material.DEAD_HORN_CORAL_FAN);
-		SUPPORT_NEED.add(Material.DEAD_TUBE_CORAL_FAN);
-		SUPPORT_NEED.add(Material.DEAD_BRAIN_CORAL_WALL_FAN);
-		SUPPORT_NEED.add(Material.DEAD_BUBBLE_CORAL_WALL_FAN);
-		SUPPORT_NEED.add(Material.DEAD_FIRE_CORAL_WALL_FAN);
-		SUPPORT_NEED.add(Material.DEAD_HORN_CORAL_WALL_FAN);
-		SUPPORT_NEED.add(Material.DEAD_TUBE_CORAL_WALL_FAN);
-		SUPPORT_NEED.add(Material.DEAD_BUSH);
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_BRAIN_CORAL));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_BUBBLE_CORAL));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_FIRE_CORAL));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_HORN_CORAL));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_TUBE_CORAL));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_BRAIN_CORAL_FAN));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_BUBBLE_CORAL_FAN));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_FIRE_CORAL_FAN));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_HORN_CORAL_FAN));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_TUBE_CORAL_FAN));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_BRAIN_CORAL_WALL_FAN));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_BUBBLE_CORAL_WALL_FAN));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_FIRE_CORAL_WALL_FAN));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_HORN_CORAL_WALL_FAN));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_TUBE_CORAL_WALL_FAN));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.DEAD_BUSH));
 		SUPPORT_NEED.addAll(Tag.SIGNS.getValues());
 		SUPPORT_NEED.addAll(Tag.BANNERS.getValues());
-		SUPPORT_NEED.add(Material.SUGAR_CANE);
-		SUPPORT_NEED.add(Material.CACTUS);
-		SUPPORT_NEED.add(Material.SCAFFOLDING);
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.SUGAR_CANE));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.CACTUS));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.SCAFFOLDING));
 	}
 
 	/**
@@ -219,7 +221,7 @@ public class Explosion {
 		if(state instanceof Container) {
 			if(bs.doSaveItems()) {
 				Inventory inventory;
-				if(block.getType() == Material.CHEST) {
+				if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.CHEST)) {
 					inventory = ((Chest)state).getBlockInventory();
 				} else
 					inventory = ((Container) state).getInventory();
@@ -239,10 +241,10 @@ public class Explosion {
 			}
 			if (regenBlock.getDurability() <= 0.0d) {
 				if (bs.doRegen()) {
-					if (regenBlock.getType() != Material.TNT)
+					if (regenBlock.getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.TNT))
 						addBlock(regenBlock);
-					if ((MaterialUtil.isBedBlock(block.getState().getType()) || getSupportNeededMaterials().contains(block.getState().getType()) || block.getState().getBlockData() instanceof Bisected) || (hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate()) || (block.getState().getType().name().contains("SHULKER_BOX") || block.getState().getType() == Material.BEACON || (block.getState().getType().name().contains("_HEAD") && block.getState().getType() != Material.PISTON_HEAD) || block.getState().getType().name().contains("_SKULL"))) {
-						block.setType(Material.AIR, false);
+					if ((MaterialUtil.isBedBlock(block.getState().getType()) || getSupportNeededMaterials().contains(block.getState().getType()) || block.getState().getBlockData() instanceof Bisected) || (hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate()) || (block.getState().getType().name().contains("SHULKER_BOX") || block.getState().getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.BEACON) || (block.getState().getType().name().contains("_HEAD") && block.getState().getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.PISTON_HEAD)) || block.getState().getType().name().contains("_SKULL"))) {
+						block.setType(BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR), false);
 					}
 
 					if (ExplosionRegen.getInstance().getCoreProtect() != null) {
@@ -331,7 +333,7 @@ public class Explosion {
 			for (Block block : new ArrayList<>(blockList)) {
 				if(hasBlock(block.getLocation()))
 					continue;
-				if(block.getType() == Material.PISTON_HEAD) {
+				if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.PISTON_HEAD)) {
 					blockList.remove(block);
 					continue;
 				}
@@ -344,7 +346,7 @@ public class Explosion {
 				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
 				{
 					Block part = null;
-					if(block.getType() == Material.CHEST || block.getType() == Material.TRAPPED_CHEST) {
+					if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.CHEST) || block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.TRAPPED_CHEST)) {
 						org.bukkit.block.data.type.Chest chest = (org.bukkit.block.data.type.Chest)block.getBlockData();
 						BlockFace face = chest.getFacing();
 						org.bukkit.block.data.type.Chest.Type type = chest.getType();
@@ -513,11 +515,11 @@ public class Explosion {
 			if(block.getBlock().getType() == MaterialUtil.getMaterial("NETHER_PORTAL")) {
 				removeBlock(block.getLocation());
 				return;
-			} else if(block.getBlock().getType() == Material.AIR) {
-				if(block.getBlock().getRelative(0, -1, 0).getType() == Material.AIR)
-					block.getState().setType(Material.FIRE);
+			} else if(block.getBlock().getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR)) {
+				if(block.getBlock().getRelative(0, -1, 0).getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR))
+					block.getState().setType(BukkitAdapter.asBukkitMaterial(FlatMaterial.FIRE));
 				else
-					block.getState().setType(Material.AIR);
+					block.getState().setType(BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR));
 			}
 		}
 		BlockState state = block.getState();
@@ -534,7 +536,7 @@ public class Explosion {
 			state.update(true, false);
 		else
 			state.update(true);
-		if(bState.getType() != Material.AIR && bState.getType() != Material.WATER & bState.getType() != Material.LAVA && bState.getType() != Material.FIRE) {
+		if(bState.getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR) && bState.getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.WATER) & bState.getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.LAVA) && bState.getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.FIRE)) {
 			block.getBlock().breakNaturally();
 			bState.update(true);
 		}

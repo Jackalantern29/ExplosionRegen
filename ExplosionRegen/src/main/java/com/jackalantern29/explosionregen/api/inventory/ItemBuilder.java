@@ -1,5 +1,7 @@
 package com.jackalantern29.explosionregen.api.inventory;
 
+import com.jackalantern29.flatx.api.enums.FlatMaterial;
+import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
@@ -23,6 +25,10 @@ public class ItemBuilder {
 
     public ItemBuilder(Material material) {
         this(new ItemStack(material));
+    }
+
+    public ItemBuilder(FlatMaterial material) {
+        this(new ItemStack(BukkitAdapter.asBukkitMaterial(material)));
     }
 
     public ItemBuilder setDisplayName(String name) {
