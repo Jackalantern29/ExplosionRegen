@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.jackalantern29.erspecialeffects.InventoryMenu;
 import com.jackalantern29.explosionregen.api.*;
-import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
+import com.jackalantern29.explosionregen.api.RegenBlockData;
 import com.jackalantern29.explosionregen.api.inventory.ItemBuilder;
 import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
 import com.jackalantern29.explosionregen.api.inventory.SlotElement;

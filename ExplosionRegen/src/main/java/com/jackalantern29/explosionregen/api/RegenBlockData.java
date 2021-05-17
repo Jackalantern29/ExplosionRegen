@@ -1,4 +1,4 @@
-package com.jackalantern29.explosionregen.api.blockdata;
+package com.jackalantern29.explosionregen.api;
 
 import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
