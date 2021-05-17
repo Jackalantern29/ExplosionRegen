@@ -2,7 +2,6 @@ package com.jackalantern29.explosionregen.api;
 
 import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import org.bukkit.Location;
 import org.bukkit.Material;

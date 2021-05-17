@@ -1,15 +1,12 @@
 package com.jackalantern29.explosionregen.api.events;
 
-import com.jackalantern29.explosionregen.api.Explosion;
 import com.jackalantern29.explosionregen.api.ExplosionSettings;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import java.util.List;
 
 public class ExplosionDamageEntityEvent extends Event implements Cancellable {
 	private static final HandlerList handlers = new HandlerList();

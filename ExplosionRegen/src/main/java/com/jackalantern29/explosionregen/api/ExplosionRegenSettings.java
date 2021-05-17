@@ -7,12 +7,8 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import com.jackalantern29.explosionregen.BukkitMethods;
-import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
-import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;

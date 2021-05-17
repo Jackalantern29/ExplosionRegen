@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
-import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.enums.GenerateDirection;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;

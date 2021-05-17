@@ -2,7 +2,6 @@ package com.jackalantern29.explosionregen.api;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
-import com.jackalantern29.explosionregen.api.blockdata.RegenBlockData;
 import com.jackalantern29.explosionregen.api.enums.*;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsLoadEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionSettingsUnloadEvent;
