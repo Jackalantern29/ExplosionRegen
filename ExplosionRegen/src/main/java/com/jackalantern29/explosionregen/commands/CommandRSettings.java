@@ -5,10 +5,11 @@ import java.util.List;
 
 import com.jackalantern29.erspecialeffects.InventoryMenu;
 import com.jackalantern29.explosionregen.api.*;
-import com.jackalantern29.explosionregen.api.RegenBlockData;
 import com.jackalantern29.explosionregen.api.inventory.ItemBuilder;
 import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
 import com.jackalantern29.explosionregen.api.inventory.SlotElement;
+import com.jackalantern29.flatx.api.FlatBlockData;
+import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -245,8 +246,8 @@ public class CommandRSettings implements TabExecutor {
 							sender.sendMessage("§cInvalid block.");
 							return true;
 						}
-						RegenBlockData regenData = new RegenBlockData(blockData);
-						BlockSettingsData data = new BlockSettingsData(regenData);
+						FlatBlockData flatData = BukkitAdapter.adapt(blockData);
+						BlockSettingsData data = new BlockSettingsData(flatData);
 						if(action.equalsIgnoreCase("add")) {
 							if(!settings.getBlockSettings().contains(blockData.getAsString())) {
 								settings.getBlockSettings().add(data);
@@ -341,8 +342,8 @@ public class CommandRSettings implements TabExecutor {
 								} else if(args[3].equalsIgnoreCase("remove")) {
 									ExplosionSettings settings = ExplosionSettings.getSettings(args[1]);
 									for(BlockSettingsData data : settings.getBlockSettings().getBlockDatas()) {
-										if(data.getRegenData() != null)
-											list.add(((BlockData)data.getRegenData().getBlockData()).getAsString());
+										if(data.getFlatData() != null)
+											list.add(data.getFlatData().getAsString());
 									}
 								}
 							}

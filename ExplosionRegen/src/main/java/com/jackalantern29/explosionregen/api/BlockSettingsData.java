@@ -1,14 +1,15 @@
 package com.jackalantern29.explosionregen.api;
 
 
+import com.jackalantern29.flatx.api.FlatBlockData;
 import com.jackalantern29.flatx.api.enums.FlatMaterial;
-import com.jackalantern29.flatx.bukkit.BukkitAdapter;
+import com.jackalantern29.flatx.bukkit.FlatBukkit;
 
 public class BlockSettingsData {
-	private final RegenBlockData regenData;
-	
-	private RegenBlockData replaceWith = new RegenBlockData(BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR));
-	
+	private final FlatBlockData flatData;
+
+	private FlatBlockData replaceWith = FlatBukkit.createBlockData(FlatMaterial.AIR);
+
 	private int chance = 30;
 	private int maxRegenHeight = 3;
 	private double durability = 1d;
@@ -20,12 +21,12 @@ public class BlockSettingsData {
 	private boolean replace = false;
 	private boolean blockUpdate = true;
 
-	public BlockSettingsData(RegenBlockData regenData) {
-		this.regenData = regenData;
+	public BlockSettingsData(FlatBlockData flatData) {
+		this.flatData = flatData;
 	}
 
-	public RegenBlockData getRegenData() {
-		return regenData;
+	public FlatBlockData getFlatData() {
+		return flatData;
 	}
 	
 	public boolean doPreventDamage() {
@@ -68,15 +69,15 @@ public class BlockSettingsData {
 		replace = value;
 	}
 	
-	public RegenBlockData getReplaceWith() {
+	public FlatBlockData getReplaceWith() {
 		return replaceWith;
 	}
 
-	public RegenBlockData getResult() {
+	public FlatBlockData getResult() {
 		if(doReplace())
 			return getReplaceWith();
 		else
-			return getRegenData();
+			return getFlatData();
 	}
 
 	public boolean isBlockUpdate() {
@@ -87,8 +88,8 @@ public class BlockSettingsData {
 		this.blockUpdate = blockUpdate;
 	}
 
-	public void setReplaceWith(RegenBlockData material) {
-		replaceWith = material;
+	public void setReplaceWith(FlatBlockData replaceWith) {
+		this.replaceWith = replaceWith;
 	}
 	
 	public int getDropChance() {

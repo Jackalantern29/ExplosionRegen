@@ -9,6 +9,7 @@ import com.jackalantern29.explosionregen.api.inventory.*;
 import com.jackalantern29.explosionregen.commands.CommandRSettings;
 import com.jackalantern29.flatx.api.enums.FlatMaterial;
 import com.jackalantern29.flatx.bukkit.BukkitAdapter;
+import com.jackalantern29.flatx.bukkit.FlatBukkit;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
@@ -336,7 +337,7 @@ public class  ExplosionSettings {
 			bsMenu.clear();
 			bsMenu.update("#layout");
 			for(BlockSettingsData blockData : getBlockSettings().getBlockDatas()) {
-				SettingsMenu blockMenu = new SettingsMenu(blockData.getRegenData() == null ? "Default" : blockData.getRegenData().toString(), 18);
+				SettingsMenu blockMenu = new SettingsMenu(blockData.getFlatData() == null ? "Default" : blockData.getFlatData().getAsString(), 18);
 
 				blockMenu.setUpdate("menu", () -> {
 					blockMenu.setItem(8, new SlotElement(closeItem, data -> {
@@ -358,12 +359,12 @@ public class  ExplosionSettings {
 						blockMenu.update("menu");
 						return true;
 					}));
-					blockMenu.setItem(4, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fReplace With: §6" + blockData.getReplaceWith().toString()).build(), data -> {
+					blockMenu.setItem(4, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fReplace With: §6" + blockData.getReplaceWith().getAsString()).build(), data -> {
 						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
 							try {
 								Material material = Material.valueOf(input.toUpperCase());
-								blockData.setReplaceWith(new RegenBlockData(material));
+								blockData.setReplaceWith(FlatBukkit.createBlockData(BukkitAdapter.adapt(material)));
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
 								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked(), true));
@@ -434,9 +435,9 @@ public class  ExplosionSettings {
 						blockMenu.update("menu");
 						return true;
 					}));
-					if(blockData.getRegenData() != null) {
+					if(blockData.getFlatData() != null) {
 						blockMenu.setItem(17, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LAVA_BUCKET)).setDisplayName("§4§lDelete Block").build(), data -> {
-							getBlockSettings().remove(blockData.getRegenData().toString());
+							getBlockSettings().remove(blockData.getFlatData().getAsString());
 							bsMenu.sendInventory(data.getWhoClicked(), true);
 							return true;
 						}));
@@ -450,16 +451,16 @@ public class  ExplosionSettings {
 				lore.add("§9Save Items: " + (blockData.doSaveItems() ? "§aTrue" : "§cFalse"));
 				lore.add("§9Replace: ");
 				lore.add("§9  Can Replace: " + (blockData.doReplace() ? "§aTrue" : "§cFalse"));
-				lore.add("§9  Replace With: §6" + blockData.getReplaceWith().toString());
+				lore.add("§9  Replace With: §6" + blockData.getReplaceWith().getAsString());
 				lore.add("§9Block Update: " + (blockData.isBlockUpdate() ? "§aTrue" : "§cFalse"));
 				lore.add("§9Drop Chance: §6" + blockData.getDropChance());
 				lore.add("§9Durability: §6" + blockData.getDurability());
 				lore.add("§9Delay: §6" + blockData.getRegenDelay());
 				ItemStack blockItem;
-				if(blockData.getRegenData() == null)
+				if(blockData.getFlatData() == null)
 					blockItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fDefault").setLore(lore).build();
 				else
-					blockItem = new ItemBuilder(blockData.getRegenData().getMaterial()).setDisplayName("§f" + blockData.getRegenData().toString()).setLore(lore).build();
+					blockItem = new ItemBuilder(blockData.getFlatData().getMaterial()).setDisplayName("§f" + blockData.getFlatData().getAsString()).setLore(lore).build();
 				bsMenu.addItem(new SlotElement(blockItem, data -> {
 					data.getWhoClicked().openInventory(blockMenu.getInventory());
 					return true;

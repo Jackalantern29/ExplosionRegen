@@ -3,28 +3,28 @@ package com.jackalantern29.explosionregen.api;
 import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
+import com.jackalantern29.flatx.api.FlatBlockData;
+import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.material.MaterialData;
 
 public class RegenBlock {
 	private final BlockState block;
 	private long regenDelay;
-	private RegenBlockData regenData;
+	private FlatBlockData flatData;
 	private double durability;
 	private RegenBlock part = null;
 
 	public RegenBlock(Block block, long regenDelay, double durability) {
-		this(block, new RegenBlockData(block), regenDelay, durability);
+		this(block, BukkitAdapter.adapt(block).getBlockData(), regenDelay, durability);
 	}
 
-	public RegenBlock(Block block, RegenBlockData toBlock, long regenDelay, double durability) {
+	public RegenBlock(Block block, FlatBlockData toBlock, long regenDelay, double durability) {
 		this.block = block.getState();
 		this.regenDelay = regenDelay;
-		this.regenData = toBlock;
+		this.flatData = toBlock;
 		this.durability = durability;
 	}
 	
@@ -52,20 +52,17 @@ public class RegenBlock {
 		return block.getType();
 	}
 	
-	public RegenBlockData getRegenData() {
-		return regenData;
+	public FlatBlockData getFlatData() {
+		return flatData;
 	}
 	
-	public void setRegenData(RegenBlockData regenData) {
-		this.regenData = regenData;
+	public void setFlatData(FlatBlockData flatData) {
+		this.flatData = flatData;
 	}
 
 	public void setBlock() {
-		block.setType(regenData.getMaterial());
-		if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-			BukkitMethods.setBlockData(block, (BlockData) regenData.getBlockData());
-		else
-			block.setData((MaterialData) regenData.getBlockData());
+		block.setType(BukkitAdapter.asBukkitMaterial(flatData.getMaterial()));
+		BukkitAdapter.adapt(block).setBlockData(flatData);
 		block.update(true);
 		if(ExplosionRegen.getInstance().getCoreProtect() != null) {
 			if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))

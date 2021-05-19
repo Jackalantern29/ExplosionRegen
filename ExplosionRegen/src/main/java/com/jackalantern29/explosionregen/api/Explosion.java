@@ -13,6 +13,7 @@ import com.jackalantern29.explosionregen.api.events.ExplosionRegenFinishEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
 import com.jackalantern29.flatx.api.enums.FlatMaterial;
 import com.jackalantern29.flatx.bukkit.BukkitAdapter;
+import com.jackalantern29.flatx.bukkit.FlatBukkit;
 import net.coreprotect.CoreProtectAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -20,7 +21,6 @@ import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Bisected;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Piston;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -170,9 +170,8 @@ public class Explosion {
 			for (int y = powerRadius * -1; y <= powerRadius; y++)
 				for (int z = powerRadius * -1; z <= powerRadius; z++) {
 					Block block = location.getBlock().getRelative(x, y, z);
-					if(MaterialUtil.isIndestructible(block.getType()) && !settings.getBlockSettings().get(new RegenBlockData(block.getType())).doPreventDamage()) {
+					if(MaterialUtil.isIndestructible(block.getType()) && !settings.getBlockSettings().get(FlatBukkit.createBlockData(BukkitAdapter.adapt(block.getType()))).doPreventDamage())
 						blockList.add(block);
-					}
 				}
 		ExplosionTriggerEvent e = new ExplosionTriggerEvent(this);
 		if(!settings.getAllowDamage(DamageCategory.BLOCK)) {
@@ -256,7 +255,7 @@ public class Explosion {
 					Random r = new Random();
 					int random = r.nextInt(99);
 					if (random <= bs.getDropChance() - 1)
-						block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(bs.getResult().getMaterial()));
+						block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(BukkitAdapter.asBukkitMaterial(bs.getResult().getMaterial())));
 				}
 			} else {
 				blockList.remove(block);
@@ -341,7 +340,7 @@ public class Explosion {
 					piston.setExtended(false);
 					block.setBlockData(piston, false);
 				}
-				BlockSettingsData bs = settings.getBlockSettings().get(new RegenBlockData(block));
+				BlockSettingsData bs = settings.getBlockSettings().get(BukkitAdapter.adapt(block).getBlockData());
 				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
 				{
 					Block part = null;
@@ -380,7 +379,7 @@ public class Explosion {
 							part = block.getRelative(0, -1, 0);
 					}
 					if(part != null) {
-						BlockSettingsData bsPart = settings.getBlockSettings().get(new RegenBlockData(part));
+						BlockSettingsData bsPart = settings.getBlockSettings().get(BukkitAdapter.adapt(part).getBlockData());
 						RegenBlock regenBlockPart = new RegenBlock(part, bsPart.getReplaceWith(), bsPart.getRegenDelay(), bsPart.getDurability());
 						regenBlock.setPart(regenBlockPart);
 						regenBlockPart.setPart(regenBlock);
@@ -523,15 +522,15 @@ public class Explosion {
 		}
 		BlockState state = block.getState();
 
-		if(settings.getBlockSettings().get(new RegenBlockData(state.getBlockData())).doReplace()) {
-			state.setBlockData((BlockData) block.getRegenData().getBlockData());
+		if(settings.getBlockSettings().get(BukkitAdapter.adapt(state).getBlockData()).doReplace()) {
+			BukkitAdapter.adapt(state).setBlockData(block.getFlatData());
 		}
 
 		BlockState bState = block.getBlock().getState();
 		if(settings.getRegenForceBlock()) {
 			block.getBlock().breakNaturally();
 		}
-		if(hasGravityBlockNearby(state) || (state.getType().hasGravity() && !state.getBlock().getRelative(0, -1, 0).getType().isSolid()) || !settings.getBlockSettings().get(block.getRegenData()).isBlockUpdate())
+		if(hasGravityBlockNearby(state) || (state.getType().hasGravity() && !state.getBlock().getRelative(0, -1, 0).getType().isSolid()) || !settings.getBlockSettings().get(block.getFlatData()).isBlockUpdate())
 			state.update(true, false);
 		else
 			state.update(true);

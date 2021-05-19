@@ -6,8 +6,10 @@ import java.util.*;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
+import com.jackalantern29.flatx.api.FlatBlockData;
 import com.jackalantern29.flatx.api.enums.FlatMaterial;
 import com.jackalantern29.flatx.bukkit.BukkitAdapter;
+import com.jackalantern29.flatx.bukkit.FlatBukkit;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -21,7 +23,7 @@ public class BlockSettings {
 	private BlockSettings(String name, BlockSettingsData... settings) {
 		this.name = name;
 		for(BlockSettingsData setting : settings)
-			this.settings.put(setting.getRegenData().toString(), setting);
+			this.settings.put(setting.getFlatData().getAsString(), setting);
 	}
 	
 	public String getName() {
@@ -29,7 +31,7 @@ public class BlockSettings {
 	}
 	
 	public void add(BlockSettingsData settings) {
-		String string = settings.getRegenData() != null ? settings.getRegenData().toString() : "";
+		String string = settings.getFlatData() != null ? settings.getFlatData().getAsString() : "";
 		this.settings.put(string, settings);
 	}
 
@@ -46,16 +48,16 @@ public class BlockSettings {
 		return true;
 	}
 
-	public BlockSettingsData get(RegenBlockData regenData) {
-		if(regenData == null || !this.settings.containsKey(regenData.toString())) {
+	public BlockSettingsData get(FlatBlockData flatData) {
+		if(flatData != null || !this.settings.containsKey(flatData.getAsString())) {
 			BlockSettingsData data = this.settings.get("");
-			if(MaterialUtil.isIndestructible(regenData.getMaterial())) {
-				data = new BlockSettingsData(regenData);
+			if(MaterialUtil.isIndestructible(BukkitAdapter.asBukkitMaterial(flatData.getMaterial()))) {
+				data = new BlockSettingsData(flatData);
 				data.setPreventDamage(true);
 			}
 			return data;
 		} else {
-			return this.settings.get(regenData.toString());
+			return this.settings.get(flatData.getAsString());
 		}
 	}
 
@@ -63,7 +65,7 @@ public class BlockSettings {
 		List<BlockSettingsData> list = new ArrayList<>(settings.values());
 		list.sort((o1, o2) -> {
 			CompareToBuilder builder = new CompareToBuilder();
-			builder.append(o1.getRegenData() != null ? o1.getRegenData().toString() : "default", o2.getRegenData() != null ? o2.getRegenData().toString() : "default");
+			builder.append(o1.getFlatData() != null ? o1.getFlatData().getAsString() : "default", o2.getFlatData() != null ? o2.getFlatData().getAsString() : "default");
 			return builder.toComparison();
 		});
 		return list;
@@ -82,17 +84,17 @@ public class BlockSettings {
 		LinkedHashMap<String, Object> map = new LinkedHashMap<>();
 		for(BlockSettingsData block : getBlockDatas()) {
 			String type;
-			if(block.getRegenData() == null) {
+			if(block.getFlatData() == null) {
 				type = "default";
 			} else {
-				type = block.getRegenData().toString();
+				type = block.getFlatData().getAsString();
 			}
 			map.put(type + ".prevent-damage", block.doPreventDamage());
 			map.put(type + ".regen", block.doRegen());
 			map.put(type + ".save-items", block.doSaveItems());
 			map.put(type + ".max-regen-height", block.getMaxRegenHeight());
 			map.put(type + ".replace.do-replace", block.doReplace());
-			map.put(type + ".replace.replace-with", block.getReplaceWith().toString());
+			map.put(type + ".replace.replace-with", block.getReplaceWith().getAsString());
 			map.put(type + ".chance", block.getDropChance());
 			map.put(type + ".durability", block.getDurability());
 			map.put(type + ".regen-delay", block.getRegenDelay());
@@ -186,19 +188,19 @@ public class BlockSettings {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-				RegenBlockData regenData = null;
+				FlatBlockData flatData;
 				if(key.equalsIgnoreCase("default"))
-					regenData = null;
+					flatData = null;
 				else {
-					regenData = new RegenBlockData(Bukkit.createBlockData(key));
+					flatData = FlatBukkit.createBlockData(key);
 				}
 				ConfigurationSection section = bc.getConfigurationSection(key);
-				RegenBlockData replaceData;
+				FlatBlockData replaceData;
 				{
 					String mat = section.getString("replace.replace-with");
-					replaceData = new RegenBlockData(Bukkit.createBlockData(mat));
+					replaceData = FlatBukkit.createBlockData(mat);
 				}
-				BlockSettingsData bd = new BlockSettingsData(regenData);
+				BlockSettingsData bd = new BlockSettingsData(flatData);
 				bd.setPreventDamage(section.getBoolean("prevent-damage"));
 				bd.setRegen(section.getBoolean("regen"));
 				bd.setSaveItems(section.getBoolean("save-items"));
