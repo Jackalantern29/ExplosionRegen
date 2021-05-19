@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jackalantern29</groupId>
     <artifactId>explosionregen</artifactId>
-    <version>3.1 EB.1</version>
+    <version>3.1-SNAPSHOT</version>
     <name>ExplosionRegen</name>
 
     <repositories>
@@ -73,7 +73,16 @@
                             <artifact>com.jackalantern29.flatx:*</artifact>
                             <includes>
                                 <include>com/jackalantern29/flatx/api/enums/FlatMaterial.class</include>
+                                <include>com/jackalantern29/flatx/api/FlatBlockData.class</include>
+                                <include>com/jackalantern29/flatx/api/FlatBlock.class</include>
+                                <include>com/jackalantern29/flatx/api/FlatBlockState.class</include>
                                 <include>com/jackalantern29/flatx/bukkit/**</include>
+                                <include>com/jackalantern29/flatx/craftbukkit/flatten/FlattenBlockData.class</include>
+                                <include>com/jackalantern29/flatx/craftbukkit/legacy/LegacyBlockData.class</include>
+                                <include>com/jackalantern29/flatx/craftbukkit/flatten/FlattenBlock.class</include>
+                                <include>com/jackalantern29/flatx/craftbukkit/legacy/LegacyBlock.class</include>
+                                <include>com/jackalantern29/flatx/craftbukkit/flatten/FlattenBlockState.class</include>
+                                <include>com/jackalantern29/flatx/craftbukkit/legacy/LegacyBlockState.class</include>
                             </includes>
                         </filter>
                     </filters>
