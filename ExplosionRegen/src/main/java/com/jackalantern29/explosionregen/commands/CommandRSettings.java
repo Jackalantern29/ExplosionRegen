@@ -337,7 +337,7 @@ public class CommandRSettings implements TabExecutor {
 							} else if(args[2].equalsIgnoreCase("block")) {
 								if(args[3].equalsIgnoreCase("add")) {
 									if(sender instanceof Player) {
-										list.add((((Player)sender).getTargetBlock(null, 10).getBlockData().getAsString()));
+										list.add(BukkitAdapter.adapt((Player)sender).getTargetBlock(null, 10).getBlockData().getAsString());
 									}
 								} else if(args[3].equalsIgnoreCase("remove")) {
 									ExplosionSettings settings = ExplosionSettings.getSettings(args[1]);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.jackalantern29.explosionregen.api.Explosion;
+import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import org.apache.commons.lang.BooleanUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -174,7 +175,7 @@ public class CommandRExplode implements TabExecutor {
 			} else if(args[0].equalsIgnoreCase("atlook")) {
 				if(sender instanceof Player) {
 					Player player = (Player)sender;
-					location = player.getTargetBlock(null, 100).getLocation();
+					location = BukkitAdapter.asBukkitLocation(BukkitAdapter.adapt(player).getTargetBlock(null, 100).getLocation());
 				} else {
 					sender.sendMessage("[ExplosionRegen] This command is only available for player use.");
 					return true;
