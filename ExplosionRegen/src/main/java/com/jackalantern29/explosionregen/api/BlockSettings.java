@@ -163,7 +163,10 @@ public class BlockSettings {
 				settings = new BlockSettings(name);
 				MAP.put(name, settings);
 			} else
-				settings = MAP.get(name);
+				return MAP.get(name);
+			Set<String> keys = new HashSet<>(bc.getKeys(false));
+			if(!keys.contains("default"))
+				keys.add("default");
 			for(String key : bc.getKeys(false)) {
 				saveMap.put(key + ".prevent-damage", false);
 				saveMap.put(key + ".regen", true);
