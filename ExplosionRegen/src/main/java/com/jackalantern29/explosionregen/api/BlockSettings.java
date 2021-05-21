@@ -31,26 +31,26 @@ public class BlockSettings {
 	}
 	
 	public void add(BlockSettingsData settings) {
-		String string = settings.getFlatData() != null ? settings.getFlatData().getAsString() : "";
-		this.settings.put(string, settings);
+		if(settings.getFlatData() == null)
+			this.settings.put(null, settings);
+		else
+			this.settings.put(settings.getFlatData().getAsString(), settings);
 	}
 
 	public void remove(String blockData) {
-		if(!blockData.equals("") && this.settings.containsKey(blockData)) {
+		if(blockData != null && this.settings.containsKey(blockData)) {
 			this.settings.remove(blockData);
 		}
 
 	}
 
 	public boolean contains(String blockData) {
-		if(!blockData.equals(""))
-			return this.settings.containsKey(blockData);
-		return true;
+		return this.settings.containsKey(blockData);
 	}
 
 	public BlockSettingsData get(FlatBlockData flatData) {
-		if(flatData != null || !this.settings.containsKey(flatData.getAsString())) {
-			BlockSettingsData data = this.settings.get("");
+		if(flatData == null || !this.settings.containsKey(flatData.getAsString())) {
+			BlockSettingsData data = this.settings.get(null);
 			if(MaterialUtil.isIndestructible(BukkitAdapter.asBukkitMaterial(flatData.getMaterial()))) {
 				data = new BlockSettingsData(flatData);
 				data.setPreventDamage(true);
