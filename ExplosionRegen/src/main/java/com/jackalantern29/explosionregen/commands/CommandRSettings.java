@@ -10,10 +10,10 @@ import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
 import com.jackalantern29.explosionregen.api.inventory.SlotElement;
 import com.jackalantern29.flatx.api.FlatBlockData;
 import com.jackalantern29.flatx.bukkit.BukkitAdapter;
+import com.jackalantern29.flatx.bukkit.FlatBukkit;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -235,33 +235,33 @@ public class CommandRSettings implements TabExecutor {
 							return true;
 						}
 					} else if(option.equalsIgnoreCase("block")) {
-						BlockData blockData;
 						if(args.length < 5) {
 							sender.sendMessage("§c/rsettings edit " + settings.getName().toLowerCase() + " " + option.toLowerCase() + " " + action.toLowerCase());
 							return true;
 						}
+
+						FlatBlockData flatData;
 						try {
-							blockData = Bukkit.createBlockData(args[4].toLowerCase());
+							flatData = FlatBukkit.createBlockData(args[4].toLowerCase());
 						} catch(IllegalArgumentException e) {
 							sender.sendMessage("§cInvalid block.");
 							return true;
 						}
-						FlatBlockData flatData = BukkitAdapter.adapt(blockData);
 						BlockSettingsData data = new BlockSettingsData(flatData);
 						if(action.equalsIgnoreCase("add")) {
-							if(!settings.getBlockSettings().contains(blockData.getAsString())) {
+							if(!settings.getBlockSettings().contains(flatData.getAsString())) {
 								settings.getBlockSettings().add(data);
-								sender.sendMessage("§aAdded '" + blockData.getAsString() + "'.");
+								sender.sendMessage("§aAdded '" + flatData.getAsString() + "'.");
 							} else {
-								sender.sendMessage("§a'" + blockData.getAsString() + "' already exists.");
+								sender.sendMessage("§a'" + flatData.getAsString() + "' already exists.");
 							}
 							return true;
 						} else if(action.equalsIgnoreCase("remove")) {
-							if(settings.getBlockSettings().contains(blockData.getAsString())) {
-								settings.getBlockSettings().remove(blockData.getAsString());
-								sender.sendMessage("§aRemoved '" + blockData.getAsString() + "'.");
+							if(settings.getBlockSettings().contains(flatData.getAsString())) {
+								settings.getBlockSettings().remove(flatData.getAsString());
+								sender.sendMessage("§aRemoved '" + flatData.getAsString() + "'.");
 							} else {
-								sender.sendMessage("§a'" + blockData.getAsString() + "' does not exist.");
+								sender.sendMessage("§a'" + flatData.getAsString() + "' does not exist.");
 							}
 						}
 					}
