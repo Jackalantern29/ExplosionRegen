@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.jackalantern29.explosionregen.api.*;
 import com.jackalantern29.explosionregen.commands.*;
+import com.jackalantern29.flatx.bukkit.FlatBukkit;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
@@ -21,10 +22,12 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 	private static ExplosionRegenSettings settings;
 	public static UUID author = UUID.fromString("76763b6e-4804-4b7e-bfbd-5d87c72e7843");
 
+	public static FlatBukkit flatBukkit;
 	public void onEnable() {
 		instance = this;
+		flatBukkit = new FlatBukkit(this);
+		flatBukkit.register();
 		settings = new ExplosionRegenSettings();
-
 		if(!settings.doEnablePlugin()) {
 			Bukkit.getConsoleSender().sendMessage("[ExplosionRegen] Option 'enable-plugin' in the config is set to false. Disabling plugin.");
 			setEnabled(false);
@@ -57,6 +60,7 @@ public class ExplosionRegen extends JavaPlugin implements Listener {
 		for(Explosion explosions : Explosion.getActiveExplosions()) {
 			explosions.regenerateAll();
 		}
+		flatBukkit.unregister();
 	}
 
 	public static ExplosionRegen getInstance() {
