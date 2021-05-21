@@ -7,6 +7,9 @@ import com.jackalantern29.explosionregen.api.Explosion;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.events.ExplosionDamageEntityEvent;
 import com.jackalantern29.flatx.api.enums.FlatMaterial;
+import com.jackalantern29.flatx.bukkit.event.BlockExplodeEvent;
+import com.jackalantern29.flatx.bukkit.event.EntityExplodeEvent;
+import com.jackalantern29.flatx.bukkit.event.ExplodeEvent;
 import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import me.ryanhamshire.GriefPrevention.Claim;
 import org.bukkit.Bukkit;
@@ -18,15 +21,12 @@ import org.bukkit.entity.Explosive;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.ExplosionSettingsOverride;
@@ -43,13 +43,8 @@ public class EntityExplodeListener implements Listener {
 	 */
 	@EventHandler
 	public void onExplode(EntityExplodeEvent event) {
-		Entity entity = event.getEntity();
-		if(!event.isCancelled()) {
-			if(entity != null)
-				explode(event, entity, event.getLocation(), event.blockList());
-			else
-				explode(event, event.getLocation().getBlock().getState(), event.getLocation(), event.blockList());
-		}
+		if(!event.isCancelled())
+			explode(event, event.getSource(), event.getLocation(), event.blockList());
 	}
 
 	/**
@@ -57,11 +52,9 @@ public class EntityExplodeListener implements Listener {
 	 */
 	@EventHandler
 	public void onExplode(BlockExplodeEvent event) {
-		if(!event.isCancelled()) {
-			explode(event, event.getBlock().getState(), event.getBlock().getLocation(), event.blockList());
-		}
+		if(!event.isCancelled())
+			explode(event, event.getSource(), event.getLocation(), event.blockList());
 	}
-
 
 	/**
 	 * Called when an entity or block explodes
@@ -73,7 +66,7 @@ public class EntityExplodeListener implements Listener {
 	 * @param location The location the explosion occurred
 	 * @param blockList List of blocks added to the damaged list
 	 */
-	private void explode(Event event, Object what, Location location, List<Block> blockList) {
+	private void explode(ExplodeEvent event, Object what, Location location, List<Block> blockList) {
 		if(!ExplosionRegen.getSettings().getWorlds().contains(location.getWorld().getName()))
 			return;
 		if(!ExplosionRegen.getSettings().getGPAllowExplosionRegen() && ExplosionRegen.getInstance().getGriefPrevention() != null) {
