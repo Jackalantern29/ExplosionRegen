@@ -1,8 +1,5 @@
 package com.jackalantern29.explosionregen.api;
 
-import com.jackalantern29.explosionregen.BukkitMethods;
-import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.enums.UpdateType;
 import com.jackalantern29.flatx.api.FlatBlockData;
 import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import org.bukkit.Location;
@@ -64,12 +61,12 @@ public class RegenBlock {
 		block.setType(BukkitAdapter.asBukkitMaterial(flatData.getMaterial()));
 		BukkitAdapter.adapt(block).setBlockData(flatData);
 		block.update(true);
-		if(ExplosionRegen.getInstance().getCoreProtect() != null) {
-			if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-				ExplosionRegen.getInstance().getCoreProtect().logPlacement("#explosionregen", block.getLocation(), block.getType(), BukkitMethods.getBlockData(block));
+/*		if (ExplosionRegen.getInstance().getCoreProtect() != null) {
+			if (UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+				ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), BukkitAdapter.asBukkitBlockData(BukkitAdapter.adapt(block).getBlockData()));
 			else
-				ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), block.getData().getData());
-		}
+				ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), block.getData());
+		}*/
 	}
 
 	public double getDurability() {

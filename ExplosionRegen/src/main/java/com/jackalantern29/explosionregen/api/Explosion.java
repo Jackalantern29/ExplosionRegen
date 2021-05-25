@@ -1,7 +1,6 @@
 package com.jackalantern29.explosionregen.api;
 
 import com.google.common.collect.ImmutableList;
-import com.jackalantern29.explosionregen.BukkitMethods;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
@@ -11,20 +10,26 @@ import com.jackalantern29.explosionregen.api.events.ExplosionBlockRegenEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionBlockRegeneratingEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionRegenFinishEvent;
 import com.jackalantern29.explosionregen.api.events.ExplosionTriggerEvent;
+import com.jackalantern29.flatx.api.FlatBlock;
+import com.jackalantern29.flatx.api.FlatBlockState;
+import com.jackalantern29.flatx.api.block.FlatBlockFace;
+import com.jackalantern29.flatx.api.block.FlatContainer;
+import com.jackalantern29.flatx.api.block.data.FlatBisected;
+import com.jackalantern29.flatx.api.block.data.FlatChest;
+import com.jackalantern29.flatx.api.block.data.type.FlatBed;
+import com.jackalantern29.flatx.api.block.data.type.FlatPiston;
 import com.jackalantern29.flatx.api.enums.FlatMaterial;
+import com.jackalantern29.flatx.api.inventory.FlatInventory;
 import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import com.jackalantern29.flatx.bukkit.FlatBukkit;
+import com.jackalantern29.flatx.bukkit.VersionUtil;
 import net.coreprotect.CoreProtectAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.*;
-import org.bukkit.block.data.Bisected;
-import org.bukkit.block.data.type.Piston;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -64,7 +69,9 @@ public class Explosion {
 								if (block.getRegenDelay() > 0)
 									block.setRegenDelay(block.getRegenDelay() - 1);
 								else {
-									if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.SUGAR_CANE) || block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.CACTUS) || block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.SCAFFOLDING)) {
+									if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.SUGAR_CANE)
+											|| block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.CACTUS)
+											|| (VersionUtil.getBukkitVersionID() >= 11 && block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.SCAFFOLDING))) {
 										for(RegenBlock b : new ArrayList<>(explosion.getBlocks())) {
 											if(b.getType() == block.getType())
 												explosion.regenerate(b);
@@ -86,7 +93,7 @@ public class Explosion {
 			}
 		}, 0, 1);
 
-		SUPPORT_NEED.addAll(Tag.FLOWERS.getValues());
+/*		SUPPORT_NEED.addAll(Tag.FLOWERS.getValues());
 		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.GRASS));
 		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.TORCH));
 		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.REDSTONE_TORCH));
@@ -127,7 +134,11 @@ public class Explosion {
 		SUPPORT_NEED.addAll(Tag.BANNERS.getValues());
 		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.SUGAR_CANE));
 		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.CACTUS));
-		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.SCAFFOLDING));
+		SUPPORT_NEED.add(BukkitAdapter.asBukkitMaterial(FlatMaterial.SCAFFOLDING));*/
+		for(Material material : Material.values()) {
+			if(!material.isOccluding() && material.isTransparent() && !material.isSolid())
+				SUPPORT_NEED.add(material);
+		}
 	}
 
 	/**
@@ -215,20 +226,21 @@ public class Explosion {
 	}
 
 	private void damageBlock(RegenBlock regenBlock, BlockSettingsData bs, Block block) {
-		BlockState state = block.getState();
-		if(state instanceof Container) {
+		FlatBlockState state = BukkitAdapter.adapt(block).getState();
+		if(state instanceof FlatContainer) {
 			if(bs.doSaveItems()) {
-				Inventory inventory;
-				if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.CHEST)) {
-					inventory = ((Chest)state).getBlockInventory();
-				} else
-					inventory = ((Container) state).getInventory();
+				FlatInventory inventory;
+				if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.CHEST))
+					inventory = ((FlatChest)state).getBlockInventory();
+				else
+					inventory = ((FlatContainer)state).getInventory();
 				inventory.clear();
 			} else {
-				((Container) regenBlock.getState()).getSnapshotInventory().clear();
+				((FlatContainer)BukkitAdapter.adapt(regenBlock.getState())).getSnapshotInventory().clear();
 				state.update(true);
 			}
 		}
+
 		if(!bs.doPreventDamage()) {
 			if (BLOCK_MAP.containsKey(block.getLocation())) {
 				RegenBlock b = BLOCK_MAP.get(block.getLocation());
@@ -241,16 +253,24 @@ public class Explosion {
 				if (bs.doRegen()) {
 					if (regenBlock.getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.TNT))
 						addBlock(regenBlock);
-					if ((MaterialUtil.isBedBlock(block.getState().getType()) || getSupportNeededMaterials().contains(block.getState().getType()) || block.getState().getBlockData() instanceof Bisected) || (hasGravityBlockNearby(block.getState()) || !bs.isBlockUpdate()) || (block.getState().getType().name().contains("SHULKER_BOX") || block.getState().getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.BEACON) || (block.getState().getType().name().contains("_HEAD") && block.getState().getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.PISTON_HEAD)) || block.getState().getType().name().contains("_SKULL"))) {
+					if ((MaterialUtil.isBedBlock(block.getState().getType())
+							|| getSupportNeededMaterials().contains(block.getState().getType())
+							|| BukkitAdapter.adapt(block).getState().getBlockData() instanceof FlatBisected)
+							|| (hasGravityBlockNearby(block.getState())
+							|| !bs.isBlockUpdate())
+							|| (block.getState().getType().name().contains("SHULKER_BOX")
+							|| block.getState().getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.BEACON)
+							|| (block.getState().getType().name().contains("_HEAD") && block.getState().getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.PISTON_HEAD))
+							|| block.getState().getType().name().contains("_SKULL"))) {
 						block.setType(BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR), false);
 					}
 
-					if (ExplosionRegen.getInstance().getCoreProtect() != null) {
+/*					if (ExplosionRegen.getInstance().getCoreProtect() != null) {
 						if (UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-							ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), BukkitMethods.getBlockData(block.getState()));
+							ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), BukkitAdapter.asBukkitBlockData(BukkitAdapter.adapt(block).getBlockData()));
 						else
 							ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), block.getData());
-					}
+					}*/
 				} else {
 					Random r = new Random();
 					int random = r.nextInt(99);
@@ -329,51 +349,52 @@ public class Explosion {
 
 		if(settings.getAllowRegen()) {
 			for (Block block : new ArrayList<>(blockList)) {
+				FlatBlock flatBlock = BukkitAdapter.adapt(block);
 				if(hasBlock(block.getLocation()))
 					continue;
 				if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.PISTON_HEAD)) {
 					blockList.remove(block);
 					continue;
 				}
-				if(block.getBlockData() instanceof Piston) {
-					Piston piston = (Piston) block.getBlockData();
+				if(flatBlock.getBlockData() instanceof FlatPiston) {
+					FlatPiston piston = (FlatPiston) flatBlock.getBlockData();
 					piston.setExtended(false);
-					block.setBlockData(piston, false);
+					flatBlock.setBlockData(piston, false);
 				}
 				BlockSettingsData bs = settings.getBlockSettings().get(BukkitAdapter.adapt(block).getBlockData());
 				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
 				{
 					Block part = null;
 					if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.CHEST) || block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.TRAPPED_CHEST)) {
-						org.bukkit.block.data.type.Chest chest = (org.bukkit.block.data.type.Chest)block.getBlockData();
-						BlockFace face = chest.getFacing();
-						org.bukkit.block.data.type.Chest.Type type = chest.getType();
-						if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Chest.Type.LEFT) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Chest.Type.RIGHT)) {
+						com.jackalantern29.flatx.api.block.data.type.FlatChest chest = (com.jackalantern29.flatx.api.block.data.type.FlatChest)flatBlock.getBlockData();
+						FlatBlockFace face = chest.getFacing();
+						com.jackalantern29.flatx.api.block.data.type.FlatChest.Type type = chest.getType();
+						if((face == FlatBlockFace.NORTH && type == com.jackalantern29.flatx.api.block.data.type.FlatChest.Type.LEFT) || (face == FlatBlockFace.SOUTH && type == com.jackalantern29.flatx.api.block.data.type.FlatChest.Type.RIGHT)) {
 							part = block.getRelative(1, 0, 0);
-						} else if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Chest.Type.RIGHT) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Chest.Type.LEFT)) {
+						} else if((face == FlatBlockFace.NORTH && type == com.jackalantern29.flatx.api.block.data.type.FlatChest.Type.RIGHT) || (face == FlatBlockFace.SOUTH && type ==com.jackalantern29.flatx.api.block.data.type.FlatChest.Type.LEFT)) {
 							part = block.getRelative(-1, 0, 0);
-						} else if((face == BlockFace.EAST && type == org.bukkit.block.data.type.Chest.Type.LEFT) || (face == BlockFace.WEST && type == org.bukkit.block.data.type.Chest.Type.RIGHT)) {
+						} else if((face == FlatBlockFace.EAST && type == com.jackalantern29.flatx.api.block.data.type.FlatChest.Type.LEFT) || (face == FlatBlockFace.WEST && type == com.jackalantern29.flatx.api.block.data.type.FlatChest.Type.RIGHT)) {
 							part = block.getRelative(0, 0, 1);
-						} else if((face == BlockFace.EAST && type == org.bukkit.block.data.type.Chest.Type.RIGHT) || (face == BlockFace.WEST && type == org.bukkit.block.data.type.Chest.Type.LEFT)) {
+						} else if((face == FlatBlockFace.EAST && type == com.jackalantern29.flatx.api.block.data.type.FlatChest.Type.RIGHT) || (face == FlatBlockFace.WEST && type == com.jackalantern29.flatx.api.block.data.type.FlatChest.Type.LEFT)) {
 							part = block.getRelative(0, 0, -1);
 						}
 					} else if(block.getType().name().endsWith("_BED")) {
-						org.bukkit.block.data.type.Bed bed = (org.bukkit.block.data.type.Bed) block.getBlockData();
-						BlockFace face = bed.getFacing();
-						org.bukkit.block.data.type.Bed.Part type = bed.getPart();
-						if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Bed.Part.HEAD) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Bed.Part.FOOT)) {
+						FlatBed bed = (FlatBed) flatBlock.getBlockData();
+						FlatBlockFace face = bed.getFacing();
+						FlatBed.Part type = bed.getPart();
+						if ((face == FlatBlockFace.NORTH && type == FlatBed.Part.HEAD) || (face == FlatBlockFace.SOUTH && type == FlatBed.Part.FOOT)) {
 							part = block.getRelative(0, 0, 1);
-						} else if((face == BlockFace.NORTH && type == org.bukkit.block.data.type.Bed.Part.FOOT) || (face == BlockFace.SOUTH && type == org.bukkit.block.data.type.Bed.Part.HEAD)) {
+						} else if ((face == FlatBlockFace.NORTH && type == FlatBed.Part.FOOT) || (face == FlatBlockFace.SOUTH && type == FlatBed.Part.HEAD)) {
 							part = block.getRelative(0, 0, -1);
-						} else if((face == BlockFace.EAST && type == org.bukkit.block.data.type.Bed.Part.HEAD) || (face == BlockFace.WEST && type == org.bukkit.block.data.type.Bed.Part.FOOT)) {
+						} else if ((face == FlatBlockFace.EAST && type == FlatBed.Part.HEAD) || (face == FlatBlockFace.WEST && type == FlatBed.Part.FOOT)) {
 							part = block.getRelative(-1, 0, 0);
 						} else {
 							part = block.getRelative(1, 0, 0);
 						}
-					} else if(block.getBlockData() instanceof Bisected) {
-						Bisected bi = (Bisected)block.getBlockData();
-						Bisected.Half type = bi.getHalf();
-						if(type == Bisected.Half.BOTTOM)
+					} else if(flatBlock.getBlockData() instanceof FlatBisected) {
+						FlatBisected bi = (FlatBisected)flatBlock.getBlockData();
+						FlatBisected.Half type = bi.getHalf();
+						if(type == FlatBisected.Half.BOTTOM)
 							part = block.getRelative(0, 1, 0);
 						else
 							part = block.getRelative(0, -1, 0);
@@ -418,11 +439,12 @@ public class Explosion {
 	 * @return List of adjacent blocks that were added
 	 */
 	private List<Block> calculateAdjacentBlocks(Block block) {
+		FlatBlock flatBlock = BukkitAdapter.adapt(block);
 		List<Block> list = new ArrayList<>();
 		if(UpdateType.isPostUpdate(UpdateType.COLOR_UPDATE)) {
-			if(block.getState() instanceof Bisected) {
-				Bisected bi = (Bisected)block.getState();
-				if(bi.getHalf() == Bisected.Half.BOTTOM)
+			if(flatBlock.getState().getBlockData() instanceof FlatBisected) {
+				FlatBisected bi = (FlatBisected)flatBlock.getState();
+				if(bi.getHalf() == FlatBisected.Half.BOTTOM)
 					list.add(block.getRelative(0, 1, 0));
 				else
 					list.add(block.getRelative(0, -1, 0));
@@ -530,7 +552,9 @@ public class Explosion {
 		if(settings.getRegenForceBlock()) {
 			block.getBlock().breakNaturally();
 		}
-		if(hasGravityBlockNearby(state) || (state.getType().hasGravity() && !state.getBlock().getRelative(0, -1, 0).getType().isSolid()) || !settings.getBlockSettings().get(block.getFlatData()).isBlockUpdate())
+		if(hasGravityBlockNearby(state)
+				|| (state.getType().hasGravity() && !state.getBlock().getRelative(0, -1, 0).getType().isSolid())
+				|| !settings.getBlockSettings().get(block.getFlatData()).isBlockUpdate())
 			state.update(true, false);
 		else
 			state.update(true);
@@ -541,12 +565,12 @@ public class Explosion {
 		removeBlock(block.getLocation());
 		previousBlock = block;
 		CoreProtectAPI coreProtect = ExplosionRegen.getInstance().getCoreProtect();
-		if(coreProtect != null) {
-			if(UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
-				coreProtect.logPlacement("#explosionregen", block.getLocation(), block.getBlock().getType(), BukkitMethods.getBlockData(block.getBlock().getState()));
+/*		if (ExplosionRegen.getInstance().getCoreProtect() != null) {
+			if (UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
+				ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), BukkitAdapter.asBukkitBlockData(BukkitAdapter.adapt(block).getBlockData()));
 			else
-				coreProtect.logPlacement("#explosionregen", block.getLocation(), block.getBlock().getType(), block.getBlock().getData());
-		}
+				ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), block.getData());
+		}*/
 		ExplosionBlockRegenEvent e = new ExplosionBlockRegenEvent(this);
 		Bukkit.getPluginManager().callEvent(e);
 		if(block.getPart() != null) {
