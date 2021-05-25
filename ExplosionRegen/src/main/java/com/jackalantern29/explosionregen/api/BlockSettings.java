@@ -51,7 +51,7 @@ public class BlockSettings {
 	public BlockSettingsData get(FlatBlockData flatData) {
 		if(flatData == null || !this.settings.containsKey(flatData.getAsString())) {
 			BlockSettingsData data = this.settings.get(null);
-			if(MaterialUtil.isIndestructible(BukkitAdapter.asBukkitMaterial(flatData.getMaterial()))) {
+			if(flatData != null && MaterialUtil.isIndestructible(BukkitAdapter.asBukkitMaterial(flatData.getMaterial()))) {
 				data = new BlockSettingsData(flatData);
 				data.setPreventDamage(true);
 			}
