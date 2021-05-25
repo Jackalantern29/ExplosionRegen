@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-import com.jackalantern29.explosionregen.BukkitMethods;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -42,6 +41,8 @@ public class ExplosionRegenSettings {
 		}
 		if(!blocksFolder.exists()) {
 			blocksFolder.mkdirs();
+		}
+		if(!new File(plugin.getDataFolder() + File.separator + "blocks" + File.separator + "default.yml").exists()) {
 			try {
 				Files.copy(plugin.getResource("default.yml"), Paths.get(plugin.getDataFolder() + File.separator + "blocks" + File.separator + "default.yml"));
 			} catch (IOException e) {
@@ -101,11 +102,6 @@ public class ExplosionRegenSettings {
 		if(getAllowProfileSettings()) {
 			if(!profileFolder.exists())
 				profileFolder.mkdir();
-		}
-		try {
-			Class.forName(BukkitMethods.class.getName());
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 		}
 	}
 	public boolean doEnablePlugin() {
