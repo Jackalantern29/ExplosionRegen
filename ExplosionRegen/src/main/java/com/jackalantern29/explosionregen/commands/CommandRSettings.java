@@ -92,7 +92,7 @@ public class CommandRSettings implements TabExecutor {
 						settings.saveAsFile();
 						sender.sendMessage("Registered Explosion Settings '" + settings.getName() + "' using '" + settings.getBlockSettings().getName() + "' block settings.");
 					} else if(type.equalsIgnoreCase("block")) {
-						BlockSettings settings = BlockSettings.createSettings(name);
+						BlockSettings settings = new BlockSettings(name);
 						settings.saveAsFile();
 						sender.sendMessage("[ExplosionRegen] Created Block Settings '" + name + "'.");
 					}
