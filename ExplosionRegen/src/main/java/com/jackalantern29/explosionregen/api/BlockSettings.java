@@ -1,13 +1,14 @@
 package com.jackalantern29.explosionregen.api;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
+import com.jackalantern29.explosionregen.api.enums.Action;
 import com.jackalantern29.flatx.api.FlatBlockData;
-import com.jackalantern29.flatx.api.enums.FlatMaterial;
 import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import com.jackalantern29.flatx.bukkit.FlatBukkit;
 import org.apache.commons.lang.builder.CompareToBuilder;
@@ -25,7 +26,7 @@ public class BlockSettings {
 		for(BlockSettingsData setting : settings)
 			this.settings.put(setting.getFlatData().getAsString(), setting);
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -73,152 +74,109 @@ public class BlockSettings {
 
 	public void saveAsFile() {
 		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "blocks" + File.separator + name + ".yml");
-		if(!file.exists()) {
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-		LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+
+		Set<String> keys = new HashSet<>(config.getKeys(false));
 		for(BlockSettingsData block : getBlockDatas()) {
 			String type;
-			if(block.getFlatData() == null) {
+			if(block.getFlatData() == null)
 				type = "default";
-			} else {
+			else
 				type = block.getFlatData().getAsString();
-			}
-			map.put(type + ".prevent-damage", block.doPreventDamage());
-			map.put(type + ".regen", block.doRegen());
-			map.put(type + ".save-items", block.doSaveItems());
-			map.put(type + ".max-regen-height", block.getMaxRegenHeight());
-			map.put(type + ".replace.do-replace", block.doReplace());
-			map.put(type + ".replace.replace-with", block.getReplaceWith().getAsString());
-			map.put(type + ".chance", block.getDropChance());
-			map.put(type + ".durability", block.getDurability());
-			map.put(type + ".regen-delay", block.getRegenDelay());
-			map.put(type + ".block-update", block.isBlockUpdate());
+			ConfigurationSection section = config.createSection(type, getDefaultMap());
+			section.set("prevent-damage", block.doPreventDamage());
+			section.set("action", block.getAction().name().toLowerCase());
+			section.set("save-data", block.isSaveData());
+			section.set("replace", block.getReplace());
+			section.set("chance", block.getChance());
+			section.set("durability", block.getDurability());
+			section.set("regen-delay", block.getRegenDelay());
+			section.set("block-update", block.isBlockUpdate());
+			keys.remove(type);
 		}
-		boolean doSave = false;
-		for(Map.Entry<String, Object> entry : new HashSet<>(map.entrySet())) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			Object valueKey = config.get(key);
+		for(String key : keys)
+			config.set(key, null);
+		try {
+			config.save(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		MAP.put(name, this);
+	}
 
-			if(value instanceof Float)
-				value = ((Float) value).doubleValue();
-			else if(value instanceof Long)
-				value = ((Long) value).intValue();
+	public static BlockSettings loadFromFile(File file) {
+		if(file == null) {
+			try {
+				throw new FileNotFoundException("Could not find file.");
+			} catch (FileNotFoundException ignored) {
+				return null;
+			}
+		}
+		BlockSettings settings = new BlockSettings(file.getName().substring(0, file.getName().length()-4));
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 
-			if(valueKey instanceof Float)
-				valueKey = ((Float) valueKey).doubleValue();
-			else if(valueKey instanceof Long)
-				valueKey = ((Long) valueKey).intValue();
-			if(!config.contains(key) || !valueKey.equals(value)) {
-				config.set(key, value); doSave = true;
-			}
-			map.remove(key);
+		Set<String> keys = new HashSet<>(config.getKeys(false));
+
+		boolean save = false;
+		if(!keys.contains("default")) {
+			keys.add("default");
+			config.createSection("default", getDefaultMap());
+			save = true;
 		}
-		for(String key : config.getKeys(false)) {
-			if(!key.equals("default") && !settings.containsKey(key)) {
-				config.set(key, null); doSave = true;
+
+		for(String key : keys) {
+			ConfigurationSection section = config.getConfigurationSection(key);
+			for(Map.Entry<String, Object> entry : getDefaultMap().entrySet()) {
+				if(!section.isSet(entry.getKey())) {
+					section.set(entry.getKey(), entry.getValue());
+					save = true;
+				}
 			}
+			FlatBlockData flatData;
+			if(key.equalsIgnoreCase("default"))
+				flatData = null;
+			else
+				flatData = FlatBukkit.createBlockData(key);
+			BlockSettingsData blockData = new BlockSettingsData(flatData);
+			blockData.setPreventDamage(section.getBoolean("prevent-damage"));
+			blockData.setAction(Action.valueOf(section.getString("action").toUpperCase()));
+			blockData.setSaveData(section.getBoolean("save-data"));
+			blockData.setReplace(section.getString("replace"));
+			blockData.setChance(section.getInt("chance"));
+			blockData.setDurability(section.getDouble("durability"));
+			blockData.setRegenDelay(section.getLong("regen-delay"));
+			blockData.setBlockUpdate(section.getBoolean("block-update"));
+			settings.add(blockData);
 		}
-		if(doSave) {
+		if(save) {
 			try {
 				config.save(file);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	public static BlockSettings createSettings(String name) {
-		if(getSettings(name) != null)
-			return getSettings(name);
-		BlockSettings settings;
-		Bukkit.getConsoleSender().sendMessage("[ExplosionRegen] Created Block Settings '" + name + "'.");
-
-		if(!MAP.containsKey(name)) {
-			settings = new BlockSettings(name);
-			MAP.put(name, settings);
-		} else
-			return MAP.get(name);
-
-		BlockSettingsData bd = new BlockSettingsData(null);
-		settings.add(bd);
-
+		MAP.put(settings.getName(), settings);
 		return settings;
 	}
 
-	public static BlockSettings registerSettings(File file) {
-		BlockSettings settings = null;
-		if(file.getName().endsWith(".yml")) {
-			YamlConfiguration bc = YamlConfiguration.loadConfiguration(file);
-			LinkedHashMap<String, Object> saveMap = new LinkedHashMap<>();
-
-			String name = file.getName().substring(0, file.getName().length()-4);
-			if(!MAP.containsKey(name)) {
-				settings = new BlockSettings(name);
-				MAP.put(name, settings);
-			} else
-				return MAP.get(name);
-			Set<String> keys = new HashSet<>(bc.getKeys(false));
-			if(!keys.contains("default"))
-				keys.add("default");
-			for(String key : bc.getKeys(false)) {
-				saveMap.put(key + ".prevent-damage", false);
-				saveMap.put(key + ".regen", true);
-				saveMap.put(key + ".save-items", true);
-				saveMap.put(key + ".replace.do-replace", false);
-				saveMap.put(key + ".replace.replace-with", BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR).name().toLowerCase());
-				saveMap.put(key + ".chance", 30);
-				saveMap.put(key + ".durability", 1.0d);
-				saveMap.put(key + ".regen-delay", 0);
-				saveMap.put(key + ".block-update", true);
-				boolean saveBC = false;
-				for(String k : new ArrayList<>(saveMap.keySet())) {
-					if(!bc.contains(k)) {
-						bc.set(k, saveMap.get(k));
-						saveBC = true;
-					}
-					saveMap.remove(k);
-				}
-				if(saveBC)
-					try {
-						bc.save(file);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				FlatBlockData flatData;
-				if(key.equalsIgnoreCase("default"))
-					flatData = null;
-				else {
-					flatData = FlatBukkit.createBlockData(key);
-				}
-				ConfigurationSection section = bc.getConfigurationSection(key);
-				FlatBlockData replaceData;
-				{
-					String mat = section.getString("replace.replace-with");
-					replaceData = FlatBukkit.createBlockData(mat);
-				}
-				BlockSettingsData bd = new BlockSettingsData(flatData);
-				bd.setPreventDamage(section.getBoolean("prevent-damage"));
-				bd.setRegen(section.getBoolean("regen"));
-				bd.setSaveItems(section.getBoolean("save-items"));
-				bd.setMaxRegenHeight(section.getInt("max-regen-height"));
-				bd.setReplace(section.getBoolean("replace.do-replace"));
-				bd.setReplaceWith(replaceData);
-				bd.setDropChance(section.getInt("chance"));
-				bd.setDurability(section.getDouble("durability"));
-				bd.setRegenDelay(section.getLong("regen-delay"));
-				bd.setBlockUpdate(section.getBoolean("block-update"));
-				settings.add(bd);
-			}
-		}
-		return settings;
+	private static HashMap<String, Object> getDefaultMap() {
+		HashMap<String, Object> defaultMap = new HashMap<>();
+		defaultMap.put("prevent-damage", false);
+		defaultMap.put("action", Action.REGENERATE.name().toLowerCase());
+		defaultMap.put("save-data", true);
+		defaultMap.put("replace", "self");
+		defaultMap.put("chance", 100);
+		defaultMap.put("durability", 1.0d);
+		defaultMap.put("regen-delay", 0);
+		defaultMap.put("block-update", true);
+		return defaultMap;
 	}
+
 	public static BlockSettings getSettings(String name) {
 		return MAP.get(name);
 	}
@@ -226,6 +184,7 @@ public class BlockSettings {
 	public static Collection<BlockSettings> getBlockSettings() {
 		return MAP.values();
 	}
+
 	public static void removeSettings(String name) {
 		if(getSettings(name) != null) {
 			MAP.remove(name);
