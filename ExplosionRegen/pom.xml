@@ -45,7 +45,7 @@
         </dependency>
         <dependency>
             <groupId>com.jackalantern29.flatx</groupId>
-            <artifactId>flatx</artifactId>
+            <artifactId>flatx-bukkit-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
