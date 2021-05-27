@@ -20,7 +20,7 @@ public class BlockSettings {
 	private final String name;
 	private final Map<String, BlockSettingsData> settings = new HashMap<>();
 
-	private BlockSettings(String name, BlockSettingsData... settings) {
+	public BlockSettings(String name, BlockSettingsData... settings) {
 		this.name = name;
 		for(BlockSettingsData setting : settings)
 			this.settings.put(setting.getFlatData().getAsString(), setting);
