@@ -42,12 +42,9 @@ public class ExplosionRegenSettings {
 		if(!blocksFolder.exists()) {
 			blocksFolder.mkdirs();
 		}
-		if(!new File(plugin.getDataFolder() + File.separator + "blocks" + File.separator + "default.yml").exists()) {
-			try {
-				Files.copy(plugin.getResource("default.yml"), Paths.get(plugin.getDataFolder() + File.separator + "blocks" + File.separator + "default.yml"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		try {
+			new File(blocksFolder, "default.yml").createNewFile();
+		} catch (IOException ignored) {
 		}
 		if(!configFile.exists())
 			try {
@@ -85,7 +82,7 @@ public class ExplosionRegenSettings {
 		allowWorlds.addAll(config.getStringList("allow_worlds"));
 
 		for(File file : Objects.requireNonNull(blocksFolder.listFiles())) {
-			BlockSettings.registerSettings(file);
+			BlockSettings.loadFromFile(file);
 		}
 		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + "default.yml");
 		List<File> fileList = new ArrayList<>(Arrays.asList(explosionsFolder.listFiles()));
