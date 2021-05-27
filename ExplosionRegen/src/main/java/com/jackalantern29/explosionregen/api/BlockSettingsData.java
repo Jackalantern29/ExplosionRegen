@@ -1,24 +1,22 @@
 package com.jackalantern29.explosionregen.api;
 
 
+import com.jackalantern29.explosionregen.api.enums.Action;
 import com.jackalantern29.flatx.api.FlatBlockData;
-import com.jackalantern29.flatx.api.enums.FlatMaterial;
 import com.jackalantern29.flatx.bukkit.FlatBukkit;
 
 public class BlockSettingsData {
 	private final FlatBlockData flatData;
 
-	private FlatBlockData replaceWith = FlatBukkit.createBlockData(FlatMaterial.AIR);
+	private String replace;
 
 	private int chance = 30;
-	private int maxRegenHeight = 3;
 	private double durability = 1d;
 	private long regenDelay = 0;
 	
 	private boolean preventDamage = false;
-	private boolean regen = true;
-	private boolean saveItems = false;
-	private boolean replace = false;
+	private Action action = Action.REGENERATE;
+	private boolean saveData = false;
 	private boolean blockUpdate = true;
 
 	public BlockSettingsData(FlatBlockData flatData) {
@@ -37,47 +35,35 @@ public class BlockSettingsData {
 		preventDamage = value;
 	}
 	
-	public boolean doRegen() {
-		return regen;
+	public Action getAction() {
+		return action;
 	}
 	
-	public void setRegen(boolean value) {
-		regen = value;
+	public void setAction(Action action) {
+		this.action = action;
+	}
+
+	public boolean isSaveData() {
+		return saveData;
+	}
+
+	public void setSaveData(boolean value) {
+		saveData = value;
 	}
 	
-	public boolean doSaveItems() {
-		return saveItems;
+	public void setReplace(String replace) {
+		this.replace = replace;
 	}
 	
-	public void setSaveItems(boolean value) {
-		saveItems = value;
-	}
-	
-	public int getMaxRegenHeight() {
-		return maxRegenHeight;
-	}
-	
-	public void setMaxRegenHeight(int value) {
-		maxRegenHeight = value;
-	}
-	
-	public boolean doReplace() {
+	public String getReplace() {
 		return replace;
-	}
-	
-	public void setReplace(boolean value) {
-		replace = value;
-	}
-	
-	public FlatBlockData getReplaceWith() {
-		return replaceWith;
 	}
 
 	public FlatBlockData getResult() {
-		if(doReplace())
-			return getReplaceWith();
-		else
+		if(replace.equalsIgnoreCase("self"))
 			return getFlatData();
+		else
+			return FlatBukkit.createBlockData(replace);
 	}
 
 	public boolean isBlockUpdate() {
@@ -88,15 +74,12 @@ public class BlockSettingsData {
 		this.blockUpdate = blockUpdate;
 	}
 
-	public void setReplaceWith(FlatBlockData replaceWith) {
-		this.replaceWith = replaceWith;
-	}
 	
-	public int getDropChance() {
+	public int getChance() {
 		return chance;
 	}
 	
-	public void setDropChance(int value) {
+	public void setChance(int value) {
 		chance = value;
 	}
 	

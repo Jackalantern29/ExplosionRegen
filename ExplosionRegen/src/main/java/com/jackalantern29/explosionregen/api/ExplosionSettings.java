@@ -349,22 +349,24 @@ public class  ExplosionSettings {
 						blockMenu.update("menu");
 						return true;
 					}));
-					blockMenu.setItem(1, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fRegenerate: " + (blockData.doRegen() ? "§aTrue" : "§cFalse")).build(), data -> {
-						blockData.setRegen(!blockData.doRegen());
+					blockMenu.setItem(1, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fAction: " + WordUtils.capitalize(blockData.getAction().name().toLowerCase())).build(), data -> {
+						if(blockData.getAction() == Action.REGENERATE)
+							blockData.setAction(Action.DESTROY);
+						else
+							blockData.setAction(Action.REGENERATE);
 						blockMenu.update("menu");
 						return true;
 					}));
-					blockMenu.setItem(3, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fCan Replace: " + (blockData.doReplace() ? "§aTrue" : "§cFalse")).build(), data -> {
+/*					blockMenu.setItem(3, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fCan Replace: " + (blockData.doReplace() ? "§aTrue" : "§cFalse")).build(), data -> {
 						blockData.setReplace(!blockData.doReplace());
 						blockMenu.update("menu");
 						return true;
-					}));
-					blockMenu.setItem(4, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fReplace With: §6" + blockData.getReplaceWith().getAsString()).build(), data -> {
+					}));*/
+					blockMenu.setItem(3, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fReplace: §6" + blockData.getReplace()).build(), data -> {
 						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
 							try {
-								Material material = Material.valueOf(input.toUpperCase());
-								blockData.setReplaceWith(FlatBukkit.createBlockData(BukkitAdapter.adapt(material)));
+								blockData.setReplace(input); //TODO verify input is valid
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
 								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked(), true));
@@ -381,11 +383,11 @@ public class  ExplosionSettings {
 						blockMenu.update("menu");
 						return true;
 					}));
-					blockMenu.setItem(9, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fDrop Chance: §6" + blockData.getDropChance()).build(), data -> {
+					blockMenu.setItem(9, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fDrop Chance: §6" + blockData.getChance()).build(), data -> {
 						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
 							if(NumberUtils.isNumber(input)) {
-								blockData.setDropChance(NumberUtils.toInt(input));
+								blockData.setChance(NumberUtils.toInt(input));
 								blockMenu.update("menu");
 								data.getWhoClicked().sendMessage("§cExiting Input Mode.");
 								Bukkit.getScheduler().runTask(ExplosionRegen.getInstance(), () -> blockMenu.sendInventory(data.getWhoClicked(), true));
@@ -430,8 +432,8 @@ public class  ExplosionSettings {
 						return true;
 					}));
 					//TODO Add check if block can store items
-					blockMenu.setItem(13, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fSave Items: " + (blockData.doSaveItems() ? "§aTrue" : "§cFalse")).build(), data -> {
-						blockData.setReplace(!blockData.doReplace());
+					blockMenu.setItem(13, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fSave Items: " + (blockData.isSaveData() ? "§aTrue" : "§cFalse")).build(), data -> {
+						blockData.setSaveData(!blockData.isSaveData());
 						blockMenu.update("menu");
 						return true;
 					}));
@@ -447,13 +449,11 @@ public class  ExplosionSettings {
 
 				List<String> lore = new ArrayList<>();
 				lore.add("§9Prevent Damage: " + (blockData.doPreventDamage() ? "§aTrue" : "§cFalse"));
-				lore.add("§9Regenerate: " + (blockData.doRegen() ? "§aTrue" : "§cFalse"));
-				lore.add("§9Save Items: " + (blockData.doSaveItems() ? "§aTrue" : "§cFalse"));
-				lore.add("§9Replace: ");
-				lore.add("§9  Can Replace: " + (blockData.doReplace() ? "§aTrue" : "§cFalse"));
-				lore.add("§9  Replace With: §6" + blockData.getReplaceWith().getAsString());
+				lore.add("§9Action: §6" + WordUtils.capitalize(blockData.getAction().name().toLowerCase()));
+				lore.add("§9Save Data: " + (blockData.isSaveData() ? "§aTrue" : "§cFalse"));
+				lore.add("§9Replace: §6" + blockData.getReplace().toLowerCase());
 				lore.add("§9Block Update: " + (blockData.isBlockUpdate() ? "§aTrue" : "§cFalse"));
-				lore.add("§9Drop Chance: §6" + blockData.getDropChance());
+				lore.add("§9Drop Chance: §6" + blockData.getChance());
 				lore.add("§9Durability: §6" + blockData.getDurability());
 				lore.add("§9Delay: §6" + blockData.getRegenDelay());
 				ItemStack blockItem;

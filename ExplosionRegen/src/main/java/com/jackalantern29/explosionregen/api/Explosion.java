@@ -3,6 +3,7 @@ package com.jackalantern29.explosionregen.api;
 import com.google.common.collect.ImmutableList;
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.MaterialUtil;
+import com.jackalantern29.explosionregen.api.enums.Action;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.enums.GenerateDirection;
 import com.jackalantern29.explosionregen.api.enums.UpdateType;
@@ -228,7 +229,7 @@ public class Explosion {
 	private void damageBlock(RegenBlock regenBlock, BlockSettingsData bs, Block block) {
 		FlatBlockState state = BukkitAdapter.adapt(block).getState();
 		if(state instanceof FlatContainer) {
-			if(bs.doSaveItems()) {
+			if(bs.isSaveData()) {
 				FlatInventory inventory;
 				if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.CHEST))
 					inventory = ((FlatChest)state).getBlockInventory();
@@ -250,7 +251,7 @@ public class Explosion {
 				regenBlock.setDurability(regenBlock.getDurability() - blockDamage);
 			}
 			if (regenBlock.getDurability() <= 0.0d) {
-				if (bs.doRegen()) {
+				if (bs.getAction() == Action.REGENERATE) {
 					if (regenBlock.getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.TNT))
 						addBlock(regenBlock);
 					if ((MaterialUtil.isBedBlock(block.getState().getType())
@@ -274,7 +275,7 @@ public class Explosion {
 				} else {
 					Random r = new Random();
 					int random = r.nextInt(99);
-					if (random <= bs.getDropChance() - 1)
+					if (random <= bs.getChance() - 1)
 						block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(BukkitAdapter.asBukkitMaterial(bs.getResult().getMaterial())));
 				}
 			} else {
@@ -283,7 +284,7 @@ public class Explosion {
 			}
 		} else {
 			blockList.remove(block);
-			if(bs.doReplace())
+			if(!bs.getReplace().equalsIgnoreCase("self"))
 				regenBlock.setBlock();
 		}
 	}
@@ -362,7 +363,7 @@ public class Explosion {
 					flatBlock.setBlockData(piston, false);
 				}
 				BlockSettingsData bs = settings.getBlockSettings().get(BukkitAdapter.adapt(block).getBlockData());
-				RegenBlock regenBlock = new RegenBlock(block, bs.getReplaceWith(), bs.getRegenDelay(), bs.getDurability());
+				RegenBlock regenBlock = new RegenBlock(block, bs.getReplace(), bs.getRegenDelay(), bs.getDurability());
 				{
 					Block part = null;
 					if(block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.CHEST) || block.getType() == BukkitAdapter.asBukkitMaterial(FlatMaterial.TRAPPED_CHEST)) {
@@ -401,7 +402,7 @@ public class Explosion {
 					}
 					if(part != null) {
 						BlockSettingsData bsPart = settings.getBlockSettings().get(BukkitAdapter.adapt(part).getBlockData());
-						RegenBlock regenBlockPart = new RegenBlock(part, bsPart.getReplaceWith(), bsPart.getRegenDelay(), bsPart.getDurability());
+						RegenBlock regenBlockPart = new RegenBlock(part, bsPart.getReplace(), bsPart.getRegenDelay(), bsPart.getDurability());
 						regenBlock.setPart(regenBlockPart);
 						regenBlockPart.setPart(regenBlock);
 						damageBlock(regenBlockPart, bsPart, part);
@@ -544,8 +545,8 @@ public class Explosion {
 		}
 		BlockState state = block.getState();
 
-		if(settings.getBlockSettings().get(BukkitAdapter.adapt(state).getBlockData()).doReplace()) {
-			BukkitAdapter.adapt(state).setBlockData(block.getFlatData());
+		if(!settings.getBlockSettings().get(BukkitAdapter.adapt(state).getBlockData()).getReplace().equalsIgnoreCase("self")) {
+			BukkitAdapter.adapt(state).setBlockData(block.getNewFlatData());
 		}
 
 		BlockState bState = block.getBlock().getState();
@@ -554,7 +555,7 @@ public class Explosion {
 		}
 		if(hasGravityBlockNearby(state)
 				|| (state.getType().hasGravity() && !state.getBlock().getRelative(0, -1, 0).getType().isSolid())
-				|| !settings.getBlockSettings().get(block.getFlatData()).isBlockUpdate())
+				|| !settings.getBlockSettings().get(block.getNewFlatData()).isBlockUpdate())
 			state.update(true, false);
 		else
 			state.update(true);

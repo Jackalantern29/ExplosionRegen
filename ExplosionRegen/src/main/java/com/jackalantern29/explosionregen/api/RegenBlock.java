@@ -2,15 +2,16 @@ package com.jackalantern29.explosionregen.api;
 
 import com.jackalantern29.flatx.api.FlatBlockData;
 import com.jackalantern29.flatx.bukkit.BukkitAdapter;
+import com.jackalantern29.flatx.bukkit.FlatBukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 
 public class RegenBlock {
-	private final BlockState block;
+	private final BlockState originalBlock;
 	private long regenDelay;
-	private FlatBlockData flatData;
+	private FlatBlockData newFlatData;
 	private double durability;
 	private RegenBlock part = null;
 
@@ -18,23 +19,35 @@ public class RegenBlock {
 		this(block, BukkitAdapter.adapt(block).getBlockData(), regenDelay, durability);
 	}
 
-	public RegenBlock(Block block, FlatBlockData toBlock, long regenDelay, double durability) {
-		this.block = block.getState();
+	public RegenBlock(Block originalBlock, FlatBlockData newFlatData, long regenDelay, double durability) {
+		this.originalBlock = originalBlock.getState();
 		this.regenDelay = regenDelay;
-		this.flatData = toBlock;
 		this.durability = durability;
+		this.newFlatData = newFlatData;
+	}
+
+	public RegenBlock(Block originalBlock, String replace, long regenDelay, double durability) {
+		this.originalBlock = originalBlock.getState();
+		this.regenDelay = regenDelay;
+		this.durability = durability;
+		FlatBlockData flatData;
+		if(replace.equalsIgnoreCase("self"))
+			flatData = BukkitAdapter.adapt(originalBlock).getBlockData();
+		else
+			flatData = FlatBukkit.createBlockData(replace);
+		this.newFlatData = flatData;
 	}
 	
 	public Block getBlock() {
-		return block.getBlock();
+		return originalBlock.getBlock();
 	}
 	
 	public BlockState getState() {
-		return block;
+		return originalBlock;
 	}
 	
 	public Location getLocation() {
-		return block.getLocation();
+		return originalBlock.getLocation();
 	}
 	
 	public long getRegenDelay() {
@@ -46,21 +59,21 @@ public class RegenBlock {
 	}
 	
 	public Material getType() {
-		return block.getType();
+		return originalBlock.getType();
 	}
 	
-	public FlatBlockData getFlatData() {
-		return flatData;
+	public FlatBlockData getNewFlatData() {
+		return newFlatData;
 	}
 	
-	public void setFlatData(FlatBlockData flatData) {
-		this.flatData = flatData;
+	public void setNewFlatData(FlatBlockData newFlatData) {
+		this.newFlatData = newFlatData;
 	}
 
 	public void setBlock() {
-		block.setType(BukkitAdapter.asBukkitMaterial(flatData.getMaterial()));
-		BukkitAdapter.adapt(block).setBlockData(flatData);
-		block.update(true);
+		originalBlock.setType(BukkitAdapter.asBukkitMaterial(newFlatData.getMaterial()));
+		BukkitAdapter.adapt(originalBlock).setBlockData(newFlatData);
+		originalBlock.update(true);
 /*		if (ExplosionRegen.getInstance().getCoreProtect() != null) {
 			if (UpdateType.isPostUpdate(UpdateType.AQUATIC_UPDATE))
 				ExplosionRegen.getInstance().getCoreProtect().logRemoval("#explosionregen", block.getLocation(), block.getType(), BukkitAdapter.asBukkitBlockData(BukkitAdapter.adapt(block).getBlockData()));
