@@ -890,7 +890,7 @@ public class  ExplosionSettings {
 		config.set("regen.direction", getRegenerateDirection().name().toLowerCase());
 		config.set("regen.instant", isInstantRegen());
 		config.set("regen.max-block-regen-queue", getMaxBlockRegenQueue());
-		config.set("regen.force-block", getRegenForceBlock());
+		config.set("regen.force", getRegenForceBlock());
 		for(DamageCategory category : DamageCategory.values()) {
 			config.set("damage." + category.name().toLowerCase() + ".allow", getAllowDamage(category));
 			config.set("damage." + category.name().toLowerCase() + ".modifier", getDamageModifier(category).name().toLowerCase());
