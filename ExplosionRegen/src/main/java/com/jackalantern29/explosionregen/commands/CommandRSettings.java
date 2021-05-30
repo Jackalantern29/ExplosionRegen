@@ -9,7 +9,6 @@ import com.jackalantern29.explosionregen.api.inventory.ItemBuilder;
 import com.jackalantern29.explosionregen.api.inventory.SettingsMenu;
 import com.jackalantern29.explosionregen.api.inventory.SlotElement;
 import com.jackalantern29.flatx.api.FlatBlockData;
-import com.jackalantern29.flatx.bukkit.BukkitAdapter;
 import com.jackalantern29.flatx.bukkit.FlatBukkit;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -337,7 +336,7 @@ public class CommandRSettings implements TabExecutor {
 							} else if(args[2].equalsIgnoreCase("block")) {
 								if(args[3].equalsIgnoreCase("add")) {
 									if(sender instanceof Player) {
-										list.add(BukkitAdapter.adapt((Player)sender).getTargetBlock(null, 10).getBlockData().getAsString());
+										list.add(FlatBukkit.getPlayer(((Player)sender).getUniqueId()).getTargetBlock(null, 10).getBlockData().getAsString());
 									}
 								} else if(args[3].equalsIgnoreCase("remove")) {
 									ExplosionSettings settings = ExplosionSettings.getSettings(args[1]);
