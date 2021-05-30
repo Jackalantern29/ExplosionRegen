@@ -21,14 +21,14 @@ import com.jackalantern29.flatx.api.block.data.type.FlatBed;
 import com.jackalantern29.flatx.api.block.data.type.FlatPiston;
 import com.jackalantern29.flatx.api.enums.FlatMaterial;
 import com.jackalantern29.flatx.api.inventory.FlatInventory;
-import com.jackalantern29.flatx.bukkit.BukkitAdapter;
-import com.jackalantern29.flatx.bukkit.FlatBukkit;
-import com.jackalantern29.flatx.bukkit.VersionUtil;
+import com.jackalantern29.flatx.bukkit.*;
 import net.coreprotect.CoreProtectAPI;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.*;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -51,13 +51,18 @@ public class Explosion {
 	private RegenBlock previousBlock;
 	private long regenTick;
 	private double blockDamage;
-
+	private final FloatingText floatingText;
 	private static final List<Material> SUPPORT_NEED = new ArrayList<>();
 	static {
+
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(ExplosionRegen.getInstance(), () -> {
 			for(Explosion explosion : new ArrayList<>(ACTIVE_EXPLOSIONS)) {
+				for(Player player : Bukkit.getOnlinePlayers()) {
+					explosion.floatingText.addPlayer(player);
+				}
 				if (!explosion.getBlocks().isEmpty()) {
 					if (explosion.getRegenTick() > 0) {
+						explosion.floatingText.setText(ChatColor.translateAlternateColorCodes('&', explosion.getSettings().getDisplayHoloText().replace("{regen_delay}", "" + (int)(Math.ceil((double)(explosion.getRegenTick() / 20))))));
 						explosion.setRegenTick(explosion.getRegenTick() - 1);
 					} else {
 						if (explosion.getSettings().isInstantRegen()) {
@@ -87,6 +92,7 @@ public class Explosion {
 					ExplosionRegenFinishEvent e = new ExplosionRegenFinishEvent(explosion);
 					Bukkit.getPluginManager().callEvent(e);
 					explosion.remove();
+					explosion.floatingText.remove();
 				}
 
 				ExplosionBlockRegeneratingEvent event = new ExplosionBlockRegeneratingEvent(explosion);
@@ -156,7 +162,7 @@ public class Explosion {
 		this.location = location;
 		this.regenTick = settings.getRegenDelay();
 		this.blockList = blockList;
-
+		this.floatingText = FlatBukkit.createFloatingText(ChatColor.translateAlternateColorCodes('&', settings.getDisplayHoloText().replace("{regen_delay}", "" + (int)(Math.ceil((double)(regenTick / 20))))), location);
 		//If the block damaged was supporting a block, add the block that needed support
 /*		for(Block block : new ArrayList<>(blockList)) {
 			if(!blockList.contains(block.getRelative(1, 0, 0)) && SUPPORT_NEED.contains(block.getRelative(1, 0, 0).getType()))

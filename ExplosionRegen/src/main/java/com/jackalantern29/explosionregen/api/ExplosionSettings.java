@@ -9,7 +9,6 @@ import com.jackalantern29.explosionregen.api.inventory.*;
 import com.jackalantern29.explosionregen.commands.CommandRSettings;
 import com.jackalantern29.flatx.api.enums.FlatMaterial;
 import com.jackalantern29.flatx.bukkit.BukkitAdapter;
-import com.jackalantern29.flatx.bukkit.FlatBukkit;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
@@ -23,6 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -51,15 +51,14 @@ public class  ExplosionSettings {
 
 	private ItemStack displayItem;
 	private String displayName;
+	private String displayHoloText = "&fBlocks will regenerate in &c{regen_delay}s";
 
 	private final Map<String, ExplosionSettingsOverride> overrides = new HashMap<>();
 	private final ExplosionSettingsOverride conditions;
 
 	private SettingsMenu menu;
 
-	private boolean saveChanges = false;
-
-	private ExplosionSettings(String name, BlockSettings blockSettings) {
+	public ExplosionSettings(String name, BlockSettings blockSettings) {
 		this.name = name;
 		this.blockSettings = blockSettings;
 		this.displayName = name;
@@ -67,7 +66,6 @@ public class  ExplosionSettings {
 		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
 		setupInventory();
 		Bukkit.getPluginManager().callEvent(new ExplosionSettingsLoadEvent(this));
-		MAP.put(name, this);
 	}
 
 	private void setupInventory() {
@@ -642,132 +640,6 @@ public class  ExplosionSettings {
 		});
 	}
 
-	public void saveAsFile() {
-		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + name + ".yml");
-		if(!file.exists()) {
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-		LinkedHashMap<String, Object> map = new LinkedHashMap<>();
-		map.put("block-settings", getBlockSettings().getName().toLowerCase());
-		map.put("enable", getAllowExplosion());
-		map.put("display-name", getDisplayName());
-		map.put("display-item", getDisplayItem().getType().name().toLowerCase());
-		map.put("regen.allow", getAllowRegen());
-		map.put("regen.direction", getRegenerateDirection().name().toLowerCase());
-		map.put("regen.instant", isInstantRegen());
-		map.put("regen.delay", getRegenDelay());
-		map.put("regen.max-block-regen-queue", getMaxBlockRegenQueue());
-		map.put("regen.force-block", getRegenForceBlock());
-		for(DamageCategory category : DamageCategory.values()) {
-			map.put("damage." + category.name().toLowerCase() + ".allow", getAllowDamage(category));
-			map.put("damage." + category.name().toLowerCase() + ".modifier", getDamageModifier(category).name().toLowerCase());
-			map.put("damage." + category.name().toLowerCase() + ".amount", getDamageAmount(category));
-		}
-		for(ExplosionSettingsOverride override : getOverrides()) {
-			map.put("override." + override.getName() + ".settings", override.getExplosionSettings().getName());
-		}
-		boolean doSave = false;
-		for(Map.Entry<String, Object> entry : new HashSet<>(map.entrySet())) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			Object valueKey = config.get(key);
-
-			if(value instanceof Float)
-				value = ((Float) value).doubleValue();
-			else if(value instanceof Long)
-				value = ((Long) value).intValue();
-
-			if(valueKey instanceof Float)
-				valueKey = ((Float) valueKey).doubleValue();
-			else if(valueKey instanceof Long)
-				valueKey = ((Long) valueKey).intValue();
-			if(!config.contains(key) || (!valueKey.equals(value) && saveChanges)) {
-				config.set(key, value); doSave = true;
-			}
-			map.remove(key);
-		}
-		for(ExplosionSettingsPlugin plugin : plugins.values()) {
-			for(Map.Entry<String, Object> entry : plugin.getEntries()) {
-				String key = plugin.getName().toLowerCase() + "." + entry.getKey();
-				Object value = entry.getValue();
-				Object valueKey = config.get(key);
-
-				if(value instanceof Float)
-					value = ((Float) value).doubleValue();
-				else if(value instanceof Long)
-					value = ((Long) value).intValue();
-
-				if(valueKey instanceof Float)
-					valueKey = ((Float) valueKey).doubleValue();
-				else if(valueKey instanceof Long)
-					valueKey = ((Long) valueKey).intValue();
-				if(!config.contains(key) || !valueKey.equals(value)) {
-					config.set(key, value); doSave = true;
-				}
-			}
-		}
-		for(ExplosionCondition condition : getConditions().getConditions()) {
-			String key = "conditions." + condition.name().toLowerCase();
-			Object value = getConditions().getSimpleConditionValue(condition);
-			Object valueKey = config.get(key);
-
-			if(value instanceof Float)
-				value = ((Float) value).doubleValue();
-			else if(value instanceof Long)
-				value = ((Long) value).intValue();
-
-			if(valueKey instanceof Float)
-				valueKey = ((Float) valueKey).doubleValue();
-			else if(valueKey instanceof Long)
-				valueKey = ((Long) valueKey).intValue();
-			if(!config.contains(key) || !valueKey.equals(value)) {
-				config.set(key, value); doSave = true;
-			}
-			for(String keyy : config.getConfigurationSection("conditions").getKeys(false)) {
-				if(!getConditions().hasCondition(ExplosionCondition.valueOf(keyy.toUpperCase()))) {
-					config.set(key, null); doSave = true;
-				}
-			}
-		}
-		for(ExplosionSettingsOverride override : getOverrides()) {
-			for(ExplosionCondition condition : override.getConditions()) {
-				String key = "override." + override.getName() + ".conditions." + condition.name().toLowerCase();
-				Object value = override.getSimpleConditionValue(condition);
-				Object valueKey = config.get(key);
-
-				if(value instanceof Float)
-					value = ((Float) value).doubleValue();
-				else if(value instanceof Long)
-					value = ((Long) value).intValue();
-
-				if(valueKey instanceof Float)
-					valueKey = ((Float) valueKey).doubleValue();
-				else if(valueKey instanceof Long)
-					valueKey = ((Long) valueKey).intValue();
-				if(!config.contains(key) || !valueKey.equals(value)) {
-					config.set(key, value); doSave = true;
-				}
-				for(String keyy : config.getConfigurationSection("override." + override.getName() + ".conditions").getKeys(false)) {
-					if(!override.hasCondition(ExplosionCondition.valueOf(keyy.toUpperCase()))) {
-						config.set(key, null); doSave = true;
-					}
-				}
-			}
-		}
-		if(doSave) {
-			try {
-				config.save(file);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -815,7 +687,6 @@ public class  ExplosionSettings {
 
 	public void setBlockSettings(BlockSettings blockSettings) {
 		this.blockSettings = blockSettings;
-		saveChanges = true;
 	}
 
 	public String getDisplayName() {
@@ -824,7 +695,6 @@ public class  ExplosionSettings {
 
 	public void setDisplayName(String value) {
 		displayName = value;
-		saveChanges = true;
 	}
 
 	/**
@@ -841,7 +711,6 @@ public class  ExplosionSettings {
 	 */
 	public void setAllowExplosion(boolean value) {
 		enable = value;
-		saveChanges = true;
 	}
 
 	public boolean getAllowRegen() {
@@ -850,7 +719,6 @@ public class  ExplosionSettings {
 
 	public void setAllowRegen(boolean value) {
 		regenAllow = value;
-		saveChanges = true;
 	}
 
 	public GenerateDirection getRegenerateDirection() {
@@ -859,7 +727,6 @@ public class  ExplosionSettings {
 
 	public void setRegenerateDirection(GenerateDirection direction) {
 		regenDirection = direction;
-		saveChanges = true;
 	}
 	
 	public boolean isInstantRegen() {
@@ -868,7 +735,6 @@ public class  ExplosionSettings {
 
 	public void setInstantRegen(boolean value) {
 		regenInstant = value;
-		saveChanges = true;
 	}
 	
 	public long getRegenDelay() {
@@ -877,7 +743,6 @@ public class  ExplosionSettings {
 
 	public void setRegenDelay(long value) {
 		regenDelay = value;
-		saveChanges = true;
 	}
 	
 	public int getMaxBlockRegenQueue() {
@@ -887,12 +752,10 @@ public class  ExplosionSettings {
 
 	public void setMaxBlockRegenQueue(int value) {
 		regenMaxBlockQueue = value;
-		saveChanges = true;
 	}
 
 	public void setRegenForceBlock(boolean value) {
 		this.regenForceBlock = value;
-		saveChanges = true;
 	}
 
 	public boolean getRegenForceBlock() {
@@ -915,7 +778,6 @@ public class  ExplosionSettings {
 			damageEntityAllow = value;
 			break;
 		}
-		saveChanges = true;
 	}
 	
 	public DamageModifier getDamageModifier(DamageCategory category) {
@@ -935,7 +797,6 @@ public class  ExplosionSettings {
 			damageEntityModifier = value;
 			break;
 		}
-		saveChanges = true;
 	}
 
 	public double getDamageAmount(DamageCategory category) {
@@ -955,7 +816,6 @@ public class  ExplosionSettings {
 			damageEntityAmount = value;
 			break;
 		}
-		saveChanges = true;
 	}
 	
 	public ItemStack getDisplayItem() {
@@ -966,7 +826,14 @@ public class  ExplosionSettings {
 		if(item != null && item.getType() != BukkitAdapter.asBukkitMaterial(FlatMaterial.AIR)) {
 			displayItem = new ItemBuilder(item).setDisplayName(getDisplayName()).build();
 		}
-		saveChanges = true;
+	}
+
+	public String getDisplayHoloText() {
+		return displayHoloText;
+	}
+
+	public void setDisplayHoloText(String text) {
+		displayHoloText = text;
 	}
 
 	public void addOrSetOverride(ExplosionSettingsOverride override) {
@@ -979,22 +846,18 @@ public class  ExplosionSettings {
 			newOverride = override;
 			overrides.put(newOverride.getName(), newOverride);
 		}
-		saveChanges = true;
 	}
 
 	public void addOrSetCondition(ExplosionSettingsOverride override) {
 		for(ExplosionCondition condition : override.getConditions())
 			conditions.setCondition(condition, override.getConditionValue(condition));
-		saveChanges = true;
 	}
 
 	public void removeOverride(String name) {
 		overrides.remove(name);
-		saveChanges = true;
 	}
 	public void removeCondition(ExplosionCondition condition) {
 		conditions.removeCondition(condition);
-		saveChanges = true;
 	}
 	
 	public Collection<ExplosionSettingsOverride> getOverrides() {
@@ -1009,62 +872,156 @@ public class  ExplosionSettings {
 		return menu;
 	}
 
-	public static ExplosionSettings registerSettings(String name) {
-		return registerSettings(name, BlockSettings.getBlockSettings().iterator().next());
-	}
-	public static ExplosionSettings registerSettings(String name, BlockSettings blockSettings) {
-		if(getSettings(name) != null)
-			return getSettings(name);
-		ExplosionSettings settings = new ExplosionSettings(name, blockSettings);
-		Bukkit.getConsoleSender().sendMessage("[ExplosionRegen] Registered Explosion Settings for '" + name + "' using '" + settings.getBlockSettings().getName() + "' block settings.");
-		return settings;
-	}
+	public void saveAsFile() {
+		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + name + ".yml");
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 
-	public static ExplosionSettings registerSettings(File file) throws IOException {
-		ExplosionSettings settings;
-		String name = file.getName().substring(0, file.getName().length()-4);
-		if(file.exists()) {
-			YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-			String blockSettings = config.getString("block-settings", "default");
-			settings = registerSettings(name, BlockSettings.getSettings(blockSettings));
-			settings.setAllowExplosion(config.getBoolean("enable", settings.getAllowExplosion()));
-			settings.setDisplayName(config.getString("display-name", settings.getDisplayName()));
-			settings.setDisplayItem(new ItemStack(Material.valueOf(config.getString("display-item", settings.getDisplayItem().getType().name()).toUpperCase())));
-			settings.setAllowRegen(config.getBoolean("regen.allow", settings.getAllowRegen()));
-			settings.setRegenerateDirection(GenerateDirection.valueOf(config.getString("regen.direction", settings.getRegenerateDirection().name()).toUpperCase()));
-			settings.setInstantRegen(config.getBoolean("regen.instant", settings.isInstantRegen()));
-			settings.setRegenDelay(config.getLong("regen.delay", settings.getRegenDelay()));
-			settings.setMaxBlockRegenQueue(config.getInt("regen.max-block-regen-queue", settings.getMaxBlockRegenQueue()));
-			settings.setRegenForceBlock(config.getBoolean("regen.force-block", settings.getRegenForceBlock()));
-			for(DamageCategory category : DamageCategory.values()) {
-				settings.setAllowDamage(category, config.getBoolean("damage." + category.name().toLowerCase() + ".allow", settings.getAllowDamage(category)));
-				settings.setDamageModifier(category, DamageModifier.valueOf(config.getString("damage." + category.name().toLowerCase() + ".modifier", settings.getDamageModifier(category).name()).toUpperCase()));
-				settings.setDamageAmount(category, config.getDouble("damage." + category.name().toLowerCase() + ".amount", settings.getDamageAmount(category)));
+		config.set("block-settings", getBlockSettings().getName().toLowerCase());
+		config.set("enable", getAllowExplosion());
+		config.set("display.item", getDisplayItem().getType().name().toLowerCase());
+		config.set("display.name", getDisplayName());
+		config.set("display.holo-text", getDisplayHoloText());
+		config.set("regen.allow", getAllowRegen());
+		config.set("regen.direction", getRegenerateDirection().name().toLowerCase());
+		config.set("regen.instant", isInstantRegen());
+		config.set("regen.max-block-regen-queue", getMaxBlockRegenQueue());
+		config.set("regen.force-block", getRegenForceBlock());
+		for(DamageCategory category : DamageCategory.values()) {
+			config.set("damage." + category.name().toLowerCase() + ".allow", getAllowDamage(category));
+			config.set("damage." + category.name().toLowerCase() + ".modifier", getDamageModifier(category).name().toLowerCase());
+			config.set("damage." + category.name().toLowerCase() + ".amount", getDamageAmount(category));
+		}
+		Set<String> condKeys = config.isConfigurationSection("override") ? config.getConfigurationSection("override").getKeys(false) : new HashSet<>();
+		for(ExplosionCondition condition : getConditions().getConditions()) {
+			config.set("conditions." + condition.name().toLowerCase(), getConditions().getSimpleConditionValue(condition));
+			condKeys.remove(condition.name().toLowerCase());
+		}
+		Set<String> overKeys = config.isConfigurationSection("override") ? config.getConfigurationSection("override").getKeys(false) : new HashSet<>();
+		for(ExplosionSettingsOverride override : getOverrides()) {
+			config.set("override." + override.getName() + ".settings", override.getExplosionSettings().getName());
+			Set<String> overCondKeys = config.getConfigurationSection("override." + override.getName() + ".conditions").getKeys(false);
+			for(ExplosionCondition condition : override.getConditions()) {
+				config.set("override." + override.getName() + ".conditions." + condition.name().toLowerCase(), override.getSimpleConditionValue(condition));
+				overCondKeys.remove(condition.name().toLowerCase());
 			}
+			for(String key : overCondKeys)
+				config.set("override." + override.getName() + ".conditions." + key, null);
+			overKeys.remove(override.getName());
+		}
+		for(String key : overKeys)
+			config.set("override." + key, null);
+		for(String key : condKeys)
+			config.set("conditions." + key, null);
 
-			if(config.isConfigurationSection("conditions")) {
-				ExplosionSettingsOverride override = settings.getConditions();
-				for(String key : config.getConfigurationSection("conditions").getKeys(false)) {
-					ExplosionCondition condition = ExplosionCondition.valueOf(key.toUpperCase());
+		//TODO save ExplosionSettingsPlugin data
+		try {
+			config.save(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		registerSettings(this);
+	}
+
+	private static void registerSettings(ExplosionSettings settings) {
+		if(!MAP.containsKey(settings.getName()))
+			Bukkit.getConsoleSender().sendMessage("[ExplosionRegen] Registered Explosion Settings for '" + settings.getName() + "' using '" + settings.getBlockSettings().getName() + "' block settings.");
+		MAP.put(settings.getName(), settings);
+	}
+
+	public static ExplosionSettings loadFromFile(File file) {
+		if(file == null) {
+			try {
+				throw new FileNotFoundException("Could not find file.");
+			} catch (FileNotFoundException ignored) {
+				return null;
+			}
+		}
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+		BlockSettings blockSettings = BlockSettings.getSettings("default");
+		if(config.contains("block-settings") && BlockSettings.getSettings(config.getString("block-settings")) != null)
+			blockSettings = BlockSettings.getSettings(config.getString("block-settings"));
+
+		ExplosionSettings settings = new ExplosionSettings(file.getName().substring(0, file.getName().length()-4), blockSettings);
+		settings.setAllowExplosion(config.getBoolean("enable", settings.getAllowExplosion()));
+		settings.setDisplayName(config.getString("display.name", settings.getDisplayName()));
+		settings.setDisplayItem(new ItemStack(BukkitAdapter.asBukkitMaterial(FlatMaterial.valueOf(config.getString("display.item", settings.getDisplayItem().getType().name()).toUpperCase()))));
+		settings.setDisplayHoloText(config.getString("display.holo-text", settings.getDisplayHoloText()));
+		settings.setAllowRegen(config.getBoolean("regen.allow", settings.getAllowRegen()));
+		settings.setRegenerateDirection(GenerateDirection.valueOf(config.getString("regen.direction", settings.getRegenerateDirection().name()).toUpperCase()));
+		settings.setInstantRegen(config.getBoolean("regen.instant", settings.isInstantRegen()));
+		settings.setRegenDelay(config.getLong("regen.delay", settings.getRegenDelay()));
+		settings.setMaxBlockRegenQueue(config.getInt("regen.max-block-regen-queue", settings.getMaxBlockRegenQueue()));
+		settings.setRegenForceBlock(config.getBoolean("regen.force", settings.getRegenForceBlock()));
+		for(DamageCategory category : DamageCategory.values()) {
+			settings.setAllowDamage(category, config.getBoolean("damage." + category.name().toLowerCase() + ".allow", settings.getAllowDamage(category)));
+			settings.setDamageModifier(category, DamageModifier.valueOf(config.getString("damage." + category.name().toLowerCase() + ".modifier", settings.getDamageModifier(category).name()).toUpperCase()));
+			settings.setDamageAmount(category, config.getDouble("damage." + category.name().toLowerCase() + ".amount", settings.getDamageAmount(category)));
+		}
+		if(config.isConfigurationSection("conditions")) {
+			ExplosionSettingsOverride override = settings.getConditions();
+			for(String key : config.getConfigurationSection("conditions").getKeys(false)) {
+				ExplosionCondition condition = ExplosionCondition.valueOf(key.toUpperCase());
+				Object value = null;
+				switch(condition) {
+					case CUSTOM_NAME:
+						value = config.get("conditions." + key);
+						break;
+					case ENTITY:
+						value = EntityType.valueOf(config.getString("conditions." + key).toUpperCase());
+						break;
+					case BLOCK:
+						value = Material.getMaterial(config.getString("conditions." + key).toUpperCase());
+						break;
+					case IS_CHARGED:
+						value = config.getBoolean("conditions." + key);
+						break;
+					case WEATHER:
+						value = WeatherType.valueOf(config.getString("conditions." + key).toUpperCase());
+						break;
+					case WORLD:
+						value = Bukkit.getWorld(config.getString("conditions." + key));
+						break;
+					case MINX:
+					case MAXX:
+					case MINY:
+					case MAXY:
+					case MINZ:
+					case MAXZ:
+						value = config.getDouble("conditions." + key);
+				}
+				override.setCondition(condition, value);
+			}
+			settings.addOrSetCondition(override);
+		}
+		if(config.isConfigurationSection("override")) {
+			for(String key : config.getConfigurationSection("override").getKeys(false)) {
+				ExplosionSettingsOverride override = new ExplosionSettingsOverride(key, ExplosionSettings.getSettings(config.getString("override." + key + ".settings")));//addOverride(key, t);
+				for(String k : config.getConfigurationSection("override." + key + ".conditions").getKeys(false)) {
+					ExplosionCondition condition = ExplosionCondition.valueOf(k.toUpperCase());
 					Object value = null;
 					switch(condition) {
 						case CUSTOM_NAME:
-							value = config.get("conditions." + key);
+							value = config.get("override." + key + ".conditions." + k);
 							break;
 						case ENTITY:
-							value = EntityType.valueOf(config.getString("conditions." + key).toUpperCase());
+							value = EntityType.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
 							break;
 						case BLOCK:
-							value = Material.getMaterial(config.getString("conditions." + key).toUpperCase());
+							value = Material.getMaterial(config.getString("override." + key + ".conditions." + k).toUpperCase());
 							break;
 						case IS_CHARGED:
-							value = config.getBoolean("conditions." + key);
+							value = config.getBoolean("override." + key + ".conditions." + k);
 							break;
 						case WEATHER:
-							value = WeatherType.valueOf(config.getString("conditions." + key).toUpperCase());
+							value = WeatherType.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
 							break;
 						case WORLD:
-							value = Bukkit.getWorld(config.getString("conditions." + key));
+							value = Bukkit.getWorld(config.getString("override." + key + ".conditions." + k));
 							break;
 						case MINX:
 						case MAXX:
@@ -1072,60 +1029,14 @@ public class  ExplosionSettings {
 						case MAXY:
 						case MINZ:
 						case MAXZ:
-							value = config.getDouble("conditions." + key);
+							value = config.getDouble("override." + key + ".conditions." + k);
 					}
 					override.setCondition(condition, value);
 				}
-				settings.addOrSetCondition(override);
+				settings.addOrSetOverride(override);
 			}
-			if(config.isConfigurationSection("override")) {
-				for(String key : config.getConfigurationSection("override").getKeys(false)) {
-					ExplosionSettingsOverride override = new ExplosionSettingsOverride(key, ExplosionSettings.registerSettings(config.getString("override." + key + ".settings")));//addOverride(key, t);
-					for(String k : config.getConfigurationSection("override." + key + ".conditions").getKeys(false)) {
-						ExplosionCondition condition = ExplosionCondition.valueOf(k.toUpperCase());
-						Object value = null;
-						switch(condition) {
-							case CUSTOM_NAME:
-								value = config.get("override." + key + ".conditions." + k);
-								break;
-							case ENTITY:
-								value = EntityType.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
-								break;
-							case BLOCK:
-								value = Material.getMaterial(config.getString("override." + key + ".conditions." + k).toUpperCase());
-								break;
-							case IS_CHARGED:
-								value = config.getBoolean("override." + key + ".conditions." + k);
-								break;
-							case WEATHER:
-								value = WeatherType.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
-								break;
-							case WORLD:
-								value = Bukkit.getWorld(config.getString("override." + key + ".conditions." + k));
-								break;
-							case MINX:
-							case MAXX:
-							case MINY:
-							case MAXY:
-							case MINZ:
-							case MAXZ:
-								value = config.getDouble("override." + key + ".conditions." + k);
-						}
-						override.setCondition(condition, value);
-					}
-					settings.addOrSetOverride(override);
-				}
-			}
-			settings.saveChanges = false;
-			return settings;
-		} else {
-			file.createNewFile();
-			return registerSettings(name, BlockSettings.getSettings("default"));
 		}
-	}
-	public static ExplosionSettings registerSettings(File file, BlockSettings blockSettings) throws IOException {
-		ExplosionSettings settings = registerSettings(file);
-		settings.setBlockSettings(blockSettings);
+		registerSettings(settings);
 		return settings;
 	}
 

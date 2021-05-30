@@ -87,7 +87,7 @@ public class CommandRSettings implements TabExecutor {
 					String name = args[2];
 					if(type.equalsIgnoreCase("explosion")) {
 						BlockSettings blockSettings = args.length >= 4 ? BlockSettings.getSettings(args[3]) : BlockSettings.getSettings("default");
-						ExplosionSettings settings = ExplosionSettings.registerSettings(name, blockSettings);
+						ExplosionSettings settings = new ExplosionSettings(name, blockSettings);
 						settings.saveAsFile();
 						sender.sendMessage("Registered Explosion Settings '" + settings.getName() + "' using '" + settings.getBlockSettings().getName() + "' block settings.");
 					} else if(type.equalsIgnoreCase("block")) {

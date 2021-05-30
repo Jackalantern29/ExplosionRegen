@@ -2,8 +2,6 @@ package com.jackalantern29.explosionregen.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 import org.bukkit.Bukkit;
@@ -44,6 +42,7 @@ public class ExplosionRegenSettings {
 		}
 		try {
 			new File(blocksFolder, "default.yml").createNewFile();
+			new File(explosionsFolder, "default.yml").createNewFile();
 		} catch (IOException ignored) {
 		}
 		if(!configFile.exists())
@@ -84,17 +83,8 @@ public class ExplosionRegenSettings {
 		for(File file : Objects.requireNonNull(blocksFolder.listFiles())) {
 			BlockSettings.loadFromFile(file);
 		}
-		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + "default.yml");
-		List<File> fileList = new ArrayList<>(Arrays.asList(explosionsFolder.listFiles()));
-		if(!fileList.contains(file))
-			fileList.add(file);
-		for(File f : fileList) {
-			try {
-				ExplosionSettings settings = ExplosionSettings.registerSettings(f);
-				settings.saveAsFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		for(File f : Objects.requireNonNull(explosionsFolder.listFiles())) {
+			ExplosionSettings.loadFromFile(f);
 		}
 		if(getAllowProfileSettings()) {
 			if(!profileFolder.exists())
