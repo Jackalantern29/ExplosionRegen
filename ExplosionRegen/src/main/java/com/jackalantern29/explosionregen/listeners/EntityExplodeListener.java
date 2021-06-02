@@ -1,9 +1,11 @@
 package com.jackalantern29.explosionregen.listeners;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.jackalantern29.explosionregen.api.Explosion;
+import com.jackalantern29.explosionregen.api.ExplosionCondition;
+import com.jackalantern29.explosionregen.api.ExplosionOverride;
 import com.jackalantern29.explosionregen.api.enums.DamageCategory;
 import com.jackalantern29.explosionregen.api.events.ExplosionDamageEntityEvent;
 import com.jackalantern29.flatx.api.enums.FlatMaterial;
@@ -29,7 +31,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
-import com.jackalantern29.explosionregen.api.ExplosionSettingsOverride;
 import com.jackalantern29.explosionregen.api.ExplosionSettings;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -82,8 +83,8 @@ public class EntityExplodeListener implements Listener {
 		}
 		//Start with default explosion before checking source modification.
 		ExplosionSettings settings = ExplosionSettings.getSettings("default");
-		if(settings.getConditions() != null) {
-			if(!settings.getConditions().doMeetConditions(what))
+		if(settings.getCondition() != null) {
+			if(!settings.getCondition().doMeetConditions(what))
 				return;
 		}
 		settings = calculateOverrides(settings, what);
@@ -91,7 +92,7 @@ public class EntityExplodeListener implements Listener {
 			((Cancellable)event).setCancelled(true);
 			return;
 		}
-		if(!settings.getConditions().doMeetConditions(what))
+		if(!settings.getCondition().doMeetConditions(what))
 			return;
 		Explosion explosion = new Explosion(settings, what, location, blockList);
 
@@ -118,12 +119,11 @@ public class EntityExplodeListener implements Listener {
 
 		if(source instanceof Entity) {
 			int conditions = 0;
-			for(ExplosionSettingsOverride override : new ArrayList<>(settings.getOverrides())) {
-				if(override.doMeetConditions(source)) {
-					if(override.countConditions() > conditions) {
-						conditions = override.countConditions();
-						newSettings = override.getExplosionSettings();
-					}
+			for(Map.Entry<String, ExplosionOverride> override : settings.getOverrides()) {
+				ExplosionCondition condition = override.getValue().getCondition();
+				if(condition.doMeetConditions(source) && condition.countConditions() > conditions) {
+					conditions = condition.countConditions();
+					newSettings = override.getValue().getSettings();
 				}
 			}
 		}
@@ -147,8 +147,8 @@ public class EntityExplodeListener implements Listener {
 			location = clickedBlock.getLocation();
 		} else
 			return;
-		if(settings.getConditions() != null) {
-			if(!settings.getConditions().doMeetConditions(what))
+		if(settings.getCondition() != null) {
+			if(!settings.getCondition().doMeetConditions(what))
 				return;
 		}
 		settings = calculateOverrides(settings, what);

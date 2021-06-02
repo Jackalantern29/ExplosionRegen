@@ -24,7 +24,7 @@ import org.bukkit.util.StringUtil;
 
 import com.jackalantern29.explosionregen.ExplosionRegen;
 import com.jackalantern29.explosionregen.api.enums.WeatherType;
-import com.jackalantern29.explosionregen.api.enums.ExplosionCondition;
+import com.jackalantern29.explosionregen.api.enums.Condition;
 
 public class CommandRSettings implements TabExecutor {
 
@@ -120,8 +120,8 @@ public class CommandRSettings implements TabExecutor {
 						return true;
 					}
 					if(option.equalsIgnoreCase("condition")) {
-						ExplosionCondition condition = args.length >= 5 ? ExplosionCondition.valueOf(args[4].toUpperCase()) : null;
-						if(condition == null) {
+						Condition cond = args.length >= 5 ? Condition.valueOf(args[4].toUpperCase()) : null;
+						if(cond == null) {
 							sender.sendMessage("§cCondition not valid.");
 							return true;
 						}
@@ -131,48 +131,20 @@ public class CommandRSettings implements TabExecutor {
 								sender.sendMessage("§cValue not valid.");
 								return true;
 							}
-							ExplosionSettingsOverride conditions = settings.getConditions();
-							Object value = null;
-							switch(condition) {
-							case CUSTOM_NAME:
-								value = valueArg;
-								break;
-							case BLOCK:
-								value = Material.valueOf(valueArg.toUpperCase());
-								break;
-							case ENTITY:
-								value = EntityType.valueOf(valueArg.toUpperCase());
-								break;
-							case IS_CHARGED:
-								value = Boolean.valueOf(valueArg);
-								break;
-							case WEATHER:
-								value = org.bukkit.WeatherType.valueOf(valueArg);
-								break;
-							case WORLD:
-								value = Bukkit.getWorld(valueArg);
-								break;
-							case MAXX:
-							case MINX:
-							case MAXY:
-							case MINY:
-							case MAXZ:
-							case MINZ:
-								value = Double.valueOf(valueArg);
-								break;
-							}
-							conditions.setCondition(condition, value);
-							settings.addOrSetCondition(conditions);
+							boolean allow = !valueArg.startsWith("!");
+							valueArg = !allow ? valueArg.substring(1) : valueArg;
+							ExplosionCondition condition = settings.getCondition();
+							setCondition(condition, cond, valueArg, allow);
 							sender.sendMessage("Added New Condition.");
 						} else if(action.equalsIgnoreCase("remove")) {
-							settings.removeCondition(condition);
+							settings.getCondition().removeCondition(cond);
 							return true;
 						}
 					} else if(option.equalsIgnoreCase("override")) {
 						String overrideName = args.length >= 5 ? args[4] : null;
 						if(action.equalsIgnoreCase("set")) {
 							ExplosionSettings overrideWith = args.length >= 6 ? ExplosionSettings.getSettings(args[5]) : null;
-							ExplosionCondition condition = args.length >= 7 ? ExplosionCondition.valueOf(args[6].toUpperCase()) : null;
+							Condition cond = args.length >= 7 ? Condition.valueOf(args[6].toUpperCase()) : null;
 							String valueArg = args.length >= 8 ? args[7] : null;
 							if(args.length == 4) {
 								sender.sendMessage("§cName not valid.");
@@ -182,7 +154,7 @@ public class CommandRSettings implements TabExecutor {
 								sender.sendMessage("§cSettings not valid.");
 								return true;
 							}
-							if(condition == null) {
+							if(cond == null) {
 								sender.sendMessage("§cCondition not valid.");
 								return true;
 							}
@@ -190,47 +162,21 @@ public class CommandRSettings implements TabExecutor {
 								sender.sendMessage("§cValue not valid.");
 								return true;
 							}
-							ExplosionSettingsOverride override = null;
-							for(ExplosionSettingsOverride ovr : settings.getOverrides()) {
-								if(ovr.getName().equalsIgnoreCase(overrideName))
-									override = ovr;
+							boolean allow = !valueArg.startsWith("!");
+							valueArg = !allow ? valueArg.substring(1) : valueArg;
+							ExplosionCondition condition;
+							ExplosionOverride override;
+							if(settings.getOverride(overrideName) == null) {
+								condition = new ExplosionCondition();
+								override = new ExplosionOverride(condition, overrideWith);
+							} else {
+								override = settings.getOverride(overrideName);
+								condition = override.getCondition();
 							}
-							if(override == null)
-								override = new ExplosionSettingsOverride(overrideName, overrideWith);
-							Object value = null;
-							switch(condition) {
-							case CUSTOM_NAME:
-								value = valueArg;
-								break;
-							case BLOCK:
-								value = Material.valueOf(valueArg.toUpperCase());
-								break;
-							case ENTITY:
-								value = EntityType.valueOf(valueArg.toUpperCase());
-								break;
-							case IS_CHARGED:
-								value = Boolean.valueOf(valueArg);
-								break;
-							case WEATHER:
-								value = org.bukkit.WeatherType.valueOf(valueArg);
-								break;
-							case WORLD:
-								value = Bukkit.getWorld(valueArg);
-								break;
-							case MAXX:
-							case MINX:
-							case MAXY:
-							case MINY:
-							case MAXZ:
-							case MINZ:
-								value = Double.valueOf(valueArg);
-								break;
-							}
-							override.setCondition(condition, value);
-							settings.addOrSetOverride(override);
+							setCondition(condition, cond, valueArg, allow);
 							sender.sendMessage("Override Condition Set.");
 						} else if(action.equalsIgnoreCase("remove")) {
-							settings.removeOverride(overrideName);
+							settings.setOverride(overrideName, null);
 							return true;
 						}
 					} else if(option.equalsIgnoreCase("block")) {
@@ -276,6 +222,37 @@ public class CommandRSettings implements TabExecutor {
 			}
 		}
 		return true;
+	}
+
+	private void setCondition(ExplosionCondition condition, Condition cond, String valueArg, boolean allow) {
+		Object value = null;
+		switch(cond) {
+		case CUSTOM_NAME:
+		case WORLD:
+			value = valueArg;
+			break;
+		case BLOCK:
+			value = Material.valueOf(valueArg.toUpperCase());
+			break;
+		case ENTITY:
+			value = EntityType.valueOf(valueArg.toUpperCase());
+			break;
+		case IS_CHARGED:
+			value = Boolean.valueOf(valueArg);
+			break;
+		case WEATHER:
+			value = WeatherType.valueOf(valueArg);
+			break;
+		case MAXX:
+		case MINX:
+		case MAXY:
+		case MINY:
+		case MAXZ:
+		case MINZ:
+			value = Double.valueOf(valueArg);
+			break;
+		}
+		condition.setCondition(cond, value, allow);
 	}
 
 	@Override
@@ -331,7 +308,7 @@ public class CommandRSettings implements TabExecutor {
 								else
 									list.add(args[4] + " <settings> <condition> <value>");
 							} else if(args[2].equalsIgnoreCase("condition")) {
-								for(ExplosionCondition condition : ExplosionCondition.values())
+								for(Condition condition : Condition.values())
 									list.add(condition.name().toLowerCase());
 							} else if(args[2].equalsIgnoreCase("block")) {
 								if(args[3].equalsIgnoreCase("add")) {
@@ -352,7 +329,7 @@ public class CommandRSettings implements TabExecutor {
 								for(ExplosionSettings settings : ExplosionSettings.getRegisteredSettings())
 									list.add(settings.getName());
 							} else if(args[2].equalsIgnoreCase("condition")) {
-								switch(ExplosionCondition.valueOf(args[4].toUpperCase())) {
+								switch(Condition.valueOf(args[4].toUpperCase())) {
 								case CUSTOM_NAME:
 									if(args[5].length() == 0)
 										list.add("<custom name>");
@@ -393,13 +370,13 @@ public class CommandRSettings implements TabExecutor {
 							return StringUtil.copyPartialMatches(args[5], list, new ArrayList<>(list.size()));
 						} else if(args.length == 7) {
 							if(args[2].equalsIgnoreCase("override")) {
-								for(ExplosionCondition condition : ExplosionCondition.values())
+								for(Condition condition : Condition.values())
 									list.add(condition.name().toLowerCase());
 							}
 							return StringUtil.copyPartialMatches(args[6], list, new ArrayList<>(list.size()));
 						} else if(args.length == 8) {
 							if(args[2].equalsIgnoreCase("override")) {
-								switch(ExplosionCondition.valueOf(args[6].toUpperCase())) {
+								switch(Condition.valueOf(args[6].toUpperCase())) {
 								case CUSTOM_NAME:
 									if(args[7].length() == 0)
 										list.add("<custom name>");

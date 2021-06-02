@@ -53,8 +53,8 @@ public class  ExplosionSettings {
 	private String displayName;
 	private String displayHoloText = "&fBlocks will regenerate in &c{regen_delay}s";
 
-	private final Map<String, ExplosionSettingsOverride> overrides = new HashMap<>();
-	private final ExplosionSettingsOverride conditions;
+	private final Map<String, ExplosionOverride> overrideMap = new HashMap<>();
+	private final ExplosionCondition condition;
 
 	private SettingsMenu menu;
 
@@ -63,17 +63,17 @@ public class  ExplosionSettings {
 		this.blockSettings = blockSettings;
 		this.displayName = name;
 		this.displayItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.TNT)).setDisplayName(name).build();
-		this.conditions = new ExplosionSettingsOverride(name + "-conditions", this);
+		this.condition = new ExplosionCondition();
 		setupInventory();
 		Bukkit.getPluginManager().callEvent(new ExplosionSettingsLoadEvent(this));
 	}
-
+	//TODO Implement support for configuring conditions/overrides from inventory menu
 	private void setupInventory() {
 		this.menu = new SettingsMenu(getDisplayName(), 54);
 		PageMenu bsMenu = new PageMenu(getDisplayName() + " §l[Block Settings]", 54);
 		PageMenu pluginMenu = new PageMenu(getDisplayName() + " §l[Plugins]", 18);
-		PageMenu conditionMenu = new PageMenu(getDisplayName() + " §l[Conditions]", 18);
-		PageMenu overrideMenu = new PageMenu(getDisplayName() + " §l[Overrides]", 18);
+/*		PageMenu conditionMenu = new PageMenu(getDisplayName() + " §l[Conditions]", 18);
+		PageMenu overrideMenu = new PageMenu(getDisplayName() + " §l[Overrides]", 18);*/
 		ItemStack closeItem = new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BARRIER)).setDisplayName("§c§lClose Menu").build();
 
 		// Sets the main menu
@@ -160,14 +160,14 @@ public class  ExplosionSettings {
 				data.getWhoClicked().openInventory(CommandRSettings.inventoryMenu);
 				return true;
 			}));
-			menu.setItem(12, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fConditions").build(), data -> {
+/*			menu.setItem(12, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§fConditions").build(), data -> {
 				conditionMenu.sendInventory(data.getWhoClicked(), true);
 				return true;
 			}));
 			menu.setItem(14, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BOOK)).setDisplayName("§fOverrides").build(), data -> {
 				overrideMenu.sendInventory(data.getWhoClicked(), true);
 				return true;
-			}));
+			}));*/
 			menu.setItem(18, new SlotElement(allowRegenItem, data -> {
 				setAllowRegen(!getAllowRegen());
 				menu.update("menu");
@@ -467,10 +467,10 @@ public class  ExplosionSettings {
 		});
 		pluginMenu.setNextPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aNext Page").build());
 		pluginMenu.setPrevPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aBack Page").build());
-		conditionMenu.setNextPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aNext Page").build());
+/*		conditionMenu.setNextPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aNext Page").build());
 		conditionMenu.setPrevPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aBack Page").build());
 		overrideMenu.setNextPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aNext Page").build());
-		overrideMenu.setPrevPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aBack Page").build());
+		overrideMenu.setPrevPageItem(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.LIME_STAINED_GLASS_PANE)).setDisplayName("§aBack Page").build());*/
 		pluginMenu.setUpdate("#layout", () -> {
 			for(SettingsMenu page : pluginMenu.getPages()) {
 				page.setItem(7, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BLACK_STAINED_GLASS_PANE)).setDisplayName(" ").build(), data -> true));
@@ -482,7 +482,7 @@ public class  ExplosionSettings {
 				page.setItem(17, new SlotElement(pluginMenu.getNextPageItem(), data -> true));
 			}
 		});
-		conditionMenu.setUpdate("#layout", () -> {
+/*		conditionMenu.setUpdate("#layout", () -> {
 			for(SettingsMenu page : conditionMenu.getPages()) {
 				page.setItem(7, new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.BLACK_STAINED_GLASS_PANE)).setDisplayName(" ").build(), data -> true));
 				page.setItem(8, new SlotElement(closeItem, data -> {
@@ -503,7 +503,7 @@ public class  ExplosionSettings {
 				page.setItem(16, new SlotElement(pluginMenu.getPrevPageItem(), data -> true));
 				page.setItem(17, new SlotElement(pluginMenu.getNextPageItem(), data -> true));
 			}
-		});
+		});*/
 		pluginMenu.setUpdate("plugins", () -> {
 			pluginMenu.clear();
 			pluginMenu.update("#layout");
@@ -514,12 +514,12 @@ public class  ExplosionSettings {
 				}));
 			}
 		});
-		conditionMenu.setUpdate("conditions", () -> {
+/*		conditionMenu.setUpdate("conditions", () -> {
 			conditionMenu.clear();
 			conditionMenu.update("#layout");
-			for(ExplosionCondition condition : getConditions().getConditions()) {
+			for(Condition condition : getConditions().getConditions()) {
 				conditionMenu.addItem(new SlotElement(new ItemBuilder(BukkitAdapter.asBukkitMaterial(FlatMaterial.PAPER)).setDisplayName("§f" + WordUtils.capitalize(condition.name().toLowerCase().replace("_", " "))).setLine(0, "§9" + WordUtils.capitalize(getConditions().getSimpleConditionValue(condition).toString().replace("_", " "))).build(), data -> {
-					if(getConditions().getConditionValue(condition) instanceof Enum) {
+					if(getConditions().getConditionValues(condition) instanceof Enum) {
 						data.getWhoClicked().sendMessage("§aEntering Input Mode. Input Value.");
 						InputMode.setChatMode((Player) data.getWhoClicked(), new InputMode(input -> {
 							try {
@@ -637,15 +637,17 @@ public class  ExplosionSettings {
 					}
 				});
 			}
-		});
+		});*/
 	}
 
 	public String getName() {
 		return name;
 	}
+
 	public ExplosionSettingsPlugin loadPlugin(Object plugin) {
 		return loadPlugin(plugin, plugin.getClass().getName());
 	}
+
 	public ExplosionSettingsPlugin loadPlugin(Object plugin, String name) {
 		File file = new File(ExplosionRegen.getInstance().getDataFolder() + File.separator + "explosions" + File.separator + getName() + ".yml");
 		if(!file.exists()) {
@@ -836,36 +838,23 @@ public class  ExplosionSettings {
 		displayHoloText = text;
 	}
 
-	public void addOrSetOverride(ExplosionSettingsOverride override) {
-		ExplosionSettingsOverride newOverride;
-		if(overrides.containsKey(override.getName())) {
-			newOverride = overrides.get(override.getName());
-			for(ExplosionCondition condition : override.getConditions())
-				newOverride.setCondition(condition, override.getConditionValue(condition));
-		} else {
-			newOverride = override;
-			overrides.put(newOverride.getName(), newOverride);
-		}
+	public ExplosionCondition getCondition() {
+		return condition;
 	}
 
-	public void addOrSetCondition(ExplosionSettingsOverride override) {
-		for(ExplosionCondition condition : override.getConditions())
-			conditions.setCondition(condition, override.getConditionValue(condition));
+	public Set<Map.Entry<String, ExplosionOverride>> getOverrides() {
+		return overrideMap.entrySet();
 	}
 
-	public void removeOverride(String name) {
-		overrides.remove(name);
+	public ExplosionOverride getOverride(String override) {
+		return overrideMap.get(override);
 	}
-	public void removeCondition(ExplosionCondition condition) {
-		conditions.removeCondition(condition);
-	}
-	
-	public Collection<ExplosionSettingsOverride> getOverrides() {
-		return overrides.values();
-	}
-	
-	public ExplosionSettingsOverride getConditions() {
-		return conditions;
+
+	public void setOverride(String name, ExplosionOverride override) {
+		if(override == null)
+			overrideMap.remove(name);
+		else
+			overrideMap.put(name, override);
 	}
 
 	public SettingsMenu getSettingsMenu() {
@@ -896,27 +885,53 @@ public class  ExplosionSettings {
 			config.set("damage." + category.name().toLowerCase() + ".modifier", getDamageModifier(category).name().toLowerCase());
 			config.set("damage." + category.name().toLowerCase() + ".amount", getDamageAmount(category));
 		}
-		Set<String> condKeys = config.isConfigurationSection("override") ? config.getConfigurationSection("override").getKeys(false) : new HashSet<>();
-		for(ExplosionCondition condition : getConditions().getConditions()) {
-			config.set("conditions." + condition.name().toLowerCase(), getConditions().getSimpleConditionValue(condition));
+		Set<String> condKeys = config.isConfigurationSection("condition") ? config.getConfigurationSection("condition").getKeys(false) : new HashSet<>();
+		for(Condition condition : getCondition().getConditions()) {
+			if(getCondition().getConditionValues(condition) instanceof Map) {
+				List<String> list = new ArrayList<>();
+				for(Map.Entry<?, Boolean> entry : ((Map<?, Boolean>) getCondition().getConditionValues(condition)).entrySet()) {
+					String key;
+					if(entry.getKey() instanceof Enum) {
+						key = ((Enum<?>)entry.getKey()).name();
+					} else
+						key = entry.getKey().toString();
+					list.add((!entry.getValue() ? "!" : "") + key.toLowerCase());
+				}
+				config.set("condition." + condition.name().toLowerCase(), list);
+			} else {
+				config.set("condition." + condition.name().toLowerCase(), getCondition().getConditionValues(condition));
+			}
 			condKeys.remove(condition.name().toLowerCase());
 		}
 		Set<String> overKeys = config.isConfigurationSection("override") ? config.getConfigurationSection("override").getKeys(false) : new HashSet<>();
-		for(ExplosionSettingsOverride override : getOverrides()) {
-			config.set("override." + override.getName() + ".settings", override.getExplosionSettings().getName());
-			Set<String> overCondKeys = config.getConfigurationSection("override." + override.getName() + ".conditions").getKeys(false);
-			for(ExplosionCondition condition : override.getConditions()) {
-				config.set("override." + override.getName() + ".conditions." + condition.name().toLowerCase(), override.getSimpleConditionValue(condition));
+		for(Map.Entry<String, ExplosionOverride> entry : getOverrides()) {
+			config.set("override." + entry.getKey() + ".settings", entry.getValue().getSettings());
+			Set<String> overCondKeys = config.getConfigurationSection("override." + entry.getKey() + ".condition").getKeys(false);
+			for(Condition condition : entry.getValue().getCondition().getConditions()) {
+				if(entry.getValue().getCondition().getConditionValues(condition) instanceof Map) {
+					List<String> list = new ArrayList<>();
+					for(Map.Entry<?, Boolean> condEntry : ((Map<?, Boolean>) entry.getValue().getCondition().getConditionValues(condition)).entrySet()) {
+						String key;
+						if(condEntry instanceof Enum) {
+							key = ((Enum<?>)condEntry.getKey()).name();
+						} else
+							key = condEntry.getKey().toString();
+						list.add((!condEntry.getValue() ? "!" : "") + key.toLowerCase());
+					}
+					config.set("override." + entry.getKey() + ".condition." + condition.name().toLowerCase(), list);
+				} else {
+					config.set("override." + entry.getKey() + ".condition." + condition.name().toLowerCase(), entry.getValue().getCondition().getConditionValues(condition));
+				}
 				overCondKeys.remove(condition.name().toLowerCase());
 			}
 			for(String key : overCondKeys)
-				config.set("override." + override.getName() + ".conditions." + key, null);
-			overKeys.remove(override.getName());
+				config.set("override." + entry.getKey() + ".condition." + key, null);
+			overKeys.remove(entry.getKey());
 		}
 		for(String key : overKeys)
 			config.set("override." + key, null);
 		for(String key : condKeys)
-			config.set("conditions." + key, null);
+			config.set("condition." + key, null);
 
 		//TODO save ExplosionSettingsPlugin data
 		try {
@@ -962,78 +977,132 @@ public class  ExplosionSettings {
 			settings.setDamageModifier(category, DamageModifier.valueOf(config.getString("damage." + category.name().toLowerCase() + ".modifier", settings.getDamageModifier(category).name()).toUpperCase()));
 			settings.setDamageAmount(category, config.getDouble("damage." + category.name().toLowerCase() + ".amount", settings.getDamageAmount(category)));
 		}
-		if(config.isConfigurationSection("conditions")) {
-			ExplosionSettingsOverride override = settings.getConditions();
-			for(String key : config.getConfigurationSection("conditions").getKeys(false)) {
-				ExplosionCondition condition = ExplosionCondition.valueOf(key.toUpperCase());
+
+		if(config.isConfigurationSection("condition")) {
+			ExplosionCondition condition = settings.getCondition();
+			for(String key : config.getConfigurationSection("condition").getKeys(false)) {
+				Condition cond = Condition.valueOf(key.toUpperCase());
 				Object value = null;
-				switch(condition) {
+				switch(cond) {
 					case CUSTOM_NAME:
-						value = config.get("conditions." + key);
+					case WORLD: {
+						HashMap<String, Boolean> map = new HashMap<>();
+						for (String v : config.getStringList("condition." + key)) {
+							boolean allow = !v.startsWith("!");
+							String result = !allow ? v.substring(1) : v;
+							map.put(result, allow);
+						}
+						value = map;
 						break;
-					case ENTITY:
-						value = EntityType.valueOf(config.getString("conditions." + key).toUpperCase());
+					}
+					case ENTITY: {
+						HashMap<EntityType, Boolean> map = new HashMap<>();
+						for (String v : config.getStringList("condition." + key)) {
+							boolean allow = !v.startsWith("!");
+							String result = !allow ? v.substring(1) : v;
+							map.put(EntityType.valueOf(result.toUpperCase()), allow);
+						}
+						value = map;
 						break;
-					case BLOCK:
-						value = Material.getMaterial(config.getString("conditions." + key).toUpperCase());
+					}
+					case BLOCK: {
+						HashMap<Material, Boolean> map = new HashMap<>();
+						for (String v : config.getStringList("condition." + key)) {
+							boolean allow = !v.startsWith("!");
+							String result = !allow ? v.substring(1) : v;
+							map.put(Material.valueOf(result.toUpperCase()), allow);
+						}
+						value = map;
 						break;
+					}
 					case IS_CHARGED:
 						value = config.getBoolean("conditions." + key);
 						break;
-					case WEATHER:
-						value = WeatherType.valueOf(config.getString("conditions." + key).toUpperCase());
+					case WEATHER: {
+						HashMap<WeatherType, Boolean> map = new HashMap<>();
+						for (String v : config.getStringList("condition." + key)) {
+							boolean allow = !v.startsWith("!");
+							String result = !allow ? v.substring(1) : v;
+							map.put(WeatherType.valueOf(result.toUpperCase()), allow);
+						}
+						value = map;
 						break;
-					case WORLD:
-						value = Bukkit.getWorld(config.getString("conditions." + key));
-						break;
+					}
 					case MINX:
 					case MAXX:
 					case MINY:
 					case MAXY:
 					case MINZ:
 					case MAXZ:
-						value = config.getDouble("conditions." + key);
+						value = config.getDouble("condition." + key);
+						break;
 				}
-				override.setCondition(condition, value);
+				condition.setCondition(cond, value);
 			}
-			settings.addOrSetCondition(override);
 		}
 		if(config.isConfigurationSection("override")) {
 			for(String key : config.getConfigurationSection("override").getKeys(false)) {
-				ExplosionSettingsOverride override = new ExplosionSettingsOverride(key, ExplosionSettings.getSettings(config.getString("override." + key + ".settings")));//addOverride(key, t);
-				for(String k : config.getConfigurationSection("override." + key + ".conditions").getKeys(false)) {
-					ExplosionCondition condition = ExplosionCondition.valueOf(k.toUpperCase());
+				ExplosionCondition condition = new ExplosionCondition();
+				ExplosionOverride override = new ExplosionOverride(condition, ExplosionSettings.getSettings(config.getString("override." + key + ".settings")));
+				for(String k : config.getConfigurationSection("override." + key + ".condition").getKeys(false)) {
+					Condition cond = Condition.valueOf(k.toUpperCase());
 					Object value = null;
-					switch(condition) {
+					switch(cond) {
 						case CUSTOM_NAME:
-							value = config.get("override." + key + ".conditions." + k);
+						case WORLD: {
+							HashMap<String, Boolean> map = new HashMap<>();
+							for (String v : config.getStringList("override." + key + ".condition." + k)) {
+								boolean allow = !v.startsWith("!");
+								String result = !allow ? v.substring(1) : v;
+								map.put(result, allow);
+							}
+							value = map;
 							break;
-						case ENTITY:
-							value = EntityType.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
+						}
+						case ENTITY: {
+							HashMap<EntityType, Boolean> map = new HashMap<>();
+							for (String v : config.getStringList("override." + key + ".condition." + k)) {
+								boolean allow = !v.startsWith("!");
+								String result = !allow ? v.substring(1) : v;
+								map.put(EntityType.valueOf(result.toUpperCase()), allow);
+							}
+							value = map;
 							break;
-						case BLOCK:
-							value = Material.getMaterial(config.getString("override." + key + ".conditions." + k).toUpperCase());
+						}
+						case BLOCK: {
+							HashMap<Material, Boolean> map = new HashMap<>();
+							for (String v : config.getStringList("override." + key + ".condition." + k)) {
+								boolean allow = !v.startsWith("!");
+								String result = !allow ? v.substring(1) : v;
+								map.put(Material.valueOf(result.toUpperCase()), allow);
+							}
+							value = map;
 							break;
+						}
 						case IS_CHARGED:
-							value = config.getBoolean("override." + key + ".conditions." + k);
+							value = config.getBoolean("override." + key + ".condition." + k);
 							break;
-						case WEATHER:
-							value = WeatherType.valueOf(config.getString("override." + key + ".conditions." + k).toUpperCase());
+						case WEATHER: {
+							HashMap<WeatherType, Boolean> map = new HashMap<>();
+							for (String v : config.getStringList("override." + key + ".condition." + k)) {
+								boolean allow = !v.startsWith("!");
+								String result = !allow ? v.substring(1) : v;
+								map.put(WeatherType.valueOf(result.toUpperCase()), allow);
+							}
+							value = map;
 							break;
-						case WORLD:
-							value = Bukkit.getWorld(config.getString("override." + key + ".conditions." + k));
-							break;
+						}
 						case MINX:
 						case MAXX:
 						case MINY:
 						case MAXY:
 						case MINZ:
 						case MAXZ:
-							value = config.getDouble("override." + key + ".conditions." + k);
+							value = config.getDouble("override." + key + ".condition." + k);
+							break;
 					}
-					override.setCondition(condition, value);
+					condition.setCondition(cond, value);
 				}
-				settings.addOrSetOverride(override);
 			}
 		}
 		registerSettings(settings);
